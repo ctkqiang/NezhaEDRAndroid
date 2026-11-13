@@ -4,23 +4,23 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Outer Sentinel Cyber Shield Shell -->
+    <!-- Premium Outer Crimson Shield Outline -->
     <path
-        android:fillColor="#D32F2F"
-        android:pathData="M54,22 L28,34 v24 c0,17.2 11.2,32.3 26,36 c14.8,-3.7 26,-18.8 26,-36 V34 L54,22 z" />
+        android:fillColor="#E53935"
+        android:pathData="M54,24 L30,35 v22 c0,15.5 10.2,29.1 24,33 c13.8,-3.9 24,-17.5 24,-33 V35 L54,24 z" />
 
-    <!-- Inner Metallic Core Armor -->
+    <!-- Dark Inner Recessed Shield Body -->
     <path
-        android:fillColor="#111827"
-        android:pathData="M54,28 L34,37.2 v19.2 c0,13.2 8.5,24.8 20,27.6 c11.5,-2.8 20,-14.4 20,-27.6 V37.2 L54,28 z" />
+        android:fillColor="#0B0F19"
+        android:pathData="M54,28.5 L34,37.6 v18.4 c0,12.5 8.2,23.5 20,26.5 c11.8,-3 20,-14 20,-26.5 V37.6 L54,28.5 z" />
 
-    <!-- Nezha Cyber Flame Spearhead Center Piece -->
+    <!-- Sleek Minimalist Spearhead Core -->
     <path
         android:fillColor="#FF5252"
-        android:pathData="M54,34 L45,52 h6 v18 h6 V52 h6 L54,34 z" />
+        android:pathData="M54,34.5 L43,53.5 h7.5 v14.5 h7 V53.5 H65 L54,34.5 z" />
 
-    <!-- High-Glow Core Orb -->
+    <!-- Pure White Central Emblem Core -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,48 m-4,0 a4,4 0 1,0 8,0 a4,4 0 1,0 -8,0" />
+        android:pathData="M54,44 L49,53.5 h3.5 v9 h3 v-9 H59 L54,44 z" />
 </vector>

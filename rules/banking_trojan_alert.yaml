@@ -1,0 +1,11 @@
+id: "RULE-PKG-003"
+name: "Banking Trojan & Overlay Sideload Detection"
+description: "Detects malware overlay apps targeting financial institutions and MFA tokens"
+severity: "CRITICAL"
+category: "PACKAGE"
+condition:
+  package_patterns:
+    - ".*trojan\\.banker.*"
+    - ".*overlay\\.stealer.*"
+    - ".*fake\\.banking.*"
+action: "TERMINATE"

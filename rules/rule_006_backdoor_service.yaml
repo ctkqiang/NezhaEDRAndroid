@@ -1,9 +1,0 @@
-id: RULE-PROC-001
-name: Unauthorized Backdoor Service Detection
-description: Monitors rogue processes attempting unauthorized background execution
-severity: MEDIUM
-category: PROCESS
-condition:
-  package_patterns:
-    - ".*backdoor\\.service.*"
-action: LOG

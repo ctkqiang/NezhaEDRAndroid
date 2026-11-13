@@ -44,12 +44,18 @@ class RuleRepositoryImpl(
 
     override fun getRemoteRuleCatalog(): List<RemoteRuleCatalogItem> {
         return listOf(
-            RemoteRuleCatalogItem("rule_001_c2_block.yaml", "RULE-NET-001", "Known C2 Threat IP Block", "NETWORK", "HIGH"),
-            RemoteRuleCatalogItem("rule_002_ransomware_beacon.yaml", "RULE-NET-002", "Ransomware Beaconing Domain Block", "NETWORK", "CRITICAL"),
-            RemoteRuleCatalogItem("rule_003_adult_content_block.yaml", "RULE-NET-003", "Adult & Explicit Content Domain Block", "NETWORK", "CRITICAL"),
-            RemoteRuleCatalogItem("rule_004_rogue_package.yaml", "RULE-PKG-001", "Suspicious Rogue Package Alert", "PACKAGE", "CRITICAL"),
-            RemoteRuleCatalogItem("rule_005_spyware_keylogger.yaml", "RULE-PKG-002", "Spyware & Keylogger Package Detection", "PACKAGE", "HIGH"),
-            RemoteRuleCatalogItem("rule_006_backdoor_service.yaml", "RULE-PROC-001", "Unauthorized Backdoor Service Detection", "PROCESS", "MEDIUM")
+            RemoteRuleCatalogItem("c2_threat_block.yaml", "RULE-NET-001", "Known C2 Threat IP Block", "NETWORK", "HIGH"),
+            RemoteRuleCatalogItem("ransomware_beacon_block.yaml", "RULE-NET-002", "Ransomware Beaconing Domain Block", "NETWORK", "CRITICAL"),
+            RemoteRuleCatalogItem("adult_content_block.yaml", "RULE-NET-003", "Adult & Explicit Content Domain Block", "NETWORK", "CRITICAL"),
+            RemoteRuleCatalogItem("pegasus_spyware_block.yaml", "RULE-NET-004", "Pegasus & Advanced Cyber Espionage Block", "NETWORK", "CRITICAL"),
+            RemoteRuleCatalogItem("cryptojacking_pool_block.yaml", "RULE-NET-005", "Cryptojacking Mining Pool Network Block", "NETWORK", "HIGH"),
+            RemoteRuleCatalogItem("phishing_credential_block.yaml", "RULE-NET-006", "Phishing & Credential Harvester Block", "NETWORK", "HIGH"),
+            RemoteRuleCatalogItem("adware_click_farm_block.yaml", "RULE-NET-007", "Fraudulent Adware & Click Farm Block", "NETWORK", "MEDIUM"),
+            RemoteRuleCatalogItem("reconnaissance_probe_block.yaml", "RULE-NET-008", "Reconnaissance & Network Probe Block", "NETWORK", "HIGH"),
+            RemoteRuleCatalogItem("rogue_package_alert.yaml", "RULE-PKG-001", "Suspicious Rogue Package Alert", "PACKAGE", "CRITICAL"),
+            RemoteRuleCatalogItem("spyware_keylogger_detection.yaml", "RULE-PKG-002", "Spyware & Keylogger Package Detection", "PACKAGE", "HIGH"),
+            RemoteRuleCatalogItem("banking_trojan_alert.yaml", "RULE-PKG-003", "Banking Trojan & Overlay Sideload Detection", "PACKAGE", "CRITICAL"),
+            RemoteRuleCatalogItem("backdoor_service_detection.yaml", "RULE-PROC-001", "Unauthorized Backdoor Service Detection", "PROCESS", "MEDIUM")
         )
     }
 
@@ -190,8 +196,8 @@ class RuleRepositoryImpl(
                 val distinctRules = parsedYamlRules.distinctBy { it.id }
                 EDRLogger.i(TAG, "Successfully loaded ${distinctRules.size} distinct YAML rulesets")
                 DetectionRulePackage(
-                    version = "1.5.0-gitops",
-                    updatedAt = "2026-03-01T18:00:00Z",
+                    version = "2.0.0-enterprise",
+                    updatedAt = "2026-03-01T20:00:00Z",
                     rules = distinctRules
                 )
             } else {

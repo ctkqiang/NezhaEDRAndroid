@@ -1,0 +1,10 @@
+id: "RULE-NET-007"
+name: "Fraudulent Adware & Click Farm Telemetry Block"
+description: "Blocks background click fraud ad servers draining battery and mobile bandwidth"
+severity: "MEDIUM"
+category: "NETWORK"
+condition:
+  target_domains:
+    - "click-fraud.ad-tracker.net"
+    - "background-popunder.ad-network.cc"
+action: "BLOCK"

@@ -1,0 +1,12 @@
+id: "RULE-NET-002"
+name: "Ransomware Beaconing Domain Block"
+description: "Prevents outbound botnet beaconing to ransomware command centers"
+severity: "CRITICAL"
+category: "NETWORK"
+condition:
+  target_ips:
+    - "203.0.113.55"
+  target_domains:
+    - "beacon.darkransom.net"
+    - "botnet.cc-server.io"
+action: "BLOCK"

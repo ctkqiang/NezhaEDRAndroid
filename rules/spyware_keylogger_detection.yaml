@@ -1,0 +1,10 @@
+id: "RULE-PKG-002"
+name: "Spyware & Keylogger Package Detection"
+description: "Flags unauthorized background keyloggers and telemetry stealers"
+severity: "HIGH"
+category: "PACKAGE"
+condition:
+  package_patterns:
+    - ".*stealer\\.keylog.*"
+    - ".*hidden\\.spyware.*"
+action: "NOTIFY"

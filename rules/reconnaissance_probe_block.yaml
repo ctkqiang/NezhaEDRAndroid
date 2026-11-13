@@ -1,0 +1,10 @@
+id: "RULE-NET-008"
+name: "Reconnaissance & Network Probe Scanner Block"
+description: "Blocks active port scanning and vulnerability probing from remote threat actors"
+severity: "HIGH"
+category: "NETWORK"
+condition:
+  target_ips:
+    - "198.51.100.99"
+    - "203.0.113.200"
+action: "BLOCK"

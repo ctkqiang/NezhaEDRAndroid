@@ -1,0 +1,12 @@
+id: "RULE-NET-004"
+name: "Pegasus & Advanced Cyber Espionage Domain Block"
+description: "Blocks egress connections to known commercial spyware & zero-day exploit exfiltration domains"
+severity: "CRITICAL"
+category: "NETWORK"
+condition:
+  target_domains:
+    - "pegasus-exfil.nso-group.net"
+    - "mercenary-spyware-c2.org"
+    - "zero-day-exploit-server.cc"
+    - "hermit-stalkerware.net"
+action: "BLOCK"

@@ -144,6 +144,23 @@ class TelemetryDatabaseHelper(context: Context) :
         return result
     }
 
+    fun exportVisitedSitesToCsv(): String {
+        EDRLogger.i(TAG, "exportVisitedSitesToCsv: Exporting SQLite records to CSV format")
+        val list = getAllVisitedSites()
+        val sb = StringBuilder()
+        sb.append("ID,Timestamp,Destination_IP,Domain,Protocol,Is_Threat,App_Name,Package_Name\n")
+        for (item in list) {
+            val safeIp = item.destinationIp.replace("\"", "\"\"")
+            val safeDomain = item.domain.replace("\"", "\"\"")
+            val safeApp = item.appName.replace("\"", "\"\"")
+            val safePkg = item.packageName.replace("\"", "\"\"")
+            sb.append("${item.id},${item.timestamp},\"$safeIp\",\"$safeDomain\",\"${item.protocol}\",${item.isThreat},\"$safeApp\",\"$safePkg\"\n")
+        }
+        val result = sb.toString()
+        EDRLogger.d(TAG, "exportVisitedSitesToCsv: Produced ${result.length} bytes of CSV data")
+        return result
+    }
+
     companion object {
         private const val TAG = "TelemetryDatabaseHelper"
         private const val DATABASE_NAME = "nezha_edr_telemetry.db"

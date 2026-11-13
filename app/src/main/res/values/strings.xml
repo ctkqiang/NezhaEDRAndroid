@@ -2,8 +2,8 @@
     <string name="app_name">NezhaEDR</string>
     <string name="notification_channel_name">NezhaEDR Threat Alerts</string>
     <string name="notification_channel_description">Notifications for detected EDR security threats and containment actions.</string>
-    <string name="threat_detected_title">EDR Threat Detected: %1$s</string>
-    <string name="threat_detected_body">Severity: %1$s — %2$s</string>
+    <string name="threat_detected_title">EDR Threat Contained: %1$s</string>
+    <string name="threat_detected_body">Application %1$s has been blocked by NezhaEDR from accessing %2$s.</string>
 
     <string name="nav_dashboard">Dashboard</string>
     <string name="nav_rules">Detection Rules</string>
@@ -20,10 +20,10 @@
     <string name="active_rules_count">Active Rulesets</string>
     <string name="total_threats_blocked">Threats Contained</string>
     <string name="visited_sites_count">Visited Sites Logged</string>
-    <string name="threat_activity_graph">Real-Time Telemetry Activity</string>
-    <string name="contribute_rules_title">Contribute Rules to Community</string>
-    <string name="contribute_rules_desc">Submit declarative YAML/JSON rulesets to NezhaEDR GitOps repository.</string>
-    <string name="btn_contribute">Contribute on GitHub</string>
+    <string name="threat_activity_graph">Real-Time Telemetry &amp; Threat Analytics</string>
+    <string name="contribute_rules_title">Contribute YAML Rules to Community</string>
+    <string name="contribute_rules_desc">Submit declarative YAML rulesets to the NezhaEDR GitOps repository.</string>
+    <string name="btn_contribute">Contribute YAML on GitHub</string>
 
     <!-- Open Source Privacy Disclaimer -->
     <string name="privacy_disclaimer_title">Open Source &amp; Privacy Guarantee</string>
@@ -31,12 +31,13 @@
 
     <!-- SQLite Visited Sites & Actions -->
     <string name="visited_sites_header">SQLite Local Telemetry History</string>
-    <string name="btn_export_data">Export Data (JSON)</string>
+    <string name="btn_export_data">Export Data (YAML)</string>
+    <string name="btn_export_csv">Export CSV</string>
     <string name="btn_clear_data">Clear Local History</string>
     <string name="confirm_clear_title">Delete Local History?</string>
     <string name="confirm_clear_body">Are you sure you want to delete all visited site records from your local SQLite database?</string>
     <string name="no_history_recorded">No visited site history recorded yet.</string>
-    <string name="data_exported_toast">Telemetry data exported to JSON.</string>
+    <string name="data_exported_toast">Telemetry data exported.</string>
     <string name="data_cleared_toast">Local SQLite records deleted.</string>
 
     <string name="rules_header_title">Active Detection Rulesets</string>
@@ -48,6 +49,10 @@
     <string name="rule_detail_dialog_title">Rule Details</string>
     <string name="btn_close">Close</string>
     <string name="btn_cancel">Cancel</string>
+
+    <!-- Threat Alert Popup Dialog -->
+    <string name="threat_alert_popup_title">Security Containment Triggered</string>
+    <string name="threat_alert_popup_body">NezhaEDR blocked application \"%1$s\" based on rule %2$s (%3$s).\n\nDetails: %4$s</string>
 
     <string name="siem_threat_logs">SIEM Threat Log &amp; Containment History</string>
     <string name="no_threats_detected">No security threats detected. Endpoint is secure.</string>

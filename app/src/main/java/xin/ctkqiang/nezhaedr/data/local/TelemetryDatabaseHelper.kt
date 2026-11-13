@@ -5,8 +5,8 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import xin.ctkqiang.nezhaedr.util.EDRLogger
+import java.util.Date
 
 @Serializable
 data class VisitedSiteRecord(
@@ -24,6 +24,7 @@ class TelemetryDatabaseHelper(context: Context) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     override fun onCreate(db: SQLiteDatabase) {
+        EDRLogger.i(TAG, "onCreate: Creating SQLite database table $TABLE_VISITED_SITES")
         val createTableQuery = """
             CREATE TABLE $TABLE_VISITED_SITES (
                 $COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,15 +37,22 @@ class TelemetryDatabaseHelper(context: Context) :
                 $COLUMN_PACKAGE_NAME TEXT
             )
         """.trimIndent()
-        db.execSQL(createTableQuery)
+        try {
+            db.execSQL(createTableQuery)
+            EDRLogger.i(TAG, "Table $TABLE_VISITED_SITES created successfully")
+        } catch (e: Exception) {
+            EDRLogger.fatal(TAG, "Failed to create database table $TABLE_VISITED_SITES", e)
+        }
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        EDRLogger.w(TAG, "onUpgrade: Upgrading database from version $oldVersion to $newVersion")
         db.execSQL("DROP TABLE IF EXISTS $TABLE_VISITED_SITES")
         onCreate(db)
     }
 
     fun insertVisitedSite(record: VisitedSiteRecord): Long {
+        EDRLogger.v(TAG, "insertVisitedSite: Inserting IP ${record.destinationIp} (isThreat: ${record.isThreat})")
         val db = writableDatabase
         val values = ContentValues().apply {
             put(COLUMN_TIMESTAMP, record.timestamp)
@@ -55,10 +63,17 @@ class TelemetryDatabaseHelper(context: Context) :
             put(COLUMN_APP_NAME, record.appName)
             put(COLUMN_PACKAGE_NAME, record.packageName)
         }
-        return db.insert(TABLE_VISITED_SITES, null, values)
+        val rowId = db.insert(TABLE_VISITED_SITES, null, values)
+        if (rowId == -1L) {
+            EDRLogger.e(TAG, "insertVisitedSite failed for record: ${record.destinationIp}")
+        } else {
+            EDRLogger.d(TAG, "insertVisitedSite: Row inserted successfully with ID $rowId")
+        }
+        return rowId
     }
 
     fun getAllVisitedSites(): List<VisitedSiteRecord> {
+        EDRLogger.v(TAG, "getAllVisitedSites: Querying all telemetry records from SQLite")
         val records = mutableListOf<VisitedSiteRecord>()
         val db = readableDatabase
         val cursor = db.query(
@@ -96,20 +111,41 @@ class TelemetryDatabaseHelper(context: Context) :
                 )
             }
         }
+        EDRLogger.d(TAG, "getAllVisitedSites: Retrieved ${records.size} records")
         return records
     }
 
     fun clearAllVisitedSites(): Int {
+        EDRLogger.w(TAG, "clearAllVisitedSites: Clearing all SQLite records")
         val db = writableDatabase
-        return db.delete(TABLE_VISITED_SITES, null, null)
+        val rowsDeleted = db.delete(TABLE_VISITED_SITES, null, null)
+        EDRLogger.i(TAG, "clearAllVisitedSites: Deleted $rowsDeleted records")
+        return rowsDeleted
     }
 
-    fun exportVisitedSitesToJson(): String {
+    fun exportVisitedSitesToYaml(): String {
+        EDRLogger.i(TAG, "exportVisitedSitesToYaml: Exporting SQLite records to YAML format")
         val list = getAllVisitedSites()
-        return Json { prettyPrint = true }.encodeToString(list)
+        val sb = StringBuilder()
+        sb.append("# NezhaEDR Local Telemetry Export (YAML)\n")
+        sb.append("# Exported: ${Date()}\n\n")
+        for (item in list) {
+            sb.append("- id: ${item.id}\n")
+            sb.append("  timestamp: ${item.timestamp}\n")
+            sb.append("  destination_ip: \"${item.destinationIp}\"\n")
+            sb.append("  domain: \"${item.domain}\"\n")
+            sb.append("  protocol: \"${item.protocol}\"\n")
+            sb.append("  is_threat: ${item.isThreat}\n")
+            sb.append("  app_name: \"${item.appName}\"\n")
+            sb.append("  package_name: \"${item.packageName}\"\n\n")
+        }
+        val result = sb.toString()
+        EDRLogger.d(TAG, "exportVisitedSitesToYaml: Produced ${result.length} bytes of YAML data")
+        return result
     }
 
     companion object {
+        private const val TAG = "TelemetryDatabaseHelper"
         private const val DATABASE_NAME = "nezha_edr_telemetry.db"
         private const val DATABASE_VERSION = 1
 

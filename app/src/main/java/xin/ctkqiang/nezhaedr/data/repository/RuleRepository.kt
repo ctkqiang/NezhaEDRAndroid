@@ -4,6 +4,7 @@ import kotlinx.serialization.json.Json
 import xin.ctkqiang.nezhaedr.data.model.DetectionRule
 import xin.ctkqiang.nezhaedr.data.model.DetectionRulePackage
 import xin.ctkqiang.nezhaedr.data.parser.YamlRuleParser
+import xin.ctkqiang.nezhaedr.util.EDRLogger
 import java.io.File
 
 interface RuleRepository {
@@ -23,12 +24,14 @@ class RuleRepositoryImpl(
     private var cachedRules: DetectionRulePackage? = null
 
     override suspend fun fetchRules(): Result<DetectionRulePackage> {
+        EDRLogger.i(TAG, "fetchRules: Initiating detection rules load process")
         return try {
             val rootDir = File("/Users/johnmelodyme/Documents/NezhaEDRAndroid")
             val rulesDir = File(rootDir, "rules")
 
             val yamlFiles = mutableListOf<File>()
             if (rulesDir.exists() && rulesDir.isDirectory) {
+                EDRLogger.d(TAG, "Scanning rules directory: ${rulesDir.absolutePath}")
                 rulesDir.listFiles { _, name -> name.endsWith(".yaml", ignoreCase = true) }?.let {
                     yamlFiles.addAll(it)
                 }
@@ -39,29 +42,36 @@ class RuleRepositoryImpl(
                 }
             }
 
+            EDRLogger.d(TAG, "Found ${yamlFiles.size} candidate .yaml rule files")
+
             val parsedYamlRules = mutableListOf<DetectionRule>()
             for (file in yamlFiles) {
                 try {
+                    EDRLogger.v(TAG, "Reading YAML file: ${file.name}")
                     val rule = YamlRuleParser.parseYamlRule(file.readText())
                     if (rule != null) {
                         parsedYamlRules.add(rule)
                     }
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    EDRLogger.e(TAG, "Error parsing YAML file ${file.name}", e)
                 }
             }
 
             val rulePackage = if (parsedYamlRules.isNotEmpty()) {
+                EDRLogger.i(TAG, "Successfully loaded ${parsedYamlRules.size} rules from YAML files")
                 DetectionRulePackage(
                     version = "1.4.0-yaml",
                     updatedAt = "2026-03-01T16:00:00Z",
                     rules = parsedYamlRules.distinctBy { it.id }
                 )
             } else {
+                EDRLogger.w(TAG, "No YAML rules found. Checking fallback rules.json")
                 val jsonFile = File(rootDir, "rules.json")
                 if (jsonFile.exists() && jsonFile.canRead()) {
+                    EDRLogger.d(TAG, "Parsing rules from ${jsonFile.absolutePath}")
                     parseRulesJson(jsonFile.readText())
                 } else {
+                    EDRLogger.w(TAG, "rules.json not found or unreadable; using embedded fallback ruleset")
                     getEmbeddedDefaultRules()
                 }
             }
@@ -69,6 +79,7 @@ class RuleRepositoryImpl(
             cachedRules = rulePackage
             Result.success(rulePackage)
         } catch (e: Exception) {
+            EDRLogger.e(TAG, "Failed to fetch rules package, reverting to embedded default ruleset", e)
             val fallback = getEmbeddedDefaultRules()
             cachedRules = fallback
             Result.success(fallback)
@@ -76,18 +87,27 @@ class RuleRepositoryImpl(
     }
 
     override fun getCachedRules(): DetectionRulePackage? {
-        return cachedRules ?: getEmbeddedDefaultRules()
+        val rules = cachedRules ?: getEmbeddedDefaultRules()
+        EDRLogger.d(TAG, "getCachedRules: returning package version ${rules.version} with ${rules.rules.size} rules")
+        return rules
     }
 
     override fun saveRulesToCache(rulePackage: DetectionRulePackage) {
+        EDRLogger.d(TAG, "saveRulesToCache: caching rule package version ${rulePackage.version}")
         cachedRules = rulePackage
     }
 
     override fun parseRulesJson(jsonString: String): DetectionRulePackage {
-        return json.decodeFromString(jsonString)
+        return try {
+            json.decodeFromString(jsonString)
+        } catch (e: Exception) {
+            EDRLogger.e(TAG, "parseRulesJson: JSON parsing error", e)
+            getEmbeddedDefaultRules()
+        }
     }
 
     private fun getEmbeddedDefaultRules(): DetectionRulePackage {
+        EDRLogger.i(TAG, "getEmbeddedDefaultRules: Constructing embedded emergency ruleset")
         val defaultJson = """
         {
           "version": "1.3.0",
@@ -186,5 +206,9 @@ class RuleRepositoryImpl(
         }
         """.trimIndent()
         return parseRulesJson(defaultJson)
+    }
+
+    companion object {
+        private const val TAG = "RuleRepository"
     }
 }

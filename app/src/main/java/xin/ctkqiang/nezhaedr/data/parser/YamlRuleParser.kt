@@ -3,10 +3,14 @@ package xin.ctkqiang.nezhaedr.data.parser
 import xin.ctkqiang.nezhaedr.data.model.ContainmentAction
 import xin.ctkqiang.nezhaedr.data.model.DetectionRule
 import xin.ctkqiang.nezhaedr.data.model.RuleCondition
+import xin.ctkqiang.nezhaedr.util.EDRLogger
 
 object YamlRuleParser {
 
+    private const val TAG = "YamlRuleParser"
+
     fun parseYamlRule(yamlText: String): DetectionRule? {
+        EDRLogger.v(TAG, "Parsing YAML rule snippet (${yamlText.length} bytes)")
         val lines = yamlText.lines()
         var id = ""
         var name = ""
@@ -30,6 +34,7 @@ object YamlRuleParser {
 
             if (trimmed.startsWith("id:")) {
                 id = trimmed.substringAfter("id:").trim().removeSurrounding("\"")
+                EDRLogger.v(TAG, "Parsed rule ID: $id")
             } else if (trimmed.startsWith("name:")) {
                 name = trimmed.substringAfter("name:").trim().removeSurrounding("\"")
             } else if (trimmed.startsWith("description:")) {
@@ -64,15 +69,19 @@ object YamlRuleParser {
             }
         }
 
-        if (id.isEmpty() || name.isEmpty()) return null
+        if (id.isEmpty() || name.isEmpty()) {
+            EDRLogger.w(TAG, "Failed to parse YAML rule: missing required id or name field")
+            return null
+        }
 
         val containmentAction = try {
             ContainmentAction.valueOf(actionStr)
         } catch (e: Exception) {
+            EDRLogger.w(TAG, "Invalid action '$actionStr' for rule $id, defaulting to LOG", e)
             ContainmentAction.LOG
         }
 
-        return DetectionRule(
+        val rule = DetectionRule(
             id = id,
             name = name,
             description = description,
@@ -87,5 +96,8 @@ object YamlRuleParser {
             ),
             action = containmentAction
         )
+
+        EDRLogger.d(TAG, "Successfully constructed YAML rule: ${rule.id} (${rule.name})")
+        return rule
     }
 }

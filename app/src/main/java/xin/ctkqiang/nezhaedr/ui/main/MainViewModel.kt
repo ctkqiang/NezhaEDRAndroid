@@ -81,19 +81,79 @@ class MainViewModel(
         _uiState.update { it.copy(activeThreatPopup = null) }
     }
 
-    fun syncRulesFromGithub(onComplete: (Boolean) -> Unit = {}) {
-        EDRLogger.i(TAG, "syncRulesFromGithub: User triggered GitHub YAML ruleset synchronization")
+    fun openSyncPickerDialog() {
+        val catalog = ruleRepository.getRemoteRuleCatalog()
+        _uiState.update {
+            it.copy(
+                showSyncPickerDialog = true,
+                availableRemoteCatalog = catalog,
+                selectedRemoteFilesToSync = catalog.map { item -> item.fileName }.toSet()
+            )
+        }
+    }
+
+    fun dismissSyncPickerDialog() {
+        _uiState.update { it.copy(showSyncPickerDialog = false) }
+    }
+
+    fun toggleRemoteRuleSelection(fileName: String) {
+        _uiState.update { current ->
+            val set = current.selectedRemoteFilesToSync.toMutableSet()
+            if (set.contains(fileName)) set.remove(fileName) else set.add(fileName)
+            current.copy(selectedRemoteFilesToSync = set)
+        }
+    }
+
+    fun selectAllRemoteRules() {
+        _uiState.update { current ->
+            current.copy(selectedRemoteFilesToSync = current.availableRemoteCatalog.map { it.fileName }.toSet())
+        }
+    }
+
+    fun deselectAllRemoteRules() {
+        _uiState.update { current ->
+            current.copy(selectedRemoteFilesToSync = emptySet())
+        }
+    }
+
+    fun syncSelectedRulesFromGithub(onComplete: (Boolean) -> Unit = {}) {
+        val selectedFiles = _uiState.value.selectedRemoteFilesToSync.toList()
+        if (selectedFiles.isEmpty()) {
+            _uiState.update { it.copy(showSyncPickerDialog = false) }
+            onComplete(false)
+            return
+        }
+
         viewModelScope.launch {
-            _uiState.update { it.copy(isSyncingRules = true) }
-            val result = ruleRepository.syncRulesFromGithub()
+            _uiState.update { it.copy(showSyncPickerDialog = false, isSyncingRules = true) }
+            val result = ruleRepository.syncSelectedRulesFromGithub(selectedFiles)
             result.getOrNull()?.let { rules ->
                 evaluationEngine.updateRules(rules)
                 _uiState.update { it.copy(rulePackage = rules, isSyncingRules = false) }
-                EDRLogger.i(TAG, "syncRulesFromGithub: Successfully synced ${rules.rules.size} rules")
+                EDRLogger.i(TAG, "syncSelectedRulesFromGithub: Successfully synced ${rules.rules.size} rules")
                 onComplete(true)
             } ?: run {
-                EDRLogger.e(TAG, "syncRulesFromGithub: Sync failed")
                 _uiState.update { it.copy(isSyncingRules = false) }
+                onComplete(false)
+            }
+        }
+    }
+
+    fun confirmDeleteRule(rule: DetectionRule?) {
+        _uiState.update { it.copy(deleteRuleConfirm = rule) }
+    }
+
+    fun executeDeleteRule(rule: DetectionRule, onComplete: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(deleteRuleConfirm = null, isLoading = true) }
+            val result = ruleRepository.deleteRule(rule.id)
+            result.getOrNull()?.let { rules ->
+                evaluationEngine.updateRules(rules)
+                _uiState.update { it.copy(rulePackage = rules, isLoading = false) }
+                EDRLogger.i(TAG, "executeDeleteRule: Deleted rule ${rule.id}, remaining: ${rules.rules.size}")
+                onComplete(true)
+            } ?: run {
+                _uiState.update { it.copy(isLoading = false) }
                 onComplete(false)
             }
         }

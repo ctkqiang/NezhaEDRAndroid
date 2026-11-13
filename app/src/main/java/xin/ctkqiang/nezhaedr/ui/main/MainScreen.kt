@@ -39,6 +39,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -49,6 +50,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -90,6 +92,7 @@ import xin.ctkqiang.nezhaedr.R
 import xin.ctkqiang.nezhaedr.containment.ThreatLogEntry
 import xin.ctkqiang.nezhaedr.data.local.VisitedSiteRecord
 import xin.ctkqiang.nezhaedr.data.model.DetectionRule
+import xin.ctkqiang.nezhaedr.data.repository.RemoteRuleCatalogItem
 import xin.ctkqiang.nezhaedr.service.telemetry.NezhaVpnService
 import xin.ctkqiang.nezhaedr.ui.theme.AppThemeMode
 import xin.ctkqiang.nezhaedr.ui.theme.NezhaEDRTheme
@@ -150,13 +153,44 @@ fun MainScreen(
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 viewModel.selectRule(rule)
             },
+            onConfirmDeleteRule = { rule ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                viewModel.confirmDeleteRule(rule)
+            },
+            onExecuteDeleteRule = { rule ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                viewModel.executeDeleteRule(rule) { success ->
+                    val msg = if (success) context.resources.getString(R.string.rule_deleted_toast) else "Failed to delete rule"
+                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                }
+            },
             onDismissThreatPopup = {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 viewModel.dismissThreatPopup()
             },
-            onSyncRules = {
+            onOpenSyncPicker = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                viewModel.syncRulesFromGithub { success ->
+                viewModel.openSyncPickerDialog()
+            },
+            onDismissSyncPicker = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                viewModel.dismissSyncPickerDialog()
+            },
+            onToggleRemoteRuleSelection = { fileName ->
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                viewModel.toggleRemoteRuleSelection(fileName)
+            },
+            onSelectAllRemoteRules = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                viewModel.selectAllRemoteRules()
+            },
+            onDeselectAllRemoteRules = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                viewModel.deselectAllRemoteRules()
+            },
+            onSyncSelectedRules = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                viewModel.syncSelectedRulesFromGithub { success ->
                     val msg = if (success) context.resources.getString(R.string.sync_success_toast) else context.resources.getString(R.string.sync_failed_toast)
                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                 }
@@ -224,8 +258,15 @@ fun MainScreenContent(
     uiState: MainUiState,
     onSelectTab: (Int) -> Unit = {},
     onSelectRule: (DetectionRule?) -> Unit = {},
+    onConfirmDeleteRule: (DetectionRule?) -> Unit = {},
+    onExecuteDeleteRule: (DetectionRule) -> Unit = {},
     onDismissThreatPopup: () -> Unit = {},
-    onSyncRules: () -> Unit = {},
+    onOpenSyncPicker: () -> Unit = {},
+    onDismissSyncPicker: () -> Unit = {},
+    onToggleRemoteRuleSelection: (String) -> Unit = {},
+    onSelectAllRemoteRules: () -> Unit = {},
+    onDeselectAllRemoteRules: () -> Unit = {},
+    onSyncSelectedRules: () -> Unit = {},
     onImportRuleClick: () -> Unit = {},
     onSelectTheme: (AppThemeMode) -> Unit = {},
     onClearData: () -> Unit = {},
@@ -268,7 +309,7 @@ fun MainScreenContent(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onSyncRules) {
+                    IconButton(onClick = onOpenSyncPicker) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_refresh),
                             contentDescription = "Sync Rules",
@@ -389,6 +430,7 @@ fun MainScreenContent(
                     1 -> RulesTabContent(
                         uiState = uiState,
                         onSelectRule = onSelectRule,
+                        onConfirmDeleteRule = onConfirmDeleteRule,
                         onImportRuleClick = onImportRuleClick
                     )
                     2 -> ThreatLogsTabContent(uiState = uiState)
@@ -401,8 +443,41 @@ fun MainScreenContent(
                     4 -> SettingsTabContent(
                         uiState = uiState,
                         onSelectTheme = onSelectTheme,
-                        onSyncRules = onSyncRules,
+                        onOpenSyncPicker = onOpenSyncPicker,
                         onImportRuleClick = onImportRuleClick
+                    )
+                }
+
+                if (uiState.showSyncPickerDialog) {
+                    SyncRulesPickerDialog(
+                        availableCatalog = uiState.availableRemoteCatalog,
+                        selectedFiles = uiState.selectedRemoteFilesToSync,
+                        onToggleSelection = onToggleRemoteRuleSelection,
+                        onSelectAll = onSelectAllRemoteRules,
+                        onDeselectAll = onDeselectAllRemoteRules,
+                        onSyncSelected = onSyncSelectedRules,
+                        onDismiss = onDismissSyncPicker
+                    )
+                }
+
+                uiState.deleteRuleConfirm?.let { rule ->
+                    AlertDialog(
+                        onDismissRequest = { onConfirmDeleteRule(null) },
+                        title = { Text(stringResource(R.string.delete_rule_title), fontWeight = FontWeight.Bold) },
+                        text = { Text(stringResource(R.string.delete_rule_body, rule.id, rule.name)) },
+                        confirmButton = {
+                            Button(
+                                onClick = { onExecuteDeleteRule(rule) },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                            ) {
+                                Text(stringResource(R.string.btn_delete))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { onConfirmDeleteRule(null) }) {
+                                Text(stringResource(R.string.btn_cancel))
+                            }
+                        }
                     )
                 }
 
@@ -465,10 +540,130 @@ fun MainScreenContent(
 }
 
 @Composable
+fun SyncRulesPickerDialog(
+    availableCatalog: List<RemoteRuleCatalogItem>,
+    selectedFiles: Set<String>,
+    onToggleSelection: (String) -> Unit,
+    onSelectAll: () -> Unit,
+    onDeselectAll: () -> Unit,
+    onSyncSelected: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    var searchQuery by remember { mutableStateOf("") }
+
+    val filteredList = remember(availableCatalog, searchQuery) {
+        if (searchQuery.isBlank()) availableCatalog else {
+            val q = searchQuery.lowercase()
+            availableCatalog.filter {
+                it.name.lowercase().contains(q) || it.ruleId.lowercase().contains(q) || it.category.lowercase().contains(q)
+            }
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(id = R.string.sync_dialog_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(340.dp)
+            ) {
+                // Search Bar Inside Sync Picker
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text(stringResource(R.string.search_rules_placeholder), style = MaterialTheme.typography.bodySmall) },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_search),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(onClick = onSelectAll) {
+                        Text(stringResource(R.string.btn_select_all), style = MaterialTheme.typography.labelSmall)
+                    }
+                    TextButton(onClick = onDeselectAll) {
+                        Text(stringResource(R.string.btn_deselect_all), style = MaterialTheme.typography.labelSmall)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    items(filteredList) { item ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onToggleSelection(item.fileName) }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = selectedFiles.contains(item.fileName),
+                                onCheckedChange = { onToggleSelection(item.fileName) }
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Column {
+                                Text(
+                                    text = "${item.ruleId} • ${item.name}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "Category: ${item.category} | Severity: ${item.severity}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onSyncSelected,
+                shape = RoundedCornerShape(12.dp),
+                enabled = selectedFiles.isNotEmpty()
+            ) {
+                Text(stringResource(R.string.btn_sync_selected, selectedFiles.size))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.btn_cancel))
+            }
+        }
+    )
+}
+
+@Composable
 fun SettingsTabContent(
     uiState: MainUiState,
     onSelectTheme: (AppThemeMode) -> Unit,
-    onSyncRules: () -> Unit,
+    onOpenSyncPicker: () -> Unit,
     onImportRuleClick: () -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
@@ -558,7 +753,7 @@ fun SettingsTabContent(
                 Button(
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onSyncRules()
+                        onOpenSyncPicker()
                     },
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -763,7 +958,7 @@ fun MinimalistDashboardTab(
             }
         }
 
-        // Metrics Counters Row (Active Rules, Threats Contained, Visited Sites, Blocked Attempts)
+        // Metrics Counters Row
         Surface(
             shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -805,7 +1000,7 @@ fun MinimalistDashboardTab(
             }
         }
 
-        // CrowdStrike Falcon Style Intercept Trail Widget
+        // NezhaCyberEDR Intercept Trail Widget
         Surface(
             shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
@@ -825,7 +1020,7 @@ fun MinimalistDashboardTab(
                         color = MaterialTheme.colorScheme.error
                     )
                     Text(
-                        text = "FALCON AUDIT",
+                        text = "EDR AUDIT",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.error
@@ -1133,9 +1328,20 @@ fun SaaS2026TelemetryWave(
 fun RulesTabContent(
     uiState: MainUiState,
     onSelectRule: (DetectionRule) -> Unit,
+    onConfirmDeleteRule: (DetectionRule) -> Unit,
     onImportRuleClick: () -> Unit
 ) {
     val rules = uiState.rulePackage?.rules ?: emptyList()
+    var searchQuery by remember { mutableStateOf("") }
+
+    val filteredRules = remember(rules, searchQuery) {
+        if (searchQuery.isBlank()) rules else {
+            val q = searchQuery.lowercase()
+            rules.filter {
+                it.name.lowercase().contains(q) || it.id.lowercase().contains(q) || it.category.lowercase().contains(q)
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -1152,38 +1358,58 @@ fun RulesTabContent(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Button(
-                    onClick = onImportRuleClick,
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_add),
-                        contentDescription = "Import Rule",
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = stringResource(id = R.string.btn_import_rule), style = MaterialTheme.typography.labelSmall)
-                }
+            Button(
+                onClick = onImportRuleClick,
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_add),
+                    contentDescription = "Import Rule",
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = stringResource(id = R.string.btn_import_rule), style = MaterialTheme.typography.labelSmall)
             }
         }
 
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Search Bar in Rules Tab
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = { Text(stringResource(R.string.search_rules_placeholder), style = MaterialTheme.typography.bodySmall) },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_search),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+            },
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        )
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        if (rules.isEmpty()) {
+        if (filteredRules.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "No YAML detection rules loaded.")
+                Text(text = "No YAML detection rules match search.")
             }
         } else {
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(rules) { rule ->
-                    RuleItemCard(rule = rule, onClick = { onSelectRule(rule) })
+                items(filteredRules) { rule ->
+                    RuleItemCard(
+                        rule = rule,
+                        onClick = { onSelectRule(rule) },
+                        onDeleteClick = { onConfirmDeleteRule(rule) }
+                    )
                 }
             }
         }
@@ -1191,7 +1417,11 @@ fun RulesTabContent(
 }
 
 @Composable
-fun RuleItemCard(rule: DetectionRule, onClick: () -> Unit) {
+fun RuleItemCard(
+    rule: DetectionRule,
+    onClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
@@ -1212,23 +1442,36 @@ fun RuleItemCard(rule: DetectionRule, onClick: () -> Unit) {
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = when (rule.severity) {
-                        "CRITICAL", "HIGH" -> MaterialTheme.colorScheme.errorContainer
-                        else -> MaterialTheme.colorScheme.secondaryContainer
-                    }
-                ) {
-                    Text(
-                        text = rule.severity,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
                         color = when (rule.severity) {
-                            "CRITICAL", "HIGH" -> MaterialTheme.colorScheme.onErrorContainer
-                            else -> MaterialTheme.colorScheme.onSecondaryContainer
+                            "CRITICAL", "HIGH" -> MaterialTheme.colorScheme.errorContainer
+                            else -> MaterialTheme.colorScheme.secondaryContainer
                         }
-                    )
+                    ) {
+                        Text(
+                            text = rule.severity,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            color = when (rule.severity) {
+                                "CRITICAL", "HIGH" -> MaterialTheme.colorScheme.onErrorContainer
+                                else -> MaterialTheme.colorScheme.onSecondaryContainer
+                            }
+                        )
+                    }
+                    IconButton(
+                        onClick = onDeleteClick,
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_delete),
+                            contentDescription = "Delete Rule",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(6.dp))

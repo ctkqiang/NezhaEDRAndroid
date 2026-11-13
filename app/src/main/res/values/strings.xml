@@ -40,7 +40,7 @@
     <string name="vector_package">Package Installation Sensor</string>
     <string name="vector_engine">YAML Rules Engine</string>
     <string name="vector_status_active">Active</string>
-    <string name="falcon_trail_title">CrowdStrike Falcon Intercept Trail</string>
+    <string name="falcon_trail_title">NezhaCyberEDR Intercept Trail</string>
     <string name="filter_all">All History</string>
     <string name="filter_blocked">Blocked Only</string>
 
@@ -52,6 +52,17 @@
     <string name="settings_gitops_desc">Synchronize threat rules directly from the remote security repository.</string>
     <string name="settings_custom_rule_title">Local Custom YAML Rule</string>
     <string name="settings_custom_rule_desc">Upload custom YAML security rules from device storage.</string>
+
+    <!-- Sync Ruleset Selection Dialog -->
+    <string name="sync_dialog_title">Select Security Rulesets to Sync</string>
+    <string name="search_rules_placeholder">Search rulesets...</string>
+    <string name="btn_select_all">Select All</string>
+    <string name="btn_deselect_all">Deselect All</string>
+    <string name="btn_sync_selected">Sync Selected (%1$d)</string>
+    <string name="delete_rule_title">Delete Security Rule?</string>
+    <string name="delete_rule_body">Are you sure you want to delete rule \"%1$s\" (%2$s) from local storage?</string>
+    <string name="btn_delete">Delete</string>
+    <string name="rule_deleted_toast">Rule deleted successfully.</string>
 
     <!-- Open Source Privacy Disclaimer -->
     <string name="privacy_disclaimer_title">Open Source &amp; Privacy Guarantee</string>

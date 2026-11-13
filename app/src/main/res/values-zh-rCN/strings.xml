@@ -40,7 +40,7 @@
     <string name="vector_package">应用安装监控感知</string>
     <string name="vector_engine">YAML 规则评估引擎</string>
     <string name="vector_status_active">已激活</string>
-    <string name="falcon_trail_title">Falcon 威胁拦截审计轨迹</string>
+    <string name="falcon_trail_title">拦截审计轨迹</string>
     <string name="filter_all">全部遥测历史</string>
     <string name="filter_blocked">仅显示已被阻断</string>
 
@@ -52,6 +52,17 @@
     <string name="settings_gitops_desc">从安全资源库实时同步最新威胁检测规则。</string>
     <string name="settings_custom_rule_title">导入本地 YAML 规则</string>
     <string name="settings_custom_rule_desc">从设备本地存储上传自定义 YAML 安全规则。</string>
+
+    <!-- Sync Ruleset Selection Dialog -->
+    <string name="sync_dialog_title">选择要同步的安全规则库</string>
+    <string name="search_rules_placeholder">搜索规则库...</string>
+    <string name="btn_select_all">全选</string>
+    <string name="btn_deselect_all">取消全选</string>
+    <string name="btn_sync_selected">同步选中规则 (%1$d)</string>
+    <string name="delete_rule_title">删除安全规则？</string>
+    <string name="delete_rule_body">确定要从本地存储中彻底删除规则 \"%1$s\" (%2$s) 吗？</string>
+    <string name="btn_delete">彻底删除</string>
+    <string name="rule_deleted_toast">安全规则已成功删除。</string>
 
     <!-- Open Source Privacy Disclaimer -->
     <string name="privacy_disclaimer_title">开源与隐私声明</string>

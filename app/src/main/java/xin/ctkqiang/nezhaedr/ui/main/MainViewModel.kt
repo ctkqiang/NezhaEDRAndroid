@@ -134,7 +134,7 @@ class MainViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             dbHelper.clearAllVisitedSites()
             withContext(Dispatchers.Main) {
-                _uiState.update { it.copy(visitedSites = emptyList()) }
+                _uiState.update { it.copy(visitedSites = emptyList(), blockedAttemptsCount = 0, blockedSitesTrail = emptyList()) }
                 EDRLogger.i(TAG, "clearLocalTelemetryData: Telemetry state cleared successfully")
             }
         }
@@ -154,9 +154,17 @@ class MainViewModel(
         EDRLogger.d(TAG, "loadVisitedSitesFromDb: Querying SQLite database")
         viewModelScope.launch(Dispatchers.IO) {
             val sites = dbHelper.getAllVisitedSites()
+            val blockedCount = dbHelper.getBlockedThreatAttemptsCount()
+            val blockedTrail = dbHelper.getBlockedThreatAttempts()
             withContext(Dispatchers.Main) {
-                _uiState.update { it.copy(visitedSites = sites) }
-                EDRLogger.i(TAG, "loadVisitedSitesFromDb: Loaded ${sites.size} records into state")
+                _uiState.update {
+                    it.copy(
+                        visitedSites = sites,
+                        blockedAttemptsCount = blockedCount,
+                        blockedSitesTrail = blockedTrail
+                    )
+                }
+                EDRLogger.i(TAG, "loadVisitedSitesFromDb: Loaded ${sites.size} records ($blockedCount blocked attempts) into state")
             }
         }
     }
@@ -166,8 +174,16 @@ class MainViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             dbHelper.insertVisitedSite(record)
             val updatedList = dbHelper.getAllVisitedSites()
+            val blockedCount = dbHelper.getBlockedThreatAttemptsCount()
+            val blockedTrail = dbHelper.getBlockedThreatAttempts()
             withContext(Dispatchers.Main) {
-                _uiState.update { it.copy(visitedSites = updatedList) }
+                _uiState.update {
+                    it.copy(
+                        visitedSites = updatedList,
+                        blockedAttemptsCount = blockedCount,
+                        blockedSitesTrail = blockedTrail
+                    )
+                }
             }
         }
     }

@@ -94,6 +94,9 @@ import xin.ctkqiang.nezhaedr.service.telemetry.NezhaVpnService
 import xin.ctkqiang.nezhaedr.ui.theme.AppThemeMode
 import xin.ctkqiang.nezhaedr.ui.theme.NezhaEDRTheme
 import xin.ctkqiang.nezhaedr.util.EDRLogger
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.sin
 
 private const val TAG = "MainScreenUI"
@@ -154,7 +157,7 @@ fun MainScreen(
             onSyncRules = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 viewModel.syncRulesFromGithub { success ->
-                    val msg = if (success) context.getString(R.string.sync_success_toast) else context.getString(R.string.sync_failed_toast)
+                    val msg = if (success) context.resources.getString(R.string.sync_success_toast) else context.resources.getString(R.string.sync_failed_toast)
                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                 }
             },
@@ -468,6 +471,8 @@ fun SettingsTabContent(
     onSyncRules: () -> Unit,
     onImportRuleClick: () -> Unit
 ) {
+    val haptic = LocalHapticFeedback.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -504,17 +509,26 @@ fun SettingsTabContent(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(
                         selected = uiState.appTheme == AppThemeMode.RED,
-                        onClick = { onSelectTheme(AppThemeMode.RED) },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            onSelectTheme(AppThemeMode.RED)
+                        },
                         label = { Text("Red (Default)", style = MaterialTheme.typography.labelSmall) }
                     )
                     FilterChip(
                         selected = uiState.appTheme == AppThemeMode.BLUE,
-                        onClick = { onSelectTheme(AppThemeMode.BLUE) },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            onSelectTheme(AppThemeMode.BLUE)
+                        },
                         label = { Text("Blue", style = MaterialTheme.typography.labelSmall) }
                     )
                     FilterChip(
                         selected = uiState.appTheme == AppThemeMode.PINK,
-                        onClick = { onSelectTheme(AppThemeMode.PINK) },
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            onSelectTheme(AppThemeMode.PINK)
+                        },
                         label = { Text("Pink", style = MaterialTheme.typography.labelSmall) }
                     )
                 }
@@ -542,7 +556,10 @@ fun SettingsTabContent(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
-                    onClick = onSyncRules,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onSyncRules()
+                    },
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
@@ -577,7 +594,10 @@ fun SettingsTabContent(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
-                    onClick = onImportRuleClick,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        onImportRuleClick()
+                    },
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondary
@@ -729,7 +749,7 @@ fun MinimalistDashboardTab(
                     modifier = Modifier.size(64.dp)
                 ) {
                     CircularProgressIndicator(
-                        progress = if (uiState.isVpnActive) 0.984f else 0.0f,
+                        progress = { if (uiState.isVpnActive) 0.984f else 0.0f },
                         strokeWidth = 6.dp,
                         color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                         modifier = Modifier.fillMaxSize()
@@ -743,7 +763,7 @@ fun MinimalistDashboardTab(
             }
         }
 
-        // Metrics Counters Row
+        // Metrics Counters Row (Active Rules, Threats Contained, Visited Sites, Blocked Attempts)
         Surface(
             shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -778,9 +798,54 @@ fun MinimalistDashboardTab(
                         .background(MaterialTheme.colorScheme.outlineVariant)
                 )
                 MetricColumn(
-                    label = stringResource(R.string.visited_sites_count),
-                    value = "${uiState.visitedSites.size}"
+                    label = stringResource(R.string.blocked_attempts_count),
+                    value = "${uiState.blockedAttemptsCount}",
+                    isHighlight = true
                 )
+            }
+        }
+
+        // CrowdStrike Falcon Style Intercept Trail Widget
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.3f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(18.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.falcon_trail_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Text(
+                        text = "FALCON AUDIT",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+
+                if (uiState.blockedSitesTrail.isEmpty()) {
+                    Text(
+                        text = "No intercepted banned site connection attempts recorded.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        uiState.blockedSitesTrail.take(4).forEach { item ->
+                            FalconInterceptItem(record = item)
+                        }
+                    }
+                }
             }
         }
 
@@ -845,6 +910,61 @@ fun MinimalistDashboardTab(
                 SaaS2026TelemetryWave(
                     isActive = uiState.isVpnActive,
                     threatCount = uiState.threatLogs.size
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FalconInterceptItem(record: VisitedSiteRecord) {
+    val formatter = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
+    val timeStr = remember(record.timestamp) { formatter.format(Date(record.timestamp)) }
+
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = record.destinationIp,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    if (record.domain.isNotEmpty()) {
+                        Text(
+                            text = "(${record.domain})",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                Text(
+                    text = "$timeStr • ${record.protocol}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Surface(
+                shape = RoundedCornerShape(6.dp),
+                color = MaterialTheme.colorScheme.error
+            ) {
+                Text(
+                    text = "INTERCEPTED",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onError,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                 )
             }
         }
@@ -1384,6 +1504,12 @@ fun HistoryTabContent(
     onExportCsv: () -> Unit,
     onClearData: () -> Unit
 ) {
+    var filterBlockedOnly by remember { mutableStateOf(false) }
+
+    val displayList = remember(uiState.visitedSites, filterBlockedOnly) {
+        if (filterBlockedOnly) uiState.visitedSites.filter { it.isThreat } else uiState.visitedSites
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1399,6 +1525,18 @@ fun HistoryTabContent(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                FilterChip(
+                    selected = !filterBlockedOnly,
+                    onClick = { filterBlockedOnly = false },
+                    label = { Text(stringResource(R.string.filter_all), style = MaterialTheme.typography.labelSmall) }
+                )
+                FilterChip(
+                    selected = filterBlockedOnly,
+                    onClick = { filterBlockedOnly = true },
+                    label = { Text(stringResource(R.string.filter_blocked), style = MaterialTheme.typography.labelSmall) }
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -1438,7 +1576,7 @@ fun HistoryTabContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        if (uiState.visitedSites.isEmpty()) {
+        if (displayList.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1456,7 +1594,7 @@ fun HistoryTabContent(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(uiState.visitedSites) { site ->
+                items(displayList) { site ->
                     VisitedSiteItemCard(site = site)
                 }
             }

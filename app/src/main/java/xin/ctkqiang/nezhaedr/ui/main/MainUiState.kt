@@ -11,6 +11,8 @@ data class MainUiState(
     val rulePackage: DetectionRulePackage? = null,
     val threatLogs: List<ThreatLogEntry> = emptyList(),
     val visitedSites: List<VisitedSiteRecord> = emptyList(),
+    val blockedAttemptsCount: Int = 0,
+    val blockedSitesTrail: List<VisitedSiteRecord> = emptyList(),
     val selectedRule: DetectionRule? = null,
     val activeThreatPopup: ThreatLogEntry? = null,
     val appTheme: AppThemeMode = AppThemeMode.RED,

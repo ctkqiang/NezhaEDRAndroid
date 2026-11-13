@@ -12,10 +12,21 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 
+data class RemoteRuleCatalogItem(
+    val fileName: String,
+    val ruleId: String,
+    val name: String,
+    val category: String,
+    val severity: String
+)
+
 interface RuleRepository {
     suspend fun fetchRules(): Result<DetectionRulePackage>
     suspend fun syncRulesFromGithub(): Result<DetectionRulePackage>
+    suspend fun syncSelectedRulesFromGithub(selectedFiles: List<String>): Result<DetectionRulePackage>
+    suspend fun deleteRule(ruleId: String): Result<DetectionRulePackage>
     suspend fun importCustomYamlRule(yamlText: String, fileName: String): Result<DetectionRulePackage>
+    fun getRemoteRuleCatalog(): List<RemoteRuleCatalogItem>
     fun getCachedRules(): DetectionRulePackage?
     fun saveRulesToCache(rulePackage: DetectionRulePackage)
     fun parseRulesJson(jsonString: String): DetectionRulePackage
@@ -31,26 +42,33 @@ class RuleRepositoryImpl(
 
     private var cachedRules: DetectionRulePackage? = null
 
+    override fun getRemoteRuleCatalog(): List<RemoteRuleCatalogItem> {
+        return listOf(
+            RemoteRuleCatalogItem("rule_001_c2_block.yaml", "RULE-NET-001", "Known C2 Threat IP Block", "NETWORK", "HIGH"),
+            RemoteRuleCatalogItem("rule_002_ransomware_beacon.yaml", "RULE-NET-002", "Ransomware Beaconing Domain Block", "NETWORK", "CRITICAL"),
+            RemoteRuleCatalogItem("rule_003_adult_content_block.yaml", "RULE-NET-003", "Adult & Explicit Content Domain Block", "NETWORK", "CRITICAL"),
+            RemoteRuleCatalogItem("rule_004_rogue_package.yaml", "RULE-PKG-001", "Suspicious Rogue Package Alert", "PACKAGE", "CRITICAL"),
+            RemoteRuleCatalogItem("rule_005_spyware_keylogger.yaml", "RULE-PKG-002", "Spyware & Keylogger Package Detection", "PACKAGE", "HIGH"),
+            RemoteRuleCatalogItem("rule_006_backdoor_service.yaml", "RULE-PROC-001", "Unauthorized Backdoor Service Detection", "PROCESS", "MEDIUM")
+        )
+    }
+
     override suspend fun fetchRules(): Result<DetectionRulePackage> {
         EDRLogger.i(TAG, "fetchRules: Initiating detection rules load process")
         return loadLocalYamlRules()
     }
 
-    override suspend fun syncRulesFromGithub(): Result<DetectionRulePackage> = withContext(Dispatchers.IO) {
-        EDRLogger.i(TAG, "syncRulesFromGithub: Synchronizing YAML rulesets from GitHub CDN")
-        val githubRawFiles = listOf(
-            "rule_001_c2_block.yaml",
-            "rule_002_ransomware_beacon.yaml",
-            "rule_003_adult_content_block.yaml",
-            "rule_004_rogue_package.yaml",
-            "rule_005_spyware_keylogger.yaml",
-            "rule_006_backdoor_service.yaml"
-        )
+    override suspend fun syncRulesFromGithub(): Result<DetectionRulePackage> {
+        val catalog = getRemoteRuleCatalog().map { it.fileName }
+        return syncSelectedRulesFromGithub(catalog)
+    }
 
+    override suspend fun syncSelectedRulesFromGithub(selectedFiles: List<String>): Result<DetectionRulePackage> = withContext(Dispatchers.IO) {
+        EDRLogger.i(TAG, "syncSelectedRulesFromGithub: Downloading ${selectedFiles.size} selected rulesets from GitHub CDN")
         val localRulesDir = getLocalRulesDirectory()
 
         var downloadedCount = 0
-        for (fileName in githubRawFiles) {
+        for (fileName in selectedFiles) {
             try {
                 val urlString = "$GITHUB_RULES_BASE_URL/$fileName"
                 EDRLogger.d(TAG, "Downloading rule from $urlString")
@@ -75,7 +93,40 @@ class RuleRepositoryImpl(
             }
         }
 
-        EDRLogger.i(TAG, "syncRulesFromGithub: Downloaded $downloadedCount rules from GitHub CDN")
+        EDRLogger.i(TAG, "syncSelectedRulesFromGithub: Downloaded $downloadedCount rules from GitHub CDN")
+        return@withContext loadLocalYamlRules()
+    }
+
+    override suspend fun deleteRule(ruleId: String): Result<DetectionRulePackage> = withContext(Dispatchers.IO) {
+        EDRLogger.w(TAG, "deleteRule: Deleting local YAML rule '$ruleId'")
+        val candidateDirs = mutableListOf<File>()
+        context?.filesDir?.let {
+            candidateDirs.add(File(it, "rules"))
+            candidateDirs.add(File(it, "custom_rules"))
+        }
+        val projectRootDir = File("/Users/johnmelodyme/Documents/NezhaEDRAndroid")
+        candidateDirs.add(File(projectRootDir, "rules"))
+        candidateDirs.add(projectRootDir)
+
+        var deletedFileCount = 0
+        for (dir in candidateDirs) {
+            if (dir.exists() && dir.isDirectory) {
+                dir.listFiles { _, name -> name.endsWith(".yaml", ignoreCase = true) || name.endsWith(".yml", ignoreCase = true) }?.forEach { file ->
+                    try {
+                        val parsed = YamlRuleParser.parseYamlRule(file.readText())
+                        if (parsed?.id == ruleId) {
+                            if (file.delete()) {
+                                deletedFileCount++
+                                EDRLogger.i(TAG, "Deleted rule file: ${file.absolutePath}")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        EDRLogger.v(TAG, "Error checking file ${file.name} for deletion: ${e.message}")
+                    }
+                }
+            }
+        }
+        EDRLogger.i(TAG, "deleteRule: Removed $deletedFileCount rule files for '$ruleId'")
         return@withContext loadLocalYamlRules()
     }
 

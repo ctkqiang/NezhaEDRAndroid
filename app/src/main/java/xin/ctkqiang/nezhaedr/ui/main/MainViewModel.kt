@@ -37,7 +37,7 @@ class MainViewModel(
         EDRLogger.i(TAG, "MainViewModel: Initializing state observers and loading rules")
         observeVpnState()
         observeTelemetry()
-        observeSiemLogs()
+        observeThreatLogs()
         loadRules()
         loadVisitedSitesFromDb()
     }
@@ -50,6 +50,10 @@ class MainViewModel(
     fun selectRule(rule: DetectionRule?) {
         EDRLogger.d(TAG, "selectRule: Selected rule '${rule?.id ?: "none"}'")
         _uiState.update { it.copy(selectedRule = rule) }
+    }
+
+    fun dismissThreatPopup() {
+        _uiState.update { it.copy(activeThreatPopup = null) }
     }
 
     fun clearLocalTelemetryData() {
@@ -153,12 +157,15 @@ class MainViewModel(
         }
     }
 
-    private fun observeSiemLogs() {
+    private fun observeThreatLogs() {
         viewModelScope.launch {
-            containmentManager.siemLogs.collect { log ->
-                EDRLogger.i(TAG, "observeSiemLogs: New SIEM threat log entry '${log.ruleId}'")
+            containmentManager.threatLogs.collect { log ->
+                EDRLogger.i(TAG, "observeThreatLogs: New threat log entry '${log.ruleId}'")
                 _uiState.update { current ->
-                    current.copy(threatLogs = listOf(log) + current.threatLogs)
+                    current.copy(
+                        threatLogs = listOf(log) + current.threatLogs,
+                        activeThreatPopup = log
+                    )
                 }
             }
         }

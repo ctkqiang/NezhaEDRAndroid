@@ -41,9 +41,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -70,6 +72,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -77,7 +80,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import xin.ctkqiang.nezhaedr.R
-import xin.ctkqiang.nezhaedr.containment.SIEMThreatLog
+import xin.ctkqiang.nezhaedr.containment.ThreatLogEntry
 import xin.ctkqiang.nezhaedr.data.local.VisitedSiteRecord
 import xin.ctkqiang.nezhaedr.data.model.DetectionRule
 import xin.ctkqiang.nezhaedr.service.telemetry.NezhaVpnService
@@ -124,6 +127,7 @@ fun MainScreen(
             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             viewModel.selectRule(rule)
         },
+        onDismissThreatPopup = { viewModel.dismissThreatPopup() },
         onClearData = {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             viewModel.clearLocalTelemetryData()
@@ -183,6 +187,7 @@ fun MainScreenContent(
     uiState: MainUiState,
     onSelectTab: (Int) -> Unit = {},
     onSelectRule: (DetectionRule?) -> Unit = {},
+    onDismissThreatPopup: () -> Unit = {},
     onClearData: () -> Unit = {},
     onExportYaml: () -> Unit = {},
     onExportCsv: () -> Unit = {},
@@ -218,30 +223,69 @@ fun MainScreenContent(
             )
         },
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ) {
                 NavigationBarItem(
                     selected = uiState.selectedTab == 0,
                     onClick = { onSelectTab(0) },
                     label = { Text(stringResource(R.string.nav_dashboard)) },
-                    icon = { Text("D", fontWeight = FontWeight.Bold) }
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_dashboard),
+                            contentDescription = stringResource(R.string.nav_dashboard)
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    )
                 )
                 NavigationBarItem(
                     selected = uiState.selectedTab == 1,
                     onClick = { onSelectTab(1) },
                     label = { Text(stringResource(R.string.nav_rules)) },
-                    icon = { Text("R", fontWeight = FontWeight.Bold) }
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_rules),
+                            contentDescription = stringResource(R.string.nav_rules)
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    )
                 )
                 NavigationBarItem(
                     selected = uiState.selectedTab == 2,
                     onClick = { onSelectTab(2) },
                     label = { Text(stringResource(R.string.nav_threats)) },
-                    icon = { Text("S", fontWeight = FontWeight.Bold) }
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_threats),
+                            contentDescription = stringResource(R.string.nav_threats)
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.error,
+                        indicatorColor = MaterialTheme.colorScheme.errorContainer
+                    )
                 )
                 NavigationBarItem(
                     selected = uiState.selectedTab == 3,
                     onClick = { onSelectTab(3) },
                     label = { Text(stringResource(R.string.nav_history)) },
-                    icon = { Text("H", fontWeight = FontWeight.Bold) }
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_history),
+                            contentDescription = stringResource(R.string.nav_history)
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    )
                 )
             }
         },
@@ -300,7 +344,7 @@ fun MainScreenContent(
                             uiState = uiState,
                             onSelectRule = onSelectRule
                         )
-                        2 -> SiemLogsTabContent(uiState = uiState)
+                        2 -> ThreatLogsTabContent(uiState = uiState)
                         3 -> HistoryTabContent(
                             uiState = uiState,
                             onExportYaml = onExportYaml,
@@ -313,6 +357,13 @@ fun MainScreenContent(
                         RuleDetailDialog(
                             rule = rule,
                             onDismiss = { onSelectRule(null) }
+                        )
+                    }
+
+                    uiState.activeThreatPopup?.let { threat ->
+                        ThreatAlertPopupDialog(
+                            threat = threat,
+                            onDismiss = onDismissThreatPopup
                         )
                     }
 
@@ -342,6 +393,44 @@ fun MainScreenContent(
             }
         }
     }
+}
+
+@Composable
+fun ThreatAlertPopupDialog(
+    threat: ThreatLogEntry,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(id = R.string.threat_alert_popup_title),
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.error
+            )
+        },
+        text = {
+            Text(
+                text = stringResource(
+                    id = R.string.threat_alert_popup_body,
+                    threat.appName,
+                    threat.ruleId,
+                    threat.ruleName,
+                    threat.details
+                )
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text(text = stringResource(id = R.string.btn_close))
+            }
+        }
+    )
 }
 
 @Composable
@@ -791,14 +880,14 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
 }
 
 @Composable
-fun SiemLogsTabContent(uiState: MainUiState) {
+fun ThreatLogsTabContent(uiState: MainUiState) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp)
     ) {
         Text(
-            text = stringResource(id = R.string.siem_threat_logs),
+            text = stringResource(id = R.string.threat_logs_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
@@ -821,7 +910,7 @@ fun SiemLogsTabContent(uiState: MainUiState) {
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(uiState.threatLogs) { log ->
-                    SIEMThreatLogItem(log = log)
+                    ThreatLogItemCard(log = log)
                 }
             }
         }
@@ -989,7 +1078,7 @@ fun VisitedSiteItemCard(site: VisitedSiteRecord) {
 }
 
 @Composable
-fun SIEMThreatLogItem(log: SIEMThreatLog) {
+fun ThreatLogItemCard(log: ThreatLogEntry) {
     Surface(
         shape = RoundedCornerShape(14.dp),
         color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f),
@@ -1053,7 +1142,7 @@ fun MainScreenDashboardPreview() {
                 isVpnActive = true,
                 isLoading = false,
                 threatLogs = listOf(
-                    SIEMThreatLog(
+                    ThreatLogEntry(
                         ruleId = "RULE-NET-001",
                         ruleName = "Known C2 Threat IP Block",
                         severity = "HIGH",

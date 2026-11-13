@@ -1,42 +1,42 @@
 <resources>
     <string name="app_name">NezhaEDR</string>
-    <string name="notification_channel_name">NezhaEDR Threat Alerts</string>
-    <string name="notification_channel_description">Notifications for detected EDR security threats and containment actions.</string>
-    <string name="threat_detected_title">EDR Threat Contained: %1$s</string>
-    <string name="threat_detected_body">Application %1$s has been blocked by NezhaEDR from accessing %2$s.</string>
+    <string name="notification_channel_name">NezhaEDR Protection Alerts</string>
+    <string name="notification_channel_description">Notifications for detected security threats and containment actions.</string>
+    <string name="threat_detected_title">Threat Blocked: %1$s</string>
+    <string name="threat_detected_body">Application %1$s was blocked from accessing %2$s by NezhaEDR.</string>
 
     <string name="nav_dashboard">Dashboard</string>
     <string name="nav_rules">Detection Rules</string>
-    <string name="nav_threats">SIEM Logs</string>
+    <string name="nav_threats">Threat Alerts</string>
     <string name="nav_history">Telemetry History</string>
 
     <string name="edr_dashboard_title">NezhaEDR Protection</string>
-    <string name="vpn_service_status">Network Telemetry Sentinel (VPN)</string>
-    <string name="vpn_status_active">Active Monitoring</string>
-    <string name="vpn_status_inactive">Protection Disabled</string>
+    <string name="vpn_service_status">Network Protection Service</string>
+    <string name="vpn_status_active">Active Protection</string>
+    <string name="vpn_status_inactive">Protection Paused</string>
     <string name="btn_enable_vpn">Enable Protection</string>
     <string name="btn_disable_vpn">Disable Protection</string>
 
     <string name="active_rules_count">Active Rulesets</string>
     <string name="total_threats_blocked">Threats Contained</string>
     <string name="visited_sites_count">Visited Sites Logged</string>
-    <string name="threat_activity_graph">Real-Time Telemetry &amp; Threat Analytics</string>
-    <string name="contribute_rules_title">Contribute YAML Rules to Community</string>
-    <string name="contribute_rules_desc">Submit declarative YAML rulesets to the NezhaEDR GitOps repository.</string>
-    <string name="btn_contribute">Contribute YAML on GitHub</string>
+    <string name="threat_activity_graph">Real-Time Telemetry Analytics</string>
+    <string name="contribute_rules_title">Contribute YAML Rules</string>
+    <string name="contribute_rules_desc">Submit declarative YAML rulesets to NezhaEDR repository.</string>
+    <string name="btn_contribute">Contribute on GitHub</string>
 
     <!-- Open Source Privacy Disclaimer -->
     <string name="privacy_disclaimer_title">Open Source &amp; Privacy Guarantee</string>
-    <string name="privacy_disclaimer_body">NezhaEDR is open-source software and does not collect or transmit user data to remote servers. All telemetry logs, visited site records, and threat events are stored locally inside your device\'s SQLite database. You maintain complete control to export or delete your local data at any time.</string>
+    <string name="privacy_disclaimer_body">NezhaEDR is open-source software and does not collect or transmit user data to remote servers. All telemetry logs and threat events are stored locally inside your device\'s SQLite database. You maintain complete control to export or delete your local data at any time.</string>
 
     <!-- SQLite Visited Sites & Actions -->
-    <string name="visited_sites_header">SQLite Local Telemetry History</string>
-    <string name="btn_export_data">Export Data (YAML)</string>
+    <string name="visited_sites_header">Local Telemetry History</string>
+    <string name="btn_export_data">Export YAML</string>
     <string name="btn_export_csv">Export CSV</string>
     <string name="btn_clear_data">Clear Local History</string>
     <string name="confirm_clear_title">Delete Local History?</string>
-    <string name="confirm_clear_body">Are you sure you want to delete all visited site records from your local SQLite database?</string>
-    <string name="no_history_recorded">No visited site history recorded yet.</string>
+    <string name="confirm_clear_body">Are you sure you want to delete all telemetry records from your local SQLite database?</string>
+    <string name="no_history_recorded">No telemetry history recorded yet.</string>
     <string name="data_exported_toast">Telemetry data exported.</string>
     <string name="data_cleared_toast">Local SQLite records deleted.</string>
 
@@ -54,7 +54,7 @@
     <string name="threat_alert_popup_title">Security Containment Triggered</string>
     <string name="threat_alert_popup_body">NezhaEDR blocked application \"%1$s\" based on rule %2$s (%3$s).\n\nDetails: %4$s</string>
 
-    <string name="siem_threat_logs">SIEM Threat Log &amp; Containment History</string>
+    <string name="threat_logs_title">Threat Containment Alerts</string>
     <string name="no_threats_detected">No security threats detected. Endpoint is secure.</string>
     <string name="app_name_label">App: %1$s</string>
     <string name="package_name_label">Package: %1$s</string>

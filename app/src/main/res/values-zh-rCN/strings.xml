@@ -1,0 +1,56 @@
+<resources>
+    <string name="app_name">哪吒EDR</string>
+    <string name="notification_channel_name">哪吒EDR 威胁告警</string>
+    <string name="notification_channel_description">针对检测到的 EDR 安全威胁及处置动作的通知。</string>
+    <string name="threat_detected_title">EDR 威胁检测: %1$s</string>
+    <string name="threat_detected_body">严重程度: %1$s — %2$s</string>
+
+    <string name="nav_dashboard">控制台</string>
+    <string name="nav_rules">检测规则库</string>
+    <string name="nav_threats">SIEM 审计日志</string>
+    <string name="nav_history">遥测历史</string>
+
+    <string name="edr_dashboard_title">哪吒EDR 终端防护</string>
+    <string name="vpn_service_status">网络遥测防护引擎 (VPN)</string>
+    <string name="vpn_status_active">正在实时监控与防护</string>
+    <string name="vpn_status_inactive">防护未开启</string>
+    <string name="btn_enable_vpn">开启终端防护</string>
+    <string name="btn_disable_vpn">关闭终端防护</string>
+
+    <string name="active_rules_count">已加载规则数</string>
+    <string name="total_threats_blocked">已拦截威胁数</string>
+    <string name="visited_sites_count">本地记录访问数</string>
+    <string name="threat_activity_graph">实时遥测与威胁活动趋势</string>
+    <string name="contribute_rules_title">贡献规则至开源社区</string>
+    <string name="contribute_rules_desc">提交声明式 YAML/JSON 规则至哪吒EDR GitOps 代码库。</string>
+    <string name="btn_contribute">前往 GitHub 贡献</string>
+
+    <!-- Open Source Privacy Disclaimer -->
+    <string name="privacy_disclaimer_title">开源与隐私声明</string>
+    <string name="privacy_disclaimer_body">哪吒EDR 为开源软件，绝不收集或上传任何用户数据至远程服务器。所有网络遥测、访问站点记录和威胁日志均严格保存在您设备本地的 SQLite 数据库中。您拥有完全的控制权，随时可以导出或彻底删除本地数据。</string>
+
+    <!-- SQLite Visited Sites & Actions -->
+    <string name="visited_sites_header">SQLite 本地遥测访问历史</string>
+    <string name="btn_export_data">导出数据 (JSON)</string>
+    <string name="btn_clear_data">清空本地历史</string>
+    <string name="confirm_clear_title">确认删除本地数据？</string>
+    <string name="confirm_clear_body">您确定要彻底删除保存在本地 SQLite 数据库中的所有访问记录吗？</string>
+    <string name="no_history_recorded">暂无本地访问历史记录。</string>
+    <string name="data_exported_toast">遥测数据已成功导出为 JSON。</string>
+    <string name="data_cleared_toast">本地 SQLite 记录已彻底删除。</string>
+
+    <string name="rules_header_title">当前生效检测规则库</string>
+    <string name="rule_category_label">规则类别: %1$s</string>
+    <string name="rule_severity_label">严重级别: %1$s</string>
+    <string name="rule_action_label">处置动作: %1$s</string>
+    <string name="rule_condition_targets">目标 IP / 域名:</string>
+    <string name="rule_condition_patterns">包名正则匹配:</string>
+    <string name="rule_detail_dialog_title">规则详细信息</string>
+    <string name="btn_close">关闭</string>
+    <string name="btn_cancel">取消</string>
+
+    <string name="siem_threat_logs">SIEM 威胁日志与阻断历史</string>
+    <string name="no_threats_detected">暂未检测到安全威胁，终端状态安全。</string>
+    <string name="app_name_label">应用名称: %1$s</string>
+    <string name="package_name_label">应用包名: %1$s</string>
+</resources>

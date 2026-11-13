@@ -1,0 +1,56 @@
+<resources>
+    <string name="app_name">NezhaEDR</string>
+    <string name="notification_channel_name">NezhaEDR Threat Alerts</string>
+    <string name="notification_channel_description">Notifications for detected EDR security threats and containment actions.</string>
+    <string name="threat_detected_title">EDR Threat Detected: %1$s</string>
+    <string name="threat_detected_body">Severity: %1$s — %2$s</string>
+
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_rules">Detection Rules</string>
+    <string name="nav_threats">SIEM Logs</string>
+    <string name="nav_history">Telemetry History</string>
+
+    <string name="edr_dashboard_title">NezhaEDR Protection</string>
+    <string name="vpn_service_status">Network Telemetry Sentinel (VPN)</string>
+    <string name="vpn_status_active">Active Monitoring</string>
+    <string name="vpn_status_inactive">Protection Disabled</string>
+    <string name="btn_enable_vpn">Enable Protection</string>
+    <string name="btn_disable_vpn">Disable Protection</string>
+
+    <string name="active_rules_count">Active Rulesets</string>
+    <string name="total_threats_blocked">Threats Contained</string>
+    <string name="visited_sites_count">Visited Sites Logged</string>
+    <string name="threat_activity_graph">Real-Time Telemetry Activity</string>
+    <string name="contribute_rules_title">Contribute Rules to Community</string>
+    <string name="contribute_rules_desc">Submit declarative YAML/JSON rulesets to NezhaEDR GitOps repository.</string>
+    <string name="btn_contribute">Contribute on GitHub</string>
+
+    <!-- Open Source Privacy Disclaimer -->
+    <string name="privacy_disclaimer_title">Open Source &amp; Privacy Guarantee</string>
+    <string name="privacy_disclaimer_body">NezhaEDR is open-source software and does not collect or transmit user data to remote servers. All telemetry logs, visited site records, and threat events are stored locally inside your device\'s SQLite database. You maintain complete control to export or delete your local data at any time.</string>
+
+    <!-- SQLite Visited Sites & Actions -->
+    <string name="visited_sites_header">SQLite Local Telemetry History</string>
+    <string name="btn_export_data">Export Data (JSON)</string>
+    <string name="btn_clear_data">Clear Local History</string>
+    <string name="confirm_clear_title">Delete Local History?</string>
+    <string name="confirm_clear_body">Are you sure you want to delete all visited site records from your local SQLite database?</string>
+    <string name="no_history_recorded">No visited site history recorded yet.</string>
+    <string name="data_exported_toast">Telemetry data exported to JSON.</string>
+    <string name="data_cleared_toast">Local SQLite records deleted.</string>
+
+    <string name="rules_header_title">Active Detection Rulesets</string>
+    <string name="rule_category_label">Category: %1$s</string>
+    <string name="rule_severity_label">Severity: %1$s</string>
+    <string name="rule_action_label">Containment Action: %1$s</string>
+    <string name="rule_condition_targets">Target IPs / Domains:</string>
+    <string name="rule_condition_patterns">Package Patterns:</string>
+    <string name="rule_detail_dialog_title">Rule Details</string>
+    <string name="btn_close">Close</string>
+    <string name="btn_cancel">Cancel</string>
+
+    <string name="siem_threat_logs">SIEM Threat Log &amp; Containment History</string>
+    <string name="no_threats_detected">No security threats detected. Endpoint is secure.</string>
+    <string name="app_name_label">App: %1$s</string>
+    <string name="package_name_label">Package: %1$s</string>
+</resources>

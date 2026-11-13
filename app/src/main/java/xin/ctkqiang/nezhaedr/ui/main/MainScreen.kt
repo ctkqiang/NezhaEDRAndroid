@@ -277,17 +277,6 @@ fun MainScreenContent(
 ) {
     var showClearDialog by remember { mutableStateOf(false) }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "SyncRotation")
-    val rotationAngle by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "RotationAngle"
-    )
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -311,10 +300,9 @@ fun MainScreenContent(
                 actions = {
                     IconButton(onClick = onOpenSyncPicker) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_refresh),
-                            contentDescription = "Sync Rules",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.rotate(if (uiState.isSyncingRules) rotationAngle else 0f)
+                            painter = painterResource(id = R.drawable.ic_download),
+                            contentDescription = "Download Rules",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
@@ -758,7 +746,7 @@ fun SettingsTabContent(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_refresh),
+                        painter = painterResource(id = R.drawable.ic_download),
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )

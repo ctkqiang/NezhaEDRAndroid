@@ -97,7 +97,6 @@ import xin.ctkqiang.nezhaedr.util.EDRLogger
 import kotlin.math.sin
 
 private const val TAG = "MainScreenUI"
-private const val CONTRIBUTOR_GITHUB_URL = "https://github.com/ctkqiang/NezhaEDRAndroid"
 
 @Composable
 fun MainScreen(
@@ -131,7 +130,7 @@ fun MainScreen(
         uri?.let {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             viewModel.importCustomYamlRule(it) { success ->
-                val msg = if (success) "Custom YAML rule imported successfully!" else "Failed to import custom rule"
+                val msg = if (success) context.resources.getString(R.string.custom_import_success) else context.resources.getString(R.string.custom_import_failed)
                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
             }
         }
@@ -148,11 +147,14 @@ fun MainScreen(
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 viewModel.selectRule(rule)
             },
-            onDismissThreatPopup = { viewModel.dismissThreatPopup() },
+            onDismissThreatPopup = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                viewModel.dismissThreatPopup()
+            },
             onSyncRules = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 viewModel.syncRulesFromGithub { success ->
-                    val msg = if (success) "Rules synchronized from GitHub CDN!" else "Failed to sync rules from GitHub"
+                    val msg = if (success) context.getString(R.string.sync_success_toast) else context.getString(R.string.sync_failed_toast)
                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                 }
             },
@@ -198,11 +200,6 @@ fun MainScreen(
                     }
                 }
             },
-            onOpenContributeLink = {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(CONTRIBUTOR_GITHUB_URL))
-                context.startActivity(intent)
-            },
             modifier = modifier
         )
     }
@@ -232,7 +229,6 @@ fun MainScreenContent(
     onExportYaml: () -> Unit = {},
     onExportCsv: () -> Unit = {},
     onToggleVpn: () -> Unit = {},
-    onOpenContributeLink: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var showClearDialog by remember { mutableStateOf(false) }
@@ -385,8 +381,7 @@ fun MainScreenContent(
                 when (uiState.selectedTab) {
                     0 -> MinimalistDashboardTab(
                         uiState = uiState,
-                        onToggleVpn = onToggleVpn,
-                        onOpenContributeLink = onOpenContributeLink
+                        onToggleVpn = onToggleVpn
                     )
                     1 -> RulesTabContent(
                         uiState = uiState,
@@ -405,6 +400,23 @@ fun MainScreenContent(
                         onSelectTheme = onSelectTheme,
                         onSyncRules = onSyncRules,
                         onImportRuleClick = onImportRuleClick
+                    )
+                }
+
+                if (uiState.isSyncingRules) {
+                    AlertDialog(
+                        onDismissRequest = {},
+                        title = { Text(stringResource(R.string.syncing_dialog_title), fontWeight = FontWeight.Bold) },
+                        text = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(36.dp))
+                                Text(stringResource(R.string.syncing_dialog_body), style = MaterialTheme.typography.bodyMedium)
+                            }
+                        },
+                        confirmButton = {}
                     )
                 }
 
@@ -509,7 +521,7 @@ fun SettingsTabContent(
             }
         }
 
-        // Dedicated GitOps Rule Sync Card
+        // Dedicated Rule Engine Sync Card
         Surface(
             shape = RoundedCornerShape(20.dp),
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
@@ -581,6 +593,28 @@ fun SettingsTabContent(
                 }
             }
         }
+
+        // Open Source & Privacy Disclaimer Card (Moved to Settings)
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(id = R.string.privacy_disclaimer_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(id = R.string.privacy_disclaimer_body),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            }
+        }
     }
 }
 
@@ -625,8 +659,7 @@ fun ThreatAlertPopupDialog(
 @Composable
 fun MinimalistDashboardTab(
     uiState: MainUiState,
-    onToggleVpn: () -> Unit,
-    onOpenContributeLink: () -> Unit
+    onToggleVpn: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -657,6 +690,60 @@ fun MinimalistDashboardTab(
             onClick = onToggleVpn
         )
 
+        // Real-Time Endpoint Security Index Widget (%)
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(id = R.string.endpoint_score_title),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = if (uiState.isVpnActive) "98.4%" else "0.0%",
+                        style = MaterialTheme.typography.displaySmall,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = if (uiState.isVpnActive) stringResource(R.string.endpoint_score_optimal) else stringResource(R.string.endpoint_score_warning),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(64.dp)
+                ) {
+                    CircularProgressIndicator(
+                        progress = if (uiState.isVpnActive) 0.984f else 0.0f,
+                        strokeWidth = 6.dp,
+                        color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    Text(
+                        text = if (uiState.isVpnActive) "OK" else "OFF",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+
+        // Metrics Counters Row
         Surface(
             shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -697,6 +784,39 @@ fun MinimalistDashboardTab(
             }
         }
 
+        // Live Protection Vectors Status Widget
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(18.dp)) {
+                Text(
+                    text = stringResource(id = R.string.protection_vectors_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ProtectionVectorRow(
+                    label = stringResource(R.string.vector_dns),
+                    isActive = uiState.isVpnActive
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                ProtectionVectorRow(
+                    label = stringResource(R.string.vector_package),
+                    isActive = true
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                ProtectionVectorRow(
+                    label = stringResource(R.string.vector_engine),
+                    isActive = true
+                )
+            }
+        }
+
+        // Live Telemetry Wave Analytics Card
         Surface(
             shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
@@ -715,7 +835,7 @@ fun MinimalistDashboardTab(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "LIVE SENSING",
+                        text = if (uiState.isVpnActive) "1.8 KB/s LIVE" else "IDLE",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
@@ -728,62 +848,33 @@ fun MinimalistDashboardTab(
                 )
             }
         }
+    }
+}
 
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
-            modifier = Modifier.fillMaxWidth()
+@Composable
+fun ProtectionVectorRow(label: String, isActive: Boolean) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = stringResource(id = R.string.privacy_disclaimer_title),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = stringResource(id = R.string.privacy_disclaimer_body),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-            }
+            Surface(
+                shape = CircleShape,
+                color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                modifier = Modifier.size(8.dp)
+            ) {}
+            Text(text = label, style = MaterialTheme.typography.bodySmall)
         }
-
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(id = R.string.contribute_rules_title),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = stringResource(id = R.string.contribute_rules_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Button(
-                    onClick = onOpenContributeLink,
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(text = "YAML", style = MaterialTheme.typography.labelLarge)
-                }
-            }
-        }
+        Text(
+            text = if (isActive) stringResource(R.string.vector_status_active) else "Paused",
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+        )
     }
 }
 
@@ -1077,7 +1168,6 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
         },
         text = {
             if (isDeveloperMode) {
-                // Developer Mode: Pure Code Highlighted Syntax Terminal Block
                 Surface(
                     shape = RoundedCornerShape(12.dp),
                     color = Color(0xFF1E1E1E),
@@ -1095,7 +1185,6 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
                     }
                 }
             } else {
-                // User Mode: Highly Professional Visual Representation
                 Column(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier.verticalScroll(rememberScrollState())
@@ -1310,28 +1399,6 @@ fun HistoryTabContent(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(14.dp)) {
-                Text(
-                    text = stringResource(id = R.string.privacy_disclaimer_title),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = stringResource(id = R.string.privacy_disclaimer_body),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))

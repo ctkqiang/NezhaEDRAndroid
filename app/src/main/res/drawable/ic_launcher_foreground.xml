@@ -4,23 +4,33 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Premium Outer Crimson Shield Outline -->
+    <!-- Outer Metallic Crimson Aegis Shield Outer Ring -->
     <path
         android:fillColor="#E53935"
-        android:pathData="M54,24 L30,35 v22 c0,15.5 10.2,29.1 24,33 c13.8,-3.9 24,-17.5 24,-33 V35 L54,24 z" />
+        android:pathData="M54,20 L26,32 v26 c0,17.8 11.8,33.5 28,38 c16.2,-4.5 28,-20.2 28,-38 V32 L54,20 z" />
 
-    <!-- Dark Inner Recessed Shield Body -->
+    <!-- Dark Recessed Inner Obsidian Core -->
     <path
-        android:fillColor="#0B0F19"
-        android:pathData="M54,28.5 L34,37.6 v18.4 c0,12.5 8.2,23.5 20,26.5 c11.8,-3 20,-14 20,-26.5 V37.6 L54,28.5 z" />
+        android:fillColor="#0B0E17"
+        android:pathData="M54,25 L31,35.5 v22.5 c0,14.5 9.5,27.2 23,30.8 c13.5,-3.6 23,-16.3 23,-30.8 V35.5 L54,25 z" />
 
-    <!-- Sleek Minimalist Spearhead Core -->
+    <!-- Inner Neon Cyber Flame Ring -->
     <path
-        android:fillColor="#FF5252"
-        android:pathData="M54,34.5 L43,53.5 h7.5 v14.5 h7 V53.5 H65 L54,34.5 z" />
+        android:fillColor="#FF2A4B"
+        android:pathData="M54,30 L36,38.5 v19.5 c0,11.2 7.3,21 18,23.8 c10.7,-2.8 18,-12.6 18,-23.8 V38.5 L54,30 z" />
 
-    <!-- Pure White Central Emblem Core -->
+    <!-- Center Obsidian Chamber -->
+    <path
+        android:fillColor="#161B26"
+        android:pathData="M54,35.5 L41,41.5 v16.5 c0,8 5.2,15 13,17 c7.8,-2 13,-9 13,-17 V41.5 L54,35.5 z" />
+
+    <!-- Crisp White Nezha Cyber Spearhead Emblem -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,44 L49,53.5 h3.5 v9 h3 v-9 H59 L54,44 z" />
+        android:pathData="M54,40 L45,56 h5.5 v11 h7 V56 H63 L54,40 z" />
+
+    <!-- High-Glow Precision Diamond Point -->
+    <path
+        android:fillColor="#FF5252"
+        android:pathData="M54,46 L51,52 h6 Z" />
 </vector>

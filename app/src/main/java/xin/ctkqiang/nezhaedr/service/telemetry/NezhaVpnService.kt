@@ -100,6 +100,7 @@ class NezhaVpnService : VpnService() {
                 .setSession("NezhaCyberEDR")
                 .setMtu(1500)
                 .addAddress("10.0.0.2", 32)
+                .addDnsServer("10.0.0.1")
 
             // Direct static threat IP routes
             val threatIps = mutableSetOf(
@@ -203,19 +204,55 @@ class NezhaVpnService : VpnService() {
 
                 if (bytesRead > 0) {
                     val destIp = parseDestinationIp(buffer, bytesRead)
-                    if (destIp != null) {
-                        EDRLogger.w(TAG, "CAPTURED THREAT PACKET -> Target IP: '$destIp'")
+                    val dnsDomain = parseDnsQueryDomain(buffer, bytesRead)
+
+                    if (destIp != null || dnsDomain != null) {
+                        val targetIp = destIp ?: "10.0.0.1"
+                        val domainName = dnsDomain ?: ""
+                        EDRLogger.w(TAG, "CAPTURED THREAT PACKET -> Target IP: '$targetIp', Domain: '$domainName'")
                         _telemetryFlow.emit(
                             TelemetryEvent.Network(
-                                destinationIp = destIp,
-                                destinationPort = 80,
-                                protocol = "IPv4"
+                                destinationIp = targetIp,
+                                domain = domainName,
+                                destinationPort = if (dnsDomain != null) 53 else 80,
+                                protocol = if (dnsDomain != null) "DNS/UDP" else "IPv4"
                             )
                         )
                     }
                 }
             }
         }
+    }
+
+    private fun parseDnsQueryDomain(buffer: ByteArray, length: Int): String? {
+        if (length < 28) return null
+        val versionAndIhl = buffer[0].toInt() and 0xFF
+        val ipVersion = versionAndIhl shr 4
+        if (ipVersion != 4) return null
+
+        val ihl = (versionAndIhl and 0x0F) * 4
+        val protocol = buffer[9].toInt() and 0xFF
+        if (protocol != 17) return null // UDP protocol = 17
+
+        val udpHeaderStart = ihl
+        if (length < udpHeaderStart + 8) return null
+        val destPort = ((buffer[udpHeaderStart + 2].toInt() and 0xFF) shl 8) or (buffer[udpHeaderStart + 3].toInt() and 0xFF)
+        if (destPort != 53) return null // DNS Port 53
+
+        val dnsStart = udpHeaderStart + 8
+        if (length < dnsStart + 12) return null
+
+        var pos = dnsStart + 12
+        val sb = StringBuilder()
+        while (pos < length) {
+            val len = buffer[pos].toInt() and 0xFF
+            if (len == 0) break
+            if (pos + 1 + len > length) break
+            if (sb.isNotEmpty()) sb.append(".")
+            sb.append(String(buffer, pos + 1, len, Charsets.US_ASCII))
+            pos += len + 1
+        }
+        return if (sb.isNotEmpty()) sb.toString() else null
     }
 
     fun protectSocket(socket: Socket): Boolean {

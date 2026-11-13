@@ -6,6 +6,7 @@ sealed interface TelemetryEvent {
     data class Network(
         override val timestamp: Long = System.currentTimeMillis(),
         val destinationIp: String,
+        val domain: String = "",
         val destinationPort: Int,
         val protocol: String
     ) : TelemetryEvent

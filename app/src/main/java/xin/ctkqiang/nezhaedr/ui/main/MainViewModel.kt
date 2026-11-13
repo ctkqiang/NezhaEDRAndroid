@@ -216,7 +216,7 @@ class MainViewModel(
     private fun observeTelemetry() {
         viewModelScope.launch {
             NezhaVpnService.telemetryFlow.collect { netEvent ->
-                EDRLogger.v(TAG, "observeTelemetry: Captured network event for IP '${netEvent.destinationIp}'")
+                EDRLogger.v(TAG, "observeTelemetry: Captured network event for IP '${netEvent.destinationIp}' (domain: '${netEvent.domain}')")
                 val match = evaluationEngine.evaluateNetworkEvent(netEvent)
                 val isThreat = match != null
                 if (match != null) {
@@ -227,9 +227,10 @@ class MainViewModel(
                 recordVisitedSite(
                     VisitedSiteRecord(
                         destinationIp = netEvent.destinationIp,
+                        domain = netEvent.domain,
                         protocol = netEvent.protocol,
                         isThreat = isThreat,
-                        appName = "Network Egress Telemetry"
+                        appName = "Network Protection Engine"
                     )
                 )
             }

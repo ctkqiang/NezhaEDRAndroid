@@ -1,0 +1,28 @@
+id: RULE-NET-003
+name: Adult & Explicit Content Domain Block
+description: Blocks outbound connections to flagged adult and explicit web destinations
+severity: CRITICAL
+category: NETWORK
+condition:
+  target_domains:
+    - toppornsites.com
+    - 91porna.com
+    - pornhub.com
+    - xvideos.com
+    - xnxx.com
+    - xhamster.com
+    - redtube.com
+    - youporn.com
+    - spankbang.com
+    - eporner.com
+    - brazzers.com
+    - stripchat.com
+    - chaturbate.com
+    - beeg.com
+    - 4tube.com
+    - tnaflix.com
+    - jav.guru
+    - rat.xxx
+    - youjizz.com
+    - redgifs.com
+action: BLOCK

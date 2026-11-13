@@ -1,0 +1,12 @@
+id: RULE-NET-001
+name: Known C2 Threat IP Block
+description: Detects and blocks egress connection to known malicious C2 addresses
+severity: HIGH
+category: NETWORK
+condition:
+  target_ips:
+    - 192.0.2.1
+    - 198.51.100.14
+  target_domains:
+    - malicious-c2.example.com
+action: BLOCK

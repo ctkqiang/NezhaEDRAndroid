@@ -51,8 +51,6 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -70,6 +68,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -77,7 +76,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -344,6 +348,21 @@ fun MainScreenContent(
                         indicatorColor = MaterialTheme.colorScheme.primaryContainer
                     )
                 )
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 4,
+                    onClick = { onSelectTab(4) },
+                    label = { Text(stringResource(R.string.nav_settings)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_settings),
+                            contentDescription = stringResource(R.string.nav_settings)
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                )
             }
         },
         modifier = modifier.fillMaxSize()
@@ -358,96 +377,207 @@ fun MainScreenContent(
                 CircularProgressIndicator()
             }
         } else {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                TabRow(
-                    selectedTabIndex = uiState.selectedTab,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.primary
-                ) {
-                    Tab(
-                        selected = uiState.selectedTab == 0,
-                        onClick = { onSelectTab(0) },
-                        text = { Text(stringResource(R.string.nav_dashboard), style = MaterialTheme.typography.labelLarge) }
+                when (uiState.selectedTab) {
+                    0 -> MinimalistDashboardTab(
+                        uiState = uiState,
+                        onToggleVpn = onToggleVpn,
+                        onOpenContributeLink = onOpenContributeLink
                     )
-                    Tab(
-                        selected = uiState.selectedTab == 1,
-                        onClick = { onSelectTab(1) },
-                        text = { Text(stringResource(R.string.nav_rules), style = MaterialTheme.typography.labelLarge) }
+                    1 -> RulesTabContent(
+                        uiState = uiState,
+                        onSelectRule = onSelectRule,
+                        onImportRuleClick = onImportRuleClick
                     )
-                    Tab(
-                        selected = uiState.selectedTab == 2,
-                        onClick = { onSelectTab(2) },
-                        text = { Text(stringResource(R.string.nav_threats), style = MaterialTheme.typography.labelLarge) }
+                    2 -> ThreatLogsTabContent(uiState = uiState)
+                    3 -> HistoryTabContent(
+                        uiState = uiState,
+                        onExportYaml = onExportYaml,
+                        onExportCsv = onExportCsv,
+                        onClearData = { showClearDialog = true }
                     )
-                    Tab(
-                        selected = uiState.selectedTab == 3,
-                        onClick = { onSelectTab(3) },
-                        text = { Text(stringResource(R.string.nav_history), style = MaterialTheme.typography.labelLarge) }
+                    4 -> SettingsTabContent(
+                        uiState = uiState,
+                        onSelectTheme = onSelectTheme,
+                        onSyncRules = onSyncRules,
+                        onImportRuleClick = onImportRuleClick
                     )
                 }
 
-                Box(modifier = Modifier.fillMaxSize()) {
-                    when (uiState.selectedTab) {
-                        0 -> MinimalistDashboardTab(
-                            uiState = uiState,
-                            onToggleVpn = onToggleVpn,
-                            onSelectTheme = onSelectTheme,
-                            onOpenContributeLink = onOpenContributeLink
-                        )
-                        1 -> RulesTabContent(
-                            uiState = uiState,
-                            onSelectRule = onSelectRule,
-                            onImportRuleClick = onImportRuleClick
-                        )
-                        2 -> ThreatLogsTabContent(uiState = uiState)
-                        3 -> HistoryTabContent(
-                            uiState = uiState,
-                            onExportYaml = onExportYaml,
-                            onExportCsv = onExportCsv,
-                            onClearData = { showClearDialog = true }
-                        )
-                    }
+                uiState.selectedRule?.let { rule ->
+                    RuleDetailDialog(
+                        rule = rule,
+                        onDismiss = { onSelectRule(null) }
+                    )
+                }
 
-                    uiState.selectedRule?.let { rule ->
-                        RuleDetailDialog(
-                            rule = rule,
-                            onDismiss = { onSelectRule(null) }
-                        )
-                    }
+                uiState.activeThreatPopup?.let { threat ->
+                    ThreatAlertPopupDialog(
+                        threat = threat,
+                        onDismiss = onDismissThreatPopup
+                    )
+                }
 
-                    uiState.activeThreatPopup?.let { threat ->
-                        ThreatAlertPopupDialog(
-                            threat = threat,
-                            onDismiss = onDismissThreatPopup
-                        )
-                    }
-
-                    if (showClearDialog) {
-                        AlertDialog(
-                            onDismissRequest = { showClearDialog = false },
-                            title = { Text(stringResource(R.string.confirm_clear_title), fontWeight = FontWeight.Bold) },
-                            text = { Text(stringResource(R.string.confirm_clear_body)) },
-                            confirmButton = {
-                                TextButton(
-                                    onClick = {
-                                        showClearDialog = false
-                                        onClearData()
-                                    }
-                                ) {
-                                    Text(stringResource(R.string.btn_clear_data), color = MaterialTheme.colorScheme.error)
+                if (showClearDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showClearDialog = false },
+                        title = { Text(stringResource(R.string.confirm_clear_title), fontWeight = FontWeight.Bold) },
+                        text = { Text(stringResource(R.string.confirm_clear_body)) },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    showClearDialog = false
+                                    onClearData()
                                 }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = { showClearDialog = false }) {
-                                    Text(stringResource(R.string.btn_cancel))
-                                }
+                            ) {
+                                Text(stringResource(R.string.btn_clear_data), color = MaterialTheme.colorScheme.error)
                             }
-                        )
-                    }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showClearDialog = false }) {
+                                Text(stringResource(R.string.btn_cancel))
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SettingsTabContent(
+    uiState: MainUiState,
+    onSelectTheme: (AppThemeMode) -> Unit,
+    onSyncRules: () -> Unit,
+    onImportRuleClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = stringResource(id = R.string.settings_header_title),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+
+        // Dedicated Theme Switcher Card
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(id = R.string.settings_theme_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(id = R.string.settings_theme_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = uiState.appTheme == AppThemeMode.RED,
+                        onClick = { onSelectTheme(AppThemeMode.RED) },
+                        label = { Text("Red (Default)", style = MaterialTheme.typography.labelSmall) }
+                    )
+                    FilterChip(
+                        selected = uiState.appTheme == AppThemeMode.BLUE,
+                        onClick = { onSelectTheme(AppThemeMode.BLUE) },
+                        label = { Text("Blue", style = MaterialTheme.typography.labelSmall) }
+                    )
+                    FilterChip(
+                        selected = uiState.appTheme == AppThemeMode.PINK,
+                        onClick = { onSelectTheme(AppThemeMode.PINK) },
+                        label = { Text("Pink", style = MaterialTheme.typography.labelSmall) }
+                    )
+                }
+            }
+        }
+
+        // Dedicated GitOps Rule Sync Card
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(id = R.string.settings_gitops_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(id = R.string.settings_gitops_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = onSyncRules,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_refresh),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(text = stringResource(id = R.string.btn_sync_github))
+                }
+            }
+        }
+
+        // Dedicated Local Custom YAML Rule Import Card
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(id = R.string.settings_custom_rule_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(id = R.string.settings_custom_rule_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = onImportRuleClick,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    )
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_add),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(text = stringResource(id = R.string.btn_import_rule))
                 }
             }
         }
@@ -496,7 +626,6 @@ fun ThreatAlertPopupDialog(
 fun MinimalistDashboardTab(
     uiState: MainUiState,
     onToggleVpn: () -> Unit,
-    onSelectTheme: (AppThemeMode) -> Unit,
     onOpenContributeLink: () -> Unit
 ) {
     Column(
@@ -527,44 +656,6 @@ fun MinimalistDashboardTab(
             isActive = uiState.isVpnActive,
             onClick = onToggleVpn
         )
-
-        // Enterprise Theme Palette Switcher
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Theme Palette",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    FilterChip(
-                        selected = uiState.appTheme == AppThemeMode.RED,
-                        onClick = { onSelectTheme(AppThemeMode.RED) },
-                        label = { Text("Red", style = MaterialTheme.typography.labelSmall) }
-                    )
-                    FilterChip(
-                        selected = uiState.appTheme == AppThemeMode.BLUE,
-                        onClick = { onSelectTheme(AppThemeMode.BLUE) },
-                        label = { Text("Blue", style = MaterialTheme.typography.labelSmall) }
-                    )
-                    FilterChip(
-                        selected = uiState.appTheme == AppThemeMode.PINK,
-                        onClick = { onSelectTheme(AppThemeMode.PINK) },
-                        label = { Text("Pink", style = MaterialTheme.typography.labelSmall) }
-                    )
-                }
-            }
-        }
 
         Surface(
             shape = RoundedCornerShape(24.dp),
@@ -750,8 +841,8 @@ fun MasterProtectionButton(
                 modifier = Modifier.fillMaxSize()
             ) {
                 Text(
-                    text = if (isActive) "ON" else "OFF",
-                    style = MaterialTheme.typography.headlineLarge,
+                    text = if (isActive) stringResource(R.string.switch_on) else stringResource(R.string.switch_off),
+                    style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.ExtraBold,
                     color = contentColor
                 )
@@ -962,32 +1053,132 @@ fun RuleItemCard(rule: DetectionRule, onClick: () -> Unit) {
 
 @Composable
 fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
+    var isDeveloperMode by remember { mutableStateOf(false) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = rule.name, fontWeight = FontWeight.Bold) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(text = "Rule ID: ${rule.id}", fontWeight = FontWeight.SemiBold)
-                Text(text = "Category: ${rule.category}")
-                Text(text = "Severity: ${rule.severity}")
-                Text(text = "Containment Action: ${rule.action.name}")
-                Text(text = "Description: ${rule.description}")
-
-                if (rule.condition.targetIps.isNotEmpty() || rule.condition.targetDomains.isNotEmpty()) {
-                    Text(
-                        text = stringResource(id = R.string.rule_condition_targets),
-                        fontWeight = FontWeight.Bold
+        title = {
+            Column {
+                Text(text = rule.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = !isDeveloperMode,
+                        onClick = { isDeveloperMode = false },
+                        label = { Text(stringResource(R.string.mode_user), style = MaterialTheme.typography.labelSmall) }
                     )
-                    rule.condition.targetIps.forEach { ip -> Text(text = " • IP: $ip") }
-                    rule.condition.targetDomains.forEach { domain -> Text(text = " • Domain: $domain") }
+                    FilterChip(
+                        selected = isDeveloperMode,
+                        onClick = { isDeveloperMode = true },
+                        label = { Text(stringResource(R.string.mode_developer), style = MaterialTheme.typography.labelSmall) }
+                    )
                 }
+            }
+        },
+        text = {
+            if (isDeveloperMode) {
+                // Developer Mode: Pure Code Highlighted Syntax Terminal Block
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFF1E1E1E),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(280.dp)
+                ) {
+                    Box(modifier = Modifier.padding(12.dp).verticalScroll(rememberScrollState())) {
+                        Text(
+                            text = buildYamlSyntaxHighlighting(rule),
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
+            } else {
+                // User Mode: Highly Professional Visual Representation
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.verticalScroll(rememberScrollState())
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer
+                        ) {
+                            Text(
+                                text = "Rule ID: ${rule.id}",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = when (rule.action.name) {
+                                "BLOCK", "TERMINATE" -> MaterialTheme.colorScheme.errorContainer
+                                else -> MaterialTheme.colorScheme.secondaryContainer
+                            }
+                        ) {
+                            Text(
+                                text = "Action: ${rule.action.name}",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
 
-                if (rule.condition.packagePatterns.isNotEmpty()) {
                     Text(
-                        text = stringResource(id = R.string.rule_condition_patterns),
-                        fontWeight = FontWeight.Bold
+                        text = rule.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    rule.condition.packagePatterns.forEach { pattern -> Text(text = " • $pattern") }
+
+                    if (rule.condition.targetIps.isNotEmpty() || rule.condition.targetDomains.isNotEmpty()) {
+                        Text(
+                            text = stringResource(id = R.string.rule_condition_targets),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                rule.condition.targetIps.forEach { ip ->
+                                    Text(text = " • IP: $ip", style = MaterialTheme.typography.bodySmall)
+                                }
+                                rule.condition.targetDomains.forEach { domain ->
+                                    Text(text = " • Domain: $domain", style = MaterialTheme.typography.bodySmall)
+                                }
+                            }
+                        }
+                    }
+
+                    if (rule.condition.packagePatterns.isNotEmpty()) {
+                        Text(
+                            text = stringResource(id = R.string.rule_condition_patterns),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                rule.condition.packagePatterns.forEach { pattern ->
+                                    Text(text = " • $pattern", style = MaterialTheme.typography.bodySmall)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -997,6 +1188,66 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
             }
         }
     )
+}
+
+fun buildYamlSyntaxHighlighting(rule: DetectionRule): AnnotatedString {
+    val rawYaml = StringBuilder()
+    rawYaml.append("id: \"${rule.id}\"\n")
+    rawYaml.append("name: \"${rule.name}\"\n")
+    rawYaml.append("description: \"${rule.description}\"\n")
+    rawYaml.append("severity: \"${rule.severity}\"\n")
+    rawYaml.append("category: \"${rule.category}\"\n")
+    rawYaml.append("action: \"${rule.action.name}\"\n")
+    rawYaml.append("condition:\n")
+    if (rule.condition.targetIps.isNotEmpty()) {
+        rawYaml.append("  target_ips:\n")
+        rule.condition.targetIps.forEach { ip -> rawYaml.append("    - \"$ip\"\n") }
+    }
+    if (rule.condition.targetDomains.isNotEmpty()) {
+        rawYaml.append("  target_domains:\n")
+        rule.condition.targetDomains.forEach { domain -> rawYaml.append("    - \"$domain\"\n") }
+    }
+    if (rule.condition.packagePatterns.isNotEmpty()) {
+        rawYaml.append("  package_patterns:\n")
+        rule.condition.packagePatterns.forEach { pattern -> rawYaml.append("    - \"$pattern\"\n") }
+    }
+
+    return buildAnnotatedString {
+        val lines = rawYaml.toString().lines()
+        for (line in lines) {
+            if (line.contains(":")) {
+                val parts = line.split(":", limit = 2)
+                val key = parts[0]
+                val value = parts.getOrNull(1) ?: ""
+
+                withStyle(SpanStyle(color = Color(0xFF80CBC4), fontWeight = FontWeight.Bold)) {
+                    append(key)
+                }
+                withStyle(SpanStyle(color = Color(0xFFFFCC80))) {
+                    append(":")
+                }
+                if (value.contains("\"")) {
+                    withStyle(SpanStyle(color = Color(0xFFAED581))) {
+                        append(value)
+                    }
+                } else {
+                    withStyle(SpanStyle(color = Color(0xFFCE93D8))) {
+                        append(value)
+                    }
+                }
+            } else if (line.trim().startsWith("-")) {
+                withStyle(SpanStyle(color = Color(0xFFFFD54F))) {
+                    append(line.takeWhile { it.isWhitespace() } + "- ")
+                }
+                withStyle(SpanStyle(color = Color(0xFFAED581))) {
+                    append(line.trim().drop(1).trim())
+                }
+            } else {
+                append(line)
+            }
+            append("\n")
+        }
+    }
 }
 
 @Composable

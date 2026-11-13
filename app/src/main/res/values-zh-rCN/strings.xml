@@ -8,7 +8,13 @@
     <string name="nav_dashboard">控制台</string>
     <string name="nav_rules">规则库</string>
     <string name="nav_threats">告警</string>
-    <string name="nav_history">遥测保险库</string>
+    <string name="nav_history">保险库</string>
+    <string name="nav_settings">设置</string>
+
+    <string name="switch_on">已开启</string>
+    <string name="switch_off">已关闭</string>
+    <string name="mode_user">用户视图</string>
+    <string name="mode_developer">开发者模式</string>
 
     <string name="edr_dashboard_title">哪吒网络安全EDR 终端防护</string>
     <string name="vpn_service_status">网络遥测防护服务</string>
@@ -24,6 +30,15 @@
     <string name="contribute_rules_title">贡献 YAML 规则至开源社区</string>
     <string name="contribute_rules_desc">提交声明式 YAML 规则至哪吒网络安全EDR 代码库。</string>
     <string name="btn_contribute">前往 GitHub 贡献 YAML</string>
+
+    <!-- Settings Screen Phrasing -->
+    <string name="settings_header_title">偏好设置</string>
+    <string name="settings_theme_title">主题配色风格</string>
+    <string name="settings_theme_desc">自定义终端控制台的主题视觉配色。</string>
+    <string name="settings_gitops_title">GitOps 规则库同步</string>
+    <string name="settings_gitops_desc">从远程 GitHub CDN 实时同步最新威胁检测规则。</string>
+    <string name="settings_custom_rule_title">导入本地 YAML 规则</string>
+    <string name="settings_custom_rule_desc">从设备本地存储上传自定义 YAML 安全规则。</string>
 
     <!-- Open Source Privacy Disclaimer -->
     <string name="privacy_disclaimer_title">开源与隐私声明</string>

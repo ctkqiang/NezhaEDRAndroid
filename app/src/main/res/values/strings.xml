@@ -5,10 +5,16 @@
     <string name="threat_detected_title">Threat Blocked: %1$s</string>
     <string name="threat_detected_body">Application %1$s was blocked from accessing %2$s by NezhaCyberEDR.</string>
 
-    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_dashboard">Sentinel</string>
     <string name="nav_rules">Rules</string>
     <string name="nav_threats">Alerts</string>
     <string name="nav_history">Vault</string>
+    <string name="nav_settings">Settings</string>
+
+    <string name="switch_on">ON</string>
+    <string name="switch_off">OFF</string>
+    <string name="mode_user">User Mode</string>
+    <string name="mode_developer">Developer Mode</string>
 
     <string name="edr_dashboard_title">NezhaCyberEDR Protection</string>
     <string name="vpn_service_status">Network Protection Engine</string>
@@ -24,6 +30,15 @@
     <string name="contribute_rules_title">Contribute YAML Rules</string>
     <string name="contribute_rules_desc">Submit declarative YAML rulesets to NezhaCyberEDR repository.</string>
     <string name="btn_contribute">Contribute on GitHub</string>
+
+    <!-- Settings Screen Phrasing -->
+    <string name="settings_header_title">Application Preferences</string>
+    <string name="settings_theme_title">Interface Accent Color</string>
+    <string name="settings_theme_desc">Customize the visual theme accent for the dashboard.</string>
+    <string name="settings_gitops_title">GitOps Rule Engine Sync</string>
+    <string name="settings_gitops_desc">Synchronize threat rules directly from the remote GitHub CDN repository.</string>
+    <string name="settings_custom_rule_title">Local Custom YAML Rule</string>
+    <string name="settings_custom_rule_desc">Upload custom YAML security rules from device storage.</string>
 
     <!-- Open Source Privacy Disclaimer -->
     <string name="privacy_disclaimer_title">Open Source &amp; Privacy Guarantee</string>

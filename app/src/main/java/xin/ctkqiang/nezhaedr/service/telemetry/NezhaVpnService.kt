@@ -1,8 +1,13 @@
 package xin.ctkqiang.nezhaedr.service.telemetry
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.net.VpnService
+import android.os.Build
 import android.os.ParcelFileDescriptor
+import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -14,6 +19,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import xin.ctkqiang.nezhaedr.R
 import xin.ctkqiang.nezhaedr.util.EDRLogger
 import java.io.FileInputStream
 import java.net.DatagramSocket
@@ -35,8 +41,34 @@ class NezhaVpnService : VpnService() {
             return START_NOT_STICKY
         }
 
+        startForegroundSentinel()
         startVpn()
         return START_STICKY
+    }
+
+    private fun startForegroundSentinel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                FOREGROUND_CHANNEL_ID,
+                "NezhaEDR Sentinel Background Service",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Background protection service monitoring endpoint network telemetry."
+            }
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.createNotificationChannel(channel)
+        }
+
+        val notification = NotificationCompat.Builder(this, FOREGROUND_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("NezhaEDR Protection Active")
+            .setContentText("Monitoring endpoint telemetry and enforcing YAML threat rulesets.")
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
+            .build()
+
+        startForeground(FOREGROUND_NOTIFICATION_ID, notification)
+        EDRLogger.i(TAG, "startForegroundSentinel: EDR background service started with ongoing notification")
     }
 
     private fun startVpn() {
@@ -87,7 +119,6 @@ class NezhaVpnService : VpnService() {
                 "malicious-c2.example.com"
             )
 
-            // Resolve threat domain IPs asynchronously
             for (domain in threatDomains) {
                 try {
                     val addresses = withContext(Dispatchers.IO) {
@@ -95,7 +126,7 @@ class NezhaVpnService : VpnService() {
                     }
                     for (addr in addresses) {
                         addr.hostAddress?.let { ip ->
-                            if (!ip.contains(":")) { // IPv4
+                            if (!ip.contains(":")) {
                                 threatIps.add(ip)
                                 EDRLogger.d(TAG, "Resolved threat domain '$domain' -> IP $ip")
                             }
@@ -106,8 +137,6 @@ class NezhaVpnService : VpnService() {
                 }
             }
 
-            // Add captive routes ONLY for target threat IPs
-            // All regular public internet traffic (google.com, youtube.com, etc.) bypasses TUN interface completely!
             for (ip in threatIps) {
                 try {
                     builder.addRoute(ip, 32)
@@ -196,6 +225,7 @@ class NezhaVpnService : VpnService() {
 
     private fun stopVpn() {
         EDRLogger.i(TAG, "stopVpn: Shutting down NezhaVpnService")
+        stopForeground(STOP_FOREGROUND_REMOVE)
         vpnInterface?.close()
         vpnInterface = null
         _vpnState.value = false
@@ -212,6 +242,9 @@ class NezhaVpnService : VpnService() {
 
     companion object {
         private const val TAG = "NezhaVpnService"
+        private const val FOREGROUND_CHANNEL_ID = "nezha_edr_background_channel"
+        private const val FOREGROUND_NOTIFICATION_ID = 8888
+
         const val ACTION_START_VPN = "xin.ctkqiang.nezhaedr.START_VPN"
         const val ACTION_STOP_VPN = "xin.ctkqiang.nezhaedr.STOP_VPN"
 

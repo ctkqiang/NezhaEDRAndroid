@@ -1,6 +1,8 @@
 package xin.ctkqiang.nezhaedr.containment
 
+import android.app.ActivityManager
 import android.content.Context
+import android.content.Intent
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -10,7 +12,7 @@ import xin.ctkqiang.nezhaedr.service.telemetry.TelemetryEvent
 import xin.ctkqiang.nezhaedr.util.EDRLogger
 import java.util.UUID
 
-data class SIEMThreatLog(
+data class ThreatLogEntry(
     val id: String = UUID.randomUUID().toString(),
     val timestamp: Long = System.currentTimeMillis(),
     val ruleId: String,
@@ -27,8 +29,8 @@ class ContainmentManager(
     private val notificationManager: EDRNotificationManager = EDRNotificationManager(context)
 ) {
 
-    private val _siemLogs = MutableSharedFlow<SIEMThreatLog>(extraBufferCapacity = 100)
-    val siemLogs: SharedFlow<SIEMThreatLog> = _siemLogs.asSharedFlow()
+    private val _threatLogs = MutableSharedFlow<ThreatLogEntry>(extraBufferCapacity = 100)
+    val threatLogs: SharedFlow<ThreatLogEntry> = _threatLogs.asSharedFlow()
 
     fun handleRuleMatch(matchResult: RuleMatchResult) {
         val rule = matchResult.rule
@@ -39,7 +41,7 @@ class ContainmentManager(
             is TelemetryEvent.Network -> {
                 EDRLogger.d(TAG, "handleRuleMatch: Classifying Network match for '${event.destinationIp}'")
                 Triple(
-                    "Network Egress Socket",
+                    "Network Protection Sentinel",
                     event.destinationIp,
                     "Destination: ${event.destinationIp}:${event.destinationPort} (${event.protocol}) — ${rule.description}"
                 )
@@ -55,7 +57,7 @@ class ContainmentManager(
             }
         }
 
-        val logEntry = SIEMThreatLog(
+        val logEntry = ThreatLogEntry(
             ruleId = rule.id,
             ruleName = rule.name,
             severity = rule.severity,
@@ -64,8 +66,8 @@ class ContainmentManager(
             packageName = pkgName,
             details = eventDetails
         )
-        val emitted = _siemLogs.tryEmit(logEntry)
-        EDRLogger.d(TAG, "handleRuleMatch: Logged to SIEM flow (emitted: $emitted)")
+        val emitted = _threatLogs.tryEmit(logEntry)
+        EDRLogger.d(TAG, "handleRuleMatch: Logged to threat log flow (emitted: $emitted)")
 
         when (rule.action) {
             ContainmentAction.LOG -> {
@@ -78,7 +80,31 @@ class ContainmentManager(
             ContainmentAction.BLOCK, ContainmentAction.TERMINATE -> {
                 EDRLogger.w(TAG, "Containment Action ${rule.action.name} executed for Rule ${rule.id}")
                 notificationManager.sendThreatNotification(matchResult)
+
+                if (event is TelemetryEvent.Package || rule.action == ContainmentAction.TERMINATE) {
+                    terminateProcessOrReturnHome(pkgName)
+                }
             }
+        }
+    }
+
+    private fun terminateProcessOrReturnHome(packageName: String) {
+        try {
+            if (packageName.isNotEmpty()) {
+                val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                am.killBackgroundProcesses(packageName)
+                EDRLogger.w(TAG, "Executed killBackgroundProcesses for rogue package: $packageName")
+            }
+
+            // Launch Home Intent to return device to launcher if active
+            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_HOME)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(homeIntent)
+            EDRLogger.w(TAG, "Triggered HOME intent containment action for terminated app")
+        } catch (e: Exception) {
+            EDRLogger.e(TAG, "Failed to execute process containment for $packageName", e)
         }
     }
 

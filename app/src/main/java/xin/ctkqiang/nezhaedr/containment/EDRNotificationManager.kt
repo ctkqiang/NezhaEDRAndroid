@@ -8,11 +8,14 @@ import androidx.core.app.NotificationCompat
 import xin.ctkqiang.nezhaedr.R
 import xin.ctkqiang.nezhaedr.engine.RuleMatchResult
 import xin.ctkqiang.nezhaedr.util.EDRLogger
+import java.util.concurrent.ConcurrentHashMap
 
 class EDRNotificationManager(private val context: Context) {
 
     private val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+    private val lastNotificationTimestamps = ConcurrentHashMap<String, Long>()
 
     init {
         createNotificationChannel()
@@ -35,12 +38,25 @@ class EDRNotificationManager(private val context: Context) {
 
     fun sendThreatNotification(matchResult: RuleMatchResult) {
         val rule = matchResult.rule
-        EDRLogger.w(TAG, "sendThreatNotification: Preparing threat alert for Rule ${rule.id} (${rule.name})")
+        val now = System.currentTimeMillis()
+        val cooldownKey = rule.id
 
+        val lastSent = lastNotificationTimestamps[cooldownKey] ?: 0L
+        if (now - lastSent < NOTIFICATION_COOLDOWN_MS) {
+            EDRLogger.d(TAG, "sendThreatNotification: Throttling duplicate notification for Rule ${rule.id} (within ${NOTIFICATION_COOLDOWN_MS / 1000}s cooldown)")
+            return
+        }
+
+        lastNotificationTimestamps[cooldownKey] = now
+        EDRLogger.w(TAG, "sendThreatNotification: Preparing single threat alert for Rule ${rule.id} (${rule.name})")
+
+        val appName = matchResult.event.let {
+            if (it is xin.ctkqiang.nezhaedr.service.telemetry.TelemetryEvent.Package) it.packageName else "Browser Egress"
+        }
         val title = context.getString(R.string.threat_detected_title, rule.name)
         val body = context.getString(
             R.string.threat_detected_body,
-            rule.severity,
+            appName,
             rule.description
         )
 
@@ -63,5 +79,6 @@ class EDRNotificationManager(private val context: Context) {
     companion object {
         private const val TAG = "EDRNotificationManager"
         const val CHANNEL_ID = "nezha_edr_threat_channel"
+        private const val NOTIFICATION_COOLDOWN_MS = 30_000L // 30 seconds notification debouncing window
     }
 }

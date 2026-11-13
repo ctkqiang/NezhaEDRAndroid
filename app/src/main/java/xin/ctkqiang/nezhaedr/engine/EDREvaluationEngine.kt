@@ -48,7 +48,7 @@ class EDREvaluationEngine {
     }
 
     fun evaluateNetworkEvent(event: TelemetryEvent.Network): RuleMatchResult? {
-        EDRLogger.v(TAG, "evaluateNetworkEvent: Evaluating destination '${event.destinationIp}:${event.destinationPort}' (${event.protocol})")
+        EDRLogger.v(TAG, "evaluateNetworkEvent: Evaluating destination '${event.destinationIp}:${event.destinationPort}', Domain: '${event.domain}' (${event.protocol})")
 
         // O(1) Target IP Match
         val matchedRule = ipLookupTable[event.destinationIp]
@@ -57,18 +57,24 @@ class EDREvaluationEngine {
             return RuleMatchResult(rule = matchedRule, event = event)
         }
 
-        // Target Domain Match
+        // Target Domain & IP Substring Match
         val destLower = event.destinationIp.lowercase()
+        val domainLower = event.domain.lowercase()
+
         for (rule in activeRules) {
-            for (domain in rule.condition.targetDomains) {
-                if (destLower.contains(domain.lowercase())) {
-                    EDRLogger.w(TAG, "MATCH FOUND (Domain): Destination '${event.destinationIp}' matched target domain '$domain' in Rule ${rule.id} (${rule.name}) [Action: ${rule.action}]")
+            for (targetDomain in rule.condition.targetDomains) {
+                val targetLower = targetDomain.lowercase()
+                val domainMatched = domainLower.isNotEmpty() && (domainLower == targetLower || domainLower.endsWith(".$targetLower") || domainLower.contains(targetLower))
+                val ipMatched = destLower.isNotEmpty() && destLower.contains(targetLower)
+
+                if (domainMatched || ipMatched) {
+                    EDRLogger.w(TAG, "MATCH FOUND (Domain): Destination Domain/IP '${event.domain}'/'${event.destinationIp}' matched target domain '$targetDomain' in Rule ${rule.id} (${rule.name}) [Action: ${rule.action}]")
                     return RuleMatchResult(rule = rule, event = event)
                 }
             }
         }
 
-        EDRLogger.v(TAG, "evaluateNetworkEvent: No match for '${event.destinationIp}' (CLEAN)")
+        EDRLogger.v(TAG, "evaluateNetworkEvent: No match for '${event.destinationIp}' / '${event.domain}' (CLEAN)")
         return null
     }
 

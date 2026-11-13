@@ -4,6 +4,9 @@ import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import xin.ctkqiang.nezhaedr.data.model.DetectionRule
 import xin.ctkqiang.nezhaedr.data.model.DetectionRulePackage
 import xin.ctkqiang.nezhaedr.data.parser.YamlRuleParser
@@ -24,9 +27,10 @@ interface RuleRepository {
     suspend fun fetchRules(): Result<DetectionRulePackage>
     suspend fun syncRulesFromGithub(): Result<DetectionRulePackage>
     suspend fun syncSelectedRulesFromGithub(selectedFiles: List<String>): Result<DetectionRulePackage>
+    suspend fun fetchRemoteGithubCatalog(): List<RemoteRuleCatalogItem>
     suspend fun deleteRule(ruleId: String): Result<DetectionRulePackage>
     suspend fun importCustomYamlRule(yamlText: String, fileName: String): Result<DetectionRulePackage>
-    fun getRemoteRuleCatalog(): List<RemoteRuleCatalogItem>
+    fun getFallbackRemoteRuleCatalog(): List<RemoteRuleCatalogItem>
     fun getCachedRules(): DetectionRulePackage?
     fun saveRulesToCache(rulePackage: DetectionRulePackage)
     fun parseRulesJson(jsonString: String): DetectionRulePackage
@@ -42,7 +46,7 @@ class RuleRepositoryImpl(
 
     private var cachedRules: DetectionRulePackage? = null
 
-    override fun getRemoteRuleCatalog(): List<RemoteRuleCatalogItem> {
+    override fun getFallbackRemoteRuleCatalog(): List<RemoteRuleCatalogItem> {
         return listOf(
             RemoteRuleCatalogItem("c2_threat_block.yaml", "RULE-NET-001", "Known C2 Threat IP Block", "NETWORK", "HIGH"),
             RemoteRuleCatalogItem("ransomware_beacon_block.yaml", "RULE-NET-002", "Ransomware Beaconing Domain Block", "NETWORK", "CRITICAL"),
@@ -59,47 +63,116 @@ class RuleRepositoryImpl(
         )
     }
 
+    override suspend fun fetchRemoteGithubCatalog(): List<RemoteRuleCatalogItem> = withContext(Dispatchers.IO) {
+        EDRLogger.i(TAG, "fetchRemoteGithubCatalog: Querying live single source of truth at $GITHUB_RULES_TREE_URL")
+        val catalogItems = mutableListOf<RemoteRuleCatalogItem>()
+        try {
+            val url = URL(GITHUB_CONTENTS_API_URL)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.connectTimeout = 8000
+            connection.readTimeout = 8000
+            connection.requestMethod = "GET"
+            connection.setRequestProperty("User-Agent", "NezhaCyberEDR-Android")
+            connection.setRequestProperty("Accept", "application/vnd.github.v3+json")
+
+            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                val jsonResponse = connection.inputStream.bufferedReader().use { it.readText() }
+                val jsonArray = Json.parseToJsonElement(jsonResponse).jsonArray
+                for (element in jsonArray) {
+                    val name = element.jsonObject["name"]?.jsonPrimitive?.content ?: ""
+                    val downloadUrl = element.jsonObject["download_url"]?.jsonPrimitive?.content ?: "$GITHUB_RULES_BASE_URL/$name"
+                    if (name.endsWith(".yaml", ignoreCase = true) || name.endsWith(".yml", ignoreCase = true)) {
+                        val yamlContent = fetchRawContent(downloadUrl)
+                        if (yamlContent != null) {
+                            val parsedRule = YamlRuleParser.parseYamlRule(yamlContent)
+                            if (parsedRule != null) {
+                                catalogItems.add(
+                                    RemoteRuleCatalogItem(
+                                        fileName = name,
+                                        ruleId = parsedRule.id,
+                                        name = parsedRule.name,
+                                        category = parsedRule.category,
+                                        severity = parsedRule.severity
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+                EDRLogger.i(TAG, "fetchRemoteGithubCatalog: Discovered ${catalogItems.size} live rulesets from GitHub single source of truth")
+            } else {
+                EDRLogger.w(TAG, "fetchRemoteGithubCatalog: HTTP ${connection.responseCode} querying GitHub contents API")
+            }
+            connection.disconnect()
+        } catch (e: Exception) {
+            EDRLogger.w(TAG, "fetchRemoteGithubCatalog: Network exception querying GitHub contents API: ${e.message}")
+        }
+
+        if (catalogItems.isEmpty()) {
+            EDRLogger.w(TAG, "fetchRemoteGithubCatalog: Returning fallback catalog items")
+            return@withContext getFallbackRemoteRuleCatalog()
+        }
+        return@withContext catalogItems
+    }
+
+    private fun fetchRawContent(urlString: String): String? {
+        return try {
+            val url = URL(urlString)
+            val conn = url.openConnection() as HttpURLConnection
+            conn.connectTimeout = 5000
+            conn.readTimeout = 5000
+            conn.requestMethod = "GET"
+            conn.setRequestProperty("User-Agent", "NezhaCyberEDR-Android")
+            if (conn.responseCode == HttpURLConnection.HTTP_OK) {
+                conn.inputStream.bufferedReader().use { it.readText() }
+            } else null
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     override suspend fun fetchRules(): Result<DetectionRulePackage> {
         EDRLogger.i(TAG, "fetchRules: Initiating detection rules load process")
         return loadLocalYamlRules()
     }
 
     override suspend fun syncRulesFromGithub(): Result<DetectionRulePackage> {
-        val catalog = getRemoteRuleCatalog().map { it.fileName }
+        val catalog = fetchRemoteGithubCatalog().map { it.fileName }
         return syncSelectedRulesFromGithub(catalog)
     }
 
     override suspend fun syncSelectedRulesFromGithub(selectedFiles: List<String>): Result<DetectionRulePackage> = withContext(Dispatchers.IO) {
-        EDRLogger.i(TAG, "syncSelectedRulesFromGithub: Downloading ${selectedFiles.size} selected rulesets from GitHub CDN")
+        EDRLogger.i(TAG, "syncSelectedRulesFromGithub: Downloading ${selectedFiles.size} selected rulesets from GitHub single source of truth CDN ($GITHUB_RULES_BASE_URL)")
         val localRulesDir = getLocalRulesDirectory()
 
         var downloadedCount = 0
         for (fileName in selectedFiles) {
             try {
                 val urlString = "$GITHUB_RULES_BASE_URL/$fileName"
-                EDRLogger.d(TAG, "Downloading rule from $urlString")
+                EDRLogger.d(TAG, "Downloading live rule from single source of truth URL: $urlString")
                 val url = URL(urlString)
                 val connection = url.openConnection() as HttpURLConnection
-                connection.connectTimeout = 5000
-                connection.readTimeout = 5000
+                connection.connectTimeout = 6000
+                connection.readTimeout = 6000
                 connection.requestMethod = "GET"
+                connection.setRequestProperty("User-Agent", "NezhaCyberEDR-Android")
 
                 if (connection.responseCode == HttpURLConnection.HTTP_OK) {
                     val yamlText = connection.inputStream.bufferedReader().use { it.readText() }
                     val destFile = File(localRulesDir, fileName)
                     destFile.writeText(yamlText)
                     downloadedCount++
-                    EDRLogger.i(TAG, "Successfully downloaded and saved $fileName locally")
+                    EDRLogger.i(TAG, "Successfully downloaded $fileName from GitHub and updated local storage")
                 } else {
-                    EDRLogger.w(TAG, "HTTP ${connection.responseCode} while fetching $fileName")
+                    EDRLogger.w(TAG, "HTTP ${connection.responseCode} while fetching $fileName from GitHub")
                 }
                 connection.disconnect()
             } catch (e: Exception) {
-                EDRLogger.w(TAG, "Network exception syncing $fileName from GitHub: ${e.message}")
+                EDRLogger.w(TAG, "Network exception syncing $fileName from GitHub single source of truth: ${e.message}")
             }
         }
 
-        EDRLogger.i(TAG, "syncSelectedRulesFromGithub: Downloaded $downloadedCount rules from GitHub CDN")
+        EDRLogger.i(TAG, "syncSelectedRulesFromGithub: Successfully updated $downloadedCount live rules from GitHub single source of truth")
         return@withContext loadLocalYamlRules()
     }
 
@@ -110,9 +183,6 @@ class RuleRepositoryImpl(
             candidateDirs.add(File(it, "rules"))
             candidateDirs.add(File(it, "custom_rules"))
         }
-        val projectRootDir = File("/Users/johnmelodyme/Documents/NezhaEDRAndroid")
-        candidateDirs.add(File(projectRootDir, "rules"))
-        candidateDirs.add(projectRootDir)
 
         var deletedFileCount = 0
         for (dir in candidateDirs) {
@@ -165,10 +235,6 @@ class RuleRepositoryImpl(
                 candidateDirs.add(File(it, "custom_rules"))
             }
 
-            val projectRootDir = File("/Users/johnmelodyme/Documents/NezhaEDRAndroid")
-            candidateDirs.add(File(projectRootDir, "rules"))
-            candidateDirs.add(projectRootDir)
-
             val yamlFiles = mutableListOf<File>()
             for (dir in candidateDirs) {
                 if (dir.exists() && dir.isDirectory) {
@@ -178,7 +244,7 @@ class RuleRepositoryImpl(
                 }
             }
 
-            EDRLogger.d(TAG, "loadLocalYamlRules: Found ${yamlFiles.size} candidate .yaml files")
+            EDRLogger.d(TAG, "loadLocalYamlRules: Found ${yamlFiles.size} candidate .yaml files in internal app storage")
 
             val parsedYamlRules = mutableListOf<DetectionRule>()
             for (file in yamlFiles.distinctBy { it.absolutePath }) {
@@ -196,8 +262,8 @@ class RuleRepositoryImpl(
                 val distinctRules = parsedYamlRules.distinctBy { it.id }
                 EDRLogger.i(TAG, "Successfully loaded ${distinctRules.size} distinct YAML rulesets")
                 DetectionRulePackage(
-                    version = "2.0.0-enterprise",
-                    updatedAt = "2026-03-01T20:00:00Z",
+                    version = "2.1.0-gitops",
+                    updatedAt = "2026-03-01T21:00:00Z",
                     rules = distinctRules
                 )
             } else {
@@ -216,13 +282,13 @@ class RuleRepositoryImpl(
     }
 
     private fun getLocalRulesDirectory(): File {
-        val dir = if (context != null) File(context.filesDir, "rules") else File("/Users/johnmelodyme/Documents/NezhaEDRAndroid/rules")
+        val dir = if (context != null) File(context.filesDir, "rules") else File("/tmp/nezha_rules")
         if (!dir.exists()) dir.mkdirs()
         return dir
     }
 
     private fun getCustomRulesDirectory(): File {
-        val dir = if (context != null) File(context.filesDir, "custom_rules") else File("/Users/johnmelodyme/Documents/NezhaEDRAndroid/rules")
+        val dir = if (context != null) File(context.filesDir, "custom_rules") else File("/tmp/nezha_custom_rules")
         if (!dir.exists()) dir.mkdirs()
         return dir
     }
@@ -347,6 +413,8 @@ class RuleRepositoryImpl(
 
     companion object {
         private const val TAG = "RuleRepository"
+        private const val GITHUB_RULES_TREE_URL = "https://github.com/ctkqiang/NezhaEDRAndroid/tree/main/rules"
+        private const val GITHUB_CONTENTS_API_URL = "https://api.github.com/repos/ctkqiang/NezhaEDRAndroid/contents/rules"
         private const val GITHUB_RULES_BASE_URL = "https://raw.githubusercontent.com/ctkqiang/NezhaEDRAndroid/main/rules"
     }
 }

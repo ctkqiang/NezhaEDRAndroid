@@ -82,13 +82,17 @@ class MainViewModel(
     }
 
     fun openSyncPickerDialog() {
-        val catalog = ruleRepository.getRemoteRuleCatalog()
-        _uiState.update {
-            it.copy(
-                showSyncPickerDialog = true,
-                availableRemoteCatalog = catalog,
-                selectedRemoteFilesToSync = catalog.map { item -> item.fileName }.toSet()
-            )
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSyncingRules = true) }
+            val catalog = ruleRepository.fetchRemoteGithubCatalog()
+            _uiState.update {
+                it.copy(
+                    showSyncPickerDialog = true,
+                    isSyncingRules = false,
+                    availableRemoteCatalog = catalog,
+                    selectedRemoteFilesToSync = catalog.map { item -> item.fileName }.toSet()
+                )
+            }
         }
     }
 

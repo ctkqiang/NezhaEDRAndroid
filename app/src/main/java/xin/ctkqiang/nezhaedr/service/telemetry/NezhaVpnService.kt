@@ -2,6 +2,7 @@ package xin.ctkqiang.nezhaedr.service.telemetry
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.VpnService
@@ -50,7 +51,7 @@ class NezhaVpnService : VpnService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 FOREGROUND_CHANNEL_ID,
-                "NezhaEDR Sentinel Background Service",
+                "NezhaCyberEDR Protection Service",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = "Background protection service monitoring endpoint network telemetry."
@@ -59,16 +60,31 @@ class NezhaVpnService : VpnService() {
             manager.createNotificationChannel(channel)
         }
 
+        val stopIntent = Intent(this, NezhaVpnService::class.java).apply {
+            action = ACTION_STOP_VPN
+        }
+        val stopPendingIntent = PendingIntent.getService(
+            this,
+            0,
+            stopIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val notification = NotificationCompat.Builder(this, FOREGROUND_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("NezhaEDR Protection Active")
+            .setContentTitle("NezhaCyberEDR Active")
             .setContentText("Monitoring endpoint telemetry and enforcing YAML threat rulesets.")
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
+            .addAction(
+                R.drawable.ic_launcher_foreground,
+                "Stop Protection",
+                stopPendingIntent
+            )
             .build()
 
         startForeground(FOREGROUND_NOTIFICATION_ID, notification)
-        EDRLogger.i(TAG, "startForegroundSentinel: EDR background service started with ongoing notification")
+        EDRLogger.i(TAG, "startForegroundSentinel: EDR background service started with ongoing notification & stop action")
     }
 
     private fun startVpn() {
@@ -81,7 +97,7 @@ class NezhaVpnService : VpnService() {
             EDRLogger.i(TAG, "startVpn: Resolving threat domains to captive IP routes")
 
             val builder = Builder()
-                .setSession("NezhaEDR-Sentinel")
+                .setSession("NezhaCyberEDR")
                 .setMtu(1500)
                 .addAddress("10.0.0.2", 32)
 

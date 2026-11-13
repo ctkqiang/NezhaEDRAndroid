@@ -94,20 +94,15 @@ class NezhaVpnService : VpnService() {
         }
 
         serviceScope.launch {
-            EDRLogger.i(TAG, "startVpn: Resolving threat domains to captive IP routes")
+            EDRLogger.i(TAG, "startVpn: Configuring network telemetry TUN interface")
 
             val builder = Builder()
                 .setSession("NezhaCyberEDR")
                 .setMtu(1500)
                 .addAddress("10.0.0.2", 32)
                 .addDnsServer("10.0.0.1")
-
-            // Direct static threat IP routes
-            val threatIps = mutableSetOf(
-                "192.0.2.1",
-                "198.51.100.14",
-                "203.0.113.55"
-            )
+                .addDnsServer("8.8.8.8")
+                .addRoute("0.0.0.0", 0)
 
             // Threat domains from rulesets to resolve into captive routes
             val threatDomains = listOf(
@@ -144,22 +139,17 @@ class NezhaVpnService : VpnService() {
                     for (addr in addresses) {
                         addr.hostAddress?.let { ip ->
                             if (!ip.contains(":")) {
-                                threatIps.add(ip)
-                                EDRLogger.d(TAG, "Resolved threat domain '$domain' -> IP $ip")
+                                try {
+                                    builder.addRoute(ip, 32)
+                                    EDRLogger.d(TAG, "Resolved threat domain '$domain' -> Added route $ip/32")
+                                } catch (e: Exception) {
+                                    EDRLogger.v(TAG, "Route $ip already covered or error: ${e.message}")
+                                }
                             }
                         }
                     }
                 } catch (e: Exception) {
-                    EDRLogger.v(TAG, "Domain resolution for '$domain' skipped or unresolvable: ${e.message}")
-                }
-            }
-
-            for (ip in threatIps) {
-                try {
-                    builder.addRoute(ip, 32)
-                    EDRLogger.d(TAG, "Added captive threat route: $ip/32")
-                } catch (e: Exception) {
-                    EDRLogger.w(TAG, "Failed to add route for IP $ip", e)
+                    EDRLogger.v(TAG, "Domain resolution for '$domain' skipped: ${e.message}")
                 }
             }
 
@@ -173,7 +163,7 @@ class NezhaVpnService : VpnService() {
             try {
                 vpnInterface = builder.establish()
                 _vpnState.value = true
-                EDRLogger.i(TAG, "NezhaVpnService established successfully with ${threatIps.size} captive threat routes")
+                EDRLogger.i(TAG, "NezhaVpnService established successfully with complete network telemetry routing")
                 startPacketInspection()
             } catch (e: Exception) {
                 EDRLogger.fatal(TAG, "Fatal failure establishing NezhaVpnService builder interface", e)
@@ -189,7 +179,7 @@ class NezhaVpnService : VpnService() {
             return
         }
 
-        EDRLogger.i(TAG, "Starting captive threat packet inspection loop on TUN descriptor")
+        EDRLogger.i(TAG, "Starting network packet inspection loop on TUN descriptor")
         serviceScope.launch {
             val input = FileInputStream(descriptor)
             val buffer = ByteArray(4096)
@@ -209,7 +199,7 @@ class NezhaVpnService : VpnService() {
                     if (destIp != null || dnsDomain != null) {
                         val targetIp = destIp ?: "10.0.0.1"
                         val domainName = dnsDomain ?: ""
-                        EDRLogger.w(TAG, "CAPTURED THREAT PACKET -> Target IP: '$targetIp', Domain: '$domainName'")
+                        EDRLogger.w(TAG, "CAPTURED TELEMETRY PACKET -> Target IP: '$targetIp', Domain: '$domainName'")
                         _telemetryFlow.emit(
                             TelemetryEvent.Network(
                                 destinationIp = targetIp,

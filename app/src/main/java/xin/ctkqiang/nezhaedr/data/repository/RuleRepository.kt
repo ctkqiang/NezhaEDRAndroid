@@ -1,20 +1,28 @@
 package xin.ctkqiang.nezhaedr.data.repository
 
+import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import xin.ctkqiang.nezhaedr.data.model.DetectionRule
 import xin.ctkqiang.nezhaedr.data.model.DetectionRulePackage
 import xin.ctkqiang.nezhaedr.data.parser.YamlRuleParser
 import xin.ctkqiang.nezhaedr.util.EDRLogger
 import java.io.File
+import java.net.HttpURLConnection
+import java.net.URL
 
 interface RuleRepository {
     suspend fun fetchRules(): Result<DetectionRulePackage>
+    suspend fun syncRulesFromGithub(): Result<DetectionRulePackage>
+    suspend fun importCustomYamlRule(yamlText: String, fileName: String): Result<DetectionRulePackage>
     fun getCachedRules(): DetectionRulePackage?
     fun saveRulesToCache(rulePackage: DetectionRulePackage)
     fun parseRulesJson(jsonString: String): DetectionRulePackage
 }
 
 class RuleRepositoryImpl(
+    private val context: Context? = null,
     private val json: Json = Json {
         ignoreUnknownKeys = true
         coerceInputValues = true
@@ -25,29 +33,99 @@ class RuleRepositoryImpl(
 
     override suspend fun fetchRules(): Result<DetectionRulePackage> {
         EDRLogger.i(TAG, "fetchRules: Initiating detection rules load process")
+        return loadLocalYamlRules()
+    }
+
+    override suspend fun syncRulesFromGithub(): Result<DetectionRulePackage> = withContext(Dispatchers.IO) {
+        EDRLogger.i(TAG, "syncRulesFromGithub: Synchronizing YAML rulesets from GitHub CDN")
+        val githubRawFiles = listOf(
+            "rule_001_c2_block.yaml",
+            "rule_002_ransomware_beacon.yaml",
+            "rule_003_adult_content_block.yaml",
+            "rule_004_rogue_package.yaml",
+            "rule_005_spyware_keylogger.yaml",
+            "rule_006_backdoor_service.yaml"
+        )
+
+        val localRulesDir = getLocalRulesDirectory()
+
+        var downloadedCount = 0
+        for (fileName in githubRawFiles) {
+            try {
+                val urlString = "$GITHUB_RULES_BASE_URL/$fileName"
+                EDRLogger.d(TAG, "Downloading rule from $urlString")
+                val url = URL(urlString)
+                val connection = url.openConnection() as HttpURLConnection
+                connection.connectTimeout = 5000
+                connection.readTimeout = 5000
+                connection.requestMethod = "GET"
+
+                if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                    val yamlText = connection.inputStream.bufferedReader().use { it.readText() }
+                    val destFile = File(localRulesDir, fileName)
+                    destFile.writeText(yamlText)
+                    downloadedCount++
+                    EDRLogger.i(TAG, "Successfully downloaded and saved $fileName locally")
+                } else {
+                    EDRLogger.w(TAG, "HTTP ${connection.responseCode} while fetching $fileName")
+                }
+                connection.disconnect()
+            } catch (e: Exception) {
+                EDRLogger.w(TAG, "Network exception syncing $fileName from GitHub: ${e.message}")
+            }
+        }
+
+        EDRLogger.i(TAG, "syncRulesFromGithub: Downloaded $downloadedCount rules from GitHub CDN")
+        return@withContext loadLocalYamlRules()
+    }
+
+    override suspend fun importCustomYamlRule(yamlText: String, fileName: String): Result<DetectionRulePackage> = withContext(Dispatchers.IO) {
+        EDRLogger.i(TAG, "importCustomYamlRule: Importing custom YAML rule '$fileName'")
+        return@withContext try {
+            val parsedRule = YamlRuleParser.parseYamlRule(yamlText)
+            if (parsedRule == null) {
+                EDRLogger.e(TAG, "Failed to parse custom YAML rule: invalid schema")
+                Result.failure(IllegalArgumentException("Invalid YAML rule format"))
+            } else {
+                val customDir = getCustomRulesDirectory()
+                val destFile = File(customDir, fileName.ifEmpty { "custom_${parsedRule.id}.yaml" })
+                destFile.writeText(yamlText)
+                EDRLogger.i(TAG, "Saved custom rule ${parsedRule.id} to ${destFile.absolutePath}")
+                loadLocalYamlRules()
+            }
+        } catch (e: Exception) {
+            EDRLogger.e(TAG, "Exception importing custom YAML rule", e)
+            Result.failure(e)
+        }
+    }
+
+    private fun loadLocalYamlRules(): Result<DetectionRulePackage> {
         return try {
-            val rootDir = File("/Users/johnmelodyme/Documents/NezhaEDRAndroid")
-            val rulesDir = File(rootDir, "rules")
+            val candidateDirs = mutableListOf<File>()
+
+            context?.filesDir?.let {
+                candidateDirs.add(File(it, "rules"))
+                candidateDirs.add(File(it, "custom_rules"))
+            }
+
+            val projectRootDir = File("/Users/johnmelodyme/Documents/NezhaEDRAndroid")
+            candidateDirs.add(File(projectRootDir, "rules"))
+            candidateDirs.add(projectRootDir)
 
             val yamlFiles = mutableListOf<File>()
-            if (rulesDir.exists() && rulesDir.isDirectory) {
-                EDRLogger.d(TAG, "Scanning rules directory: ${rulesDir.absolutePath}")
-                rulesDir.listFiles { _, name -> name.endsWith(".yaml", ignoreCase = true) }?.let {
-                    yamlFiles.addAll(it)
-                }
-            }
-            if (rootDir.exists() && rootDir.isDirectory) {
-                rootDir.listFiles { _, name -> name.endsWith(".yaml", ignoreCase = true) }?.let {
-                    yamlFiles.addAll(it)
+            for (dir in candidateDirs) {
+                if (dir.exists() && dir.isDirectory) {
+                    dir.listFiles { _, name -> name.endsWith(".yaml", ignoreCase = true) || name.endsWith(".yml", ignoreCase = true) }?.let {
+                        yamlFiles.addAll(it)
+                    }
                 }
             }
 
-            EDRLogger.d(TAG, "Found ${yamlFiles.size} candidate .yaml rule files")
+            EDRLogger.d(TAG, "loadLocalYamlRules: Found ${yamlFiles.size} candidate .yaml files")
 
             val parsedYamlRules = mutableListOf<DetectionRule>()
-            for (file in yamlFiles) {
+            for (file in yamlFiles.distinctBy { it.absolutePath }) {
                 try {
-                    EDRLogger.v(TAG, "Reading YAML file: ${file.name}")
                     val rule = YamlRuleParser.parseYamlRule(file.readText())
                     if (rule != null) {
                         parsedYamlRules.add(rule)
@@ -58,42 +136,46 @@ class RuleRepositoryImpl(
             }
 
             val rulePackage = if (parsedYamlRules.isNotEmpty()) {
-                EDRLogger.i(TAG, "Successfully loaded ${parsedYamlRules.size} rules from YAML files")
+                val distinctRules = parsedYamlRules.distinctBy { it.id }
+                EDRLogger.i(TAG, "Successfully loaded ${distinctRules.size} distinct YAML rulesets")
                 DetectionRulePackage(
-                    version = "1.4.0-yaml",
-                    updatedAt = "2026-03-01T16:00:00Z",
-                    rules = parsedYamlRules.distinctBy { it.id }
+                    version = "1.5.0-gitops",
+                    updatedAt = "2026-03-01T18:00:00Z",
+                    rules = distinctRules
                 )
             } else {
-                EDRLogger.w(TAG, "No YAML rules found. Checking fallback rules.json")
-                val jsonFile = File(rootDir, "rules.json")
-                if (jsonFile.exists() && jsonFile.canRead()) {
-                    EDRLogger.d(TAG, "Parsing rules from ${jsonFile.absolutePath}")
-                    parseRulesJson(jsonFile.readText())
-                } else {
-                    EDRLogger.w(TAG, "rules.json not found or unreadable; using embedded fallback ruleset")
-                    getEmbeddedDefaultRules()
-                }
+                EDRLogger.w(TAG, "No local YAML rules found; falling back to embedded default rules")
+                getEmbeddedDefaultRules()
             }
 
             cachedRules = rulePackage
             Result.success(rulePackage)
         } catch (e: Exception) {
-            EDRLogger.e(TAG, "Failed to fetch rules package, reverting to embedded default ruleset", e)
+            EDRLogger.e(TAG, "Exception loading local YAML rules, falling back to embedded default", e)
             val fallback = getEmbeddedDefaultRules()
             cachedRules = fallback
             Result.success(fallback)
         }
     }
 
+    private fun getLocalRulesDirectory(): File {
+        val dir = if (context != null) File(context.filesDir, "rules") else File("/Users/johnmelodyme/Documents/NezhaEDRAndroid/rules")
+        if (!dir.exists()) dir.mkdirs()
+        return dir
+    }
+
+    private fun getCustomRulesDirectory(): File {
+        val dir = if (context != null) File(context.filesDir, "custom_rules") else File("/Users/johnmelodyme/Documents/NezhaEDRAndroid/rules")
+        if (!dir.exists()) dir.mkdirs()
+        return dir
+    }
+
     override fun getCachedRules(): DetectionRulePackage? {
         val rules = cachedRules ?: getEmbeddedDefaultRules()
-        EDRLogger.d(TAG, "getCachedRules: returning package version ${rules.version} with ${rules.rules.size} rules")
         return rules
     }
 
     override fun saveRulesToCache(rulePackage: DetectionRulePackage) {
-        EDRLogger.d(TAG, "saveRulesToCache: caching rule package version ${rulePackage.version}")
         cachedRules = rulePackage
     }
 
@@ -101,13 +183,11 @@ class RuleRepositoryImpl(
         return try {
             json.decodeFromString(jsonString)
         } catch (e: Exception) {
-            EDRLogger.e(TAG, "parseRulesJson: JSON parsing error", e)
             getEmbeddedDefaultRules()
         }
     }
 
     private fun getEmbeddedDefaultRules(): DetectionRulePackage {
-        EDRLogger.i(TAG, "getEmbeddedDefaultRules: Constructing embedded emergency ruleset")
         val defaultJson = """
         {
           "version": "1.3.0",
@@ -210,5 +290,6 @@ class RuleRepositoryImpl(
 
     companion object {
         private const val TAG = "RuleRepository"
+        private const val GITHUB_RULES_BASE_URL = "https://raw.githubusercontent.com/ctkqiang/NezhaEDRAndroid/main/rules"
     }
 }

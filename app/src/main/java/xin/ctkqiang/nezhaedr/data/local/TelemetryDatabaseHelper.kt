@@ -115,6 +115,60 @@ class TelemetryDatabaseHelper(context: Context) :
         return records
     }
 
+    fun getBlockedThreatAttemptsCount(): Int {
+        val db = readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT COUNT(*) FROM $TABLE_VISITED_SITES WHERE $COLUMN_IS_THREAT = 1",
+            null
+        )
+        cursor.use {
+            if (it.moveToFirst()) {
+                return it.getInt(0)
+            }
+        }
+        return 0
+    }
+
+    fun getBlockedThreatAttempts(): List<VisitedSiteRecord> {
+        val records = mutableListOf<VisitedSiteRecord>()
+        val db = readableDatabase
+        val cursor = db.query(
+            TABLE_VISITED_SITES,
+            null,
+            "$COLUMN_IS_THREAT = 1",
+            null,
+            null,
+            null,
+            "$COLUMN_TIMESTAMP DESC"
+        )
+        cursor.use { c ->
+            val idIdx = c.getColumnIndexOrThrow(COLUMN_ID)
+            val timeIdx = c.getColumnIndexOrThrow(COLUMN_TIMESTAMP)
+            val ipIdx = c.getColumnIndexOrThrow(COLUMN_DEST_IP)
+            val domainIdx = c.getColumnIndexOrThrow(COLUMN_DOMAIN)
+            val protoIdx = c.getColumnIndexOrThrow(COLUMN_PROTOCOL)
+            val threatIdx = c.getColumnIndexOrThrow(COLUMN_IS_THREAT)
+            val appIdx = c.getColumnIndexOrThrow(COLUMN_APP_NAME)
+            val pkgIdx = c.getColumnIndexOrThrow(COLUMN_PACKAGE_NAME)
+
+            while (c.moveToNext()) {
+                records.add(
+                    VisitedSiteRecord(
+                        id = c.getLong(idIdx),
+                        timestamp = c.getLong(timeIdx),
+                        destinationIp = c.getString(ipIdx) ?: "",
+                        domain = c.getString(domainIdx) ?: "",
+                        protocol = c.getString(protoIdx) ?: "IPv4",
+                        isThreat = c.getInt(threatIdx) == 1,
+                        appName = c.getString(appIdx) ?: "Unknown Application",
+                        packageName = c.getString(pkgIdx) ?: ""
+                    )
+                )
+            }
+        }
+        return records
+    }
+
     fun clearAllVisitedSites(): Int {
         EDRLogger.w(TAG, "clearAllVisitedSites: Clearing all SQLite records")
         val db = writableDatabase

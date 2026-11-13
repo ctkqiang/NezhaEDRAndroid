@@ -27,6 +27,7 @@
     <string name="active_rules_count">Active Rulesets</string>
     <string name="total_threats_blocked">Threats Contained</string>
     <string name="visited_sites_count">Visited Sites Logged</string>
+    <string name="blocked_attempts_count">Blocked Banned Attempts</string>
     <string name="threat_activity_graph">Real-Time Telemetry Analytics</string>
 
     <!-- Dashboard Widget Phrasing -->
@@ -39,6 +40,9 @@
     <string name="vector_package">Package Installation Sensor</string>
     <string name="vector_engine">YAML Rules Engine</string>
     <string name="vector_status_active">Active</string>
+    <string name="falcon_trail_title">CrowdStrike Falcon Intercept Trail</string>
+    <string name="filter_all">All History</string>
+    <string name="filter_blocked">Blocked Only</string>
 
     <!-- Settings Screen Phrasing -->
     <string name="settings_header_title">Application Preferences</string>

@@ -27,6 +27,7 @@
     <string name="active_rules_count">已加载规则数</string>
     <string name="total_threats_blocked">已拦截威胁数</string>
     <string name="visited_sites_count">本地记录访问数</string>
+    <string name="blocked_attempts_count">已拦截违禁访问尝试</string>
     <string name="threat_activity_graph">实时遥测与威胁活动趋势</string>
 
     <!-- Dashboard Widget Phrasing -->
@@ -39,6 +40,9 @@
     <string name="vector_package">应用安装监控感知</string>
     <string name="vector_engine">YAML 规则评估引擎</string>
     <string name="vector_status_active">已激活</string>
+    <string name="falcon_trail_title">Falcon 威胁拦截审计轨迹</string>
+    <string name="filter_all">全部遥测历史</string>
+    <string name="filter_blocked">仅显示已被阻断</string>
 
     <!-- Settings Screen Phrasing -->
     <string name="settings_header_title">偏好设置</string>

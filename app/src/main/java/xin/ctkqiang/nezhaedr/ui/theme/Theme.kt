@@ -1,66 +1,51 @@
 package xin.ctkqiang.nezhaedr.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-
-// Red Theme (Default)
-private val RedLightColorScheme = lightColorScheme(
-    primary = RedPrimaryLight,
-    secondary = RedSecondaryLight,
-    tertiary = RedTertiaryLight,
-    primaryContainer = RedContainerLight
-)
 
 private val RedDarkColorScheme = darkColorScheme(
     primary = RedPrimaryDark,
     secondary = RedSecondaryDark,
     tertiary = RedTertiaryDark,
-    primaryContainer = RedContainerDark
-)
-
-// Blue Theme
-private val BlueLightColorScheme = lightColorScheme(
-    primary = BluePrimaryLight,
-    secondary = BlueSecondaryLight,
-    tertiary = BlueTertiaryLight,
-    primaryContainer = BlueContainerLight
+    background = GlassObsidianBackground,
+    surface = GlassObsidianBackground,
+    surfaceVariant = GlassCardSurface,
+    primaryContainer = RedContainerDark,
+    outline = GlassSpecularBorder
 )
 
 private val BlueDarkColorScheme = darkColorScheme(
     primary = BluePrimaryDark,
     secondary = BlueSecondaryDark,
     tertiary = BlueTertiaryDark,
-    primaryContainer = BlueContainerDark
-)
-
-// Pink Theme
-private val PinkLightColorScheme = lightColorScheme(
-    primary = PinkPrimaryLight,
-    secondary = PinkSecondaryLight,
-    tertiary = PinkTertiaryLight,
-    primaryContainer = PinkContainerLight
+    background = GlassObsidianBackground,
+    surface = GlassObsidianBackground,
+    surfaceVariant = GlassCardSurface,
+    primaryContainer = BlueContainerDark,
+    outline = GlassSpecularBorder
 )
 
 private val PinkDarkColorScheme = darkColorScheme(
     primary = PinkPrimaryDark,
     secondary = PinkSecondaryDark,
     tertiary = PinkTertiaryDark,
-    primaryContainer = PinkContainerDark
+    background = GlassObsidianBackground,
+    surface = GlassObsidianBackground,
+    surfaceVariant = GlassCardSurface,
+    primaryContainer = PinkContainerDark,
+    outline = GlassSpecularBorder
 )
 
 @Composable
 fun NezhaEDRTheme(
     appTheme: AppThemeMode = AppThemeMode.RED,
-    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     val colorScheme = when (appTheme) {
-        AppThemeMode.RED -> if (darkTheme) RedDarkColorScheme else RedLightColorScheme
-        AppThemeMode.BLUE -> if (darkTheme) BlueDarkColorScheme else BlueLightColorScheme
-        AppThemeMode.PINK -> if (darkTheme) PinkDarkColorScheme else PinkLightColorScheme
+        AppThemeMode.RED -> RedDarkColorScheme
+        AppThemeMode.BLUE -> BlueDarkColorScheme
+        AppThemeMode.PINK -> PinkDarkColorScheme
     }
 
     MaterialTheme(

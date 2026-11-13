@@ -1,16 +1,16 @@
 <resources>
-    <string name="app_name">哪吒EDR</string>
-    <string name="notification_channel_name">哪吒EDR 威胁告警</string>
+    <string name="app_name">哪吒网络安全EDR</string>
+    <string name="notification_channel_name">哪吒网络安全EDR 威胁告警</string>
     <string name="notification_channel_description">针对检测到的 EDR 安全威胁及处置动作的通知。</string>
-    <string name="threat_detected_title">EDR 威胁阻断告警: %1$s</string>
-    <string name="threat_detected_body">应用 %1$s 已被哪吒EDR 阻止访问目标 %2$s。</string>
+    <string name="threat_detected_title">哪吒网络安全EDR 威胁阻断告警: %1$s</string>
+    <string name="threat_detected_body">应用 %1$s 已被哪吒网络安全EDR 阻止访问目标 %2$s。</string>
 
     <string name="nav_dashboard">控制台</string>
-    <string name="nav_rules">检测规则库</string>
-    <string name="nav_threats">威胁告警</string>
-    <string name="nav_history">遥测历史</string>
+    <string name="nav_rules">规则库</string>
+    <string name="nav_threats">告警</string>
+    <string name="nav_history">遥测保险库</string>
 
-    <string name="edr_dashboard_title">哪吒EDR 终端防护</string>
+    <string name="edr_dashboard_title">哪吒网络安全EDR 终端防护</string>
     <string name="vpn_service_status">网络遥测防护服务</string>
     <string name="vpn_status_active">正在实时监控与防护</string>
     <string name="vpn_status_inactive">防护未开启</string>
@@ -22,18 +22,20 @@
     <string name="visited_sites_count">本地记录访问数</string>
     <string name="threat_activity_graph">实时遥测与威胁活动趋势</string>
     <string name="contribute_rules_title">贡献 YAML 规则至开源社区</string>
-    <string name="contribute_rules_desc">提交声明式 YAML 规则至哪吒EDR 代码库。</string>
+    <string name="contribute_rules_desc">提交声明式 YAML 规则至哪吒网络安全EDR 代码库。</string>
     <string name="btn_contribute">前往 GitHub 贡献 YAML</string>
 
     <!-- Open Source Privacy Disclaimer -->
     <string name="privacy_disclaimer_title">开源与隐私声明</string>
-    <string name="privacy_disclaimer_body">哪吒EDR 为开源软件，绝不收集或上传任何用户数据至远程服务器。所有网络遥测、访问站点记录和威胁日志均严格保存在您设备本地的 SQLite 数据库中。您拥有完全的控制权，随时可以导出或彻底删除本地数据。</string>
+    <string name="privacy_disclaimer_body">哪吒网络安全EDR 为开源软件，绝不收集或上传任何用户数据至远程服务器。所有网络遥测、访问站点记录和威胁日志均严格保存在您设备本地的 SQLite 数据库中。您拥有完全的控制权，随时可以导出或彻底删除本地数据。</string>
 
     <!-- SQLite Visited Sites & Actions -->
     <string name="visited_sites_header">SQLite 本地遥测访问历史</string>
     <string name="btn_export_data">导出 YAML</string>
     <string name="btn_export_csv">导出 CSV</string>
     <string name="btn_clear_data">清空本地历史</string>
+    <string name="btn_import_rule">导入 YAML 规则</string>
+    <string name="btn_sync_github">同步 GitHub 规则库</string>
     <string name="confirm_clear_title">确认删除本地数据？</string>
     <string name="confirm_clear_body">您确定要彻底删除保存在本地 SQLite 数据库中的所有访问记录吗？</string>
     <string name="no_history_recorded">暂无本地访问历史记录。</string>
@@ -52,7 +54,7 @@
 
     <!-- Threat Alert Popup Dialog -->
     <string name="threat_alert_popup_title">触发安全处置阻断</string>
-    <string name="threat_alert_popup_body">哪吒EDR 已依据规则 %2$s (%3$s) 阻断应用 \"%1$s\" 的风险行为。\n\n详细信息: %4$s</string>
+    <string name="threat_alert_popup_body">哪吒网络安全EDR 已依据规则 %2$s (%3$s) 阻断应用 \"%1$s\" 的风险行为。\n\n详细信息: %4$s</string>
 
     <string name="threat_logs_title">威胁阻断告警记录</string>
     <string name="no_threats_detected">暂未检测到安全威胁，终端状态安全。</string>

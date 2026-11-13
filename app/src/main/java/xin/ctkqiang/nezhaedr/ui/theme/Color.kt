@@ -2,10 +2,41 @@ package xin.ctkqiang.nezhaedr.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+enum class AppThemeMode {
+    RED,
+    BLUE,
+    PINK
+}
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Red Theme Palette (Default)
+val RedPrimaryLight = Color(0xFFD32F2F)
+val RedSecondaryLight = Color(0xFFC62828)
+val RedTertiaryLight = Color(0xFFE53935)
+val RedContainerLight = Color(0xFFFFEBEE)
+
+val RedPrimaryDark = Color(0xFFFF6666)
+val RedSecondaryDark = Color(0xFFEF9A9A)
+val RedTertiaryDark = Color(0xFFFF8A80)
+val RedContainerDark = Color(0xFF4A0000)
+
+// Blue Theme Palette
+val BluePrimaryLight = Color(0xFF0288D1)
+val BlueSecondaryLight = Color(0xFF0277BD)
+val BlueTertiaryLight = Color(0xFF039BE5)
+val BlueContainerLight = Color(0xFFE1F5FE)
+
+val BluePrimaryDark = Color(0xFF4FC3F7)
+val BlueSecondaryDark = Color(0xFF81D4FA)
+val BlueTertiaryDark = Color(0xFF80D8FF)
+val BlueContainerDark = Color(0xFF003656)
+
+// Pink Theme Palette
+val PinkPrimaryLight = Color(0xFFD81B60)
+val PinkSecondaryLight = Color(0xFFC2185B)
+val PinkTertiaryLight = Color(0xFFE91E63)
+val PinkContainerLight = Color(0xFFFCE4EC)
+
+val PinkPrimaryDark = Color(0xFFF48FB1)
+val PinkSecondaryDark = Color(0xFFF8BBD0)
+val PinkTertiaryDark = Color(0xFFFF80AB)
+val PinkContainerDark = Color(0xFF4A0025)

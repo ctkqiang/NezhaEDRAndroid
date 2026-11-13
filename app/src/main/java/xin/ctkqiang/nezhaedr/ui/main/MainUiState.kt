@@ -4,6 +4,7 @@ import xin.ctkqiang.nezhaedr.containment.ThreatLogEntry
 import xin.ctkqiang.nezhaedr.data.local.VisitedSiteRecord
 import xin.ctkqiang.nezhaedr.data.model.DetectionRule
 import xin.ctkqiang.nezhaedr.data.model.DetectionRulePackage
+import xin.ctkqiang.nezhaedr.ui.theme.AppThemeMode
 
 data class MainUiState(
     val isVpnActive: Boolean = false,
@@ -12,6 +13,8 @@ data class MainUiState(
     val visitedSites: List<VisitedSiteRecord> = emptyList(),
     val selectedRule: DetectionRule? = null,
     val activeThreatPopup: ThreatLogEntry? = null,
+    val appTheme: AppThemeMode = AppThemeMode.RED,
     val selectedTab: Int = 0,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isSyncingRules: Boolean = false
 )

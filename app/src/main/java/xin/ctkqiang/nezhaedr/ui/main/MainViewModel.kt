@@ -1,6 +1,8 @@
 package xin.ctkqiang.nezhaedr.ui.main
 
 import android.app.Application
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -20,17 +22,25 @@ import xin.ctkqiang.nezhaedr.data.repository.RuleRepositoryImpl
 import xin.ctkqiang.nezhaedr.engine.EDREvaluationEngine
 import xin.ctkqiang.nezhaedr.service.telemetry.NezhaVpnService
 import xin.ctkqiang.nezhaedr.service.telemetry.PackageTelemetryReceiver
+import xin.ctkqiang.nezhaedr.ui.theme.AppThemeMode
 import xin.ctkqiang.nezhaedr.util.EDRLogger
 
 class MainViewModel(
     application: Application,
-    private val ruleRepository: RuleRepository = RuleRepositoryImpl(),
+    private val ruleRepository: RuleRepository = RuleRepositoryImpl(application),
     private val evaluationEngine: EDREvaluationEngine = EDREvaluationEngine(),
     private val containmentManager: ContainmentManager = ContainmentManager(application),
     private val dbHelper: TelemetryDatabaseHelper = TelemetryDatabaseHelper(application)
 ) : AndroidViewModel(application) {
 
-    private val _uiState = MutableStateFlow(MainUiState(isLoading = true))
+    private val prefs = application.getSharedPreferences("nezha_edr_prefs", Context.MODE_PRIVATE)
+
+    private val _uiState = MutableStateFlow(
+        MainUiState(
+            isLoading = true,
+            appTheme = loadSavedTheme()
+        )
+    )
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
     init {
@@ -40,6 +50,21 @@ class MainViewModel(
         observeThreatLogs()
         loadRules()
         loadVisitedSitesFromDb()
+    }
+
+    fun setAppTheme(theme: AppThemeMode) {
+        EDRLogger.i(TAG, "setAppTheme: Changing app theme mode to $theme")
+        prefs.edit().putString("app_theme_mode", theme.name).apply()
+        _uiState.update { it.copy(appTheme = theme) }
+    }
+
+    private fun loadSavedTheme(): AppThemeMode {
+        val savedName = prefs.getString("app_theme_mode", AppThemeMode.RED.name)
+        return try {
+            AppThemeMode.valueOf(savedName ?: AppThemeMode.RED.name)
+        } catch (e: Exception) {
+            AppThemeMode.RED
+        }
     }
 
     fun selectTab(tabIndex: Int) {
@@ -54,6 +79,54 @@ class MainViewModel(
 
     fun dismissThreatPopup() {
         _uiState.update { it.copy(activeThreatPopup = null) }
+    }
+
+    fun syncRulesFromGithub(onComplete: (Boolean) -> Unit = {}) {
+        EDRLogger.i(TAG, "syncRulesFromGithub: User triggered GitHub YAML ruleset synchronization")
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSyncingRules = true) }
+            val result = ruleRepository.syncRulesFromGithub()
+            result.getOrNull()?.let { rules ->
+                evaluationEngine.updateRules(rules)
+                _uiState.update { it.copy(rulePackage = rules, isSyncingRules = false) }
+                EDRLogger.i(TAG, "syncRulesFromGithub: Successfully synced ${rules.rules.size} rules")
+                onComplete(true)
+            } ?: run {
+                EDRLogger.e(TAG, "syncRulesFromGithub: Sync failed")
+                _uiState.update { it.copy(isSyncingRules = false) }
+                onComplete(false)
+            }
+        }
+    }
+
+    fun importCustomYamlRule(uri: Uri, onComplete: (Boolean) -> Unit = {}) {
+        EDRLogger.i(TAG, "importCustomYamlRule: Importing YAML rule from Uri $uri")
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val content = getApplication<Application>().contentResolver.openInputStream(uri)?.use {
+                    it.bufferedReader().readText()
+                }
+                if (content.isNullOrEmpty()) {
+                    EDRLogger.e(TAG, "importCustomYamlRule: Content stream empty")
+                    withContext(Dispatchers.Main) { onComplete(false) }
+                    return@launch
+                }
+
+                val fileName = uri.lastPathSegment ?: "custom_rule.yaml"
+                val result = ruleRepository.importCustomYamlRule(content, fileName)
+                withContext(Dispatchers.Main) {
+                    result.getOrNull()?.let { rules ->
+                        evaluationEngine.updateRules(rules)
+                        _uiState.update { it.copy(rulePackage = rules) }
+                        EDRLogger.i(TAG, "importCustomYamlRule: Imported rule, total rules: ${rules.rules.size}")
+                        onComplete(true)
+                    } ?: onComplete(false)
+                }
+            } catch (e: Exception) {
+                EDRLogger.e(TAG, "Exception reading custom YAML file Uri", e)
+                withContext(Dispatchers.Main) { onComplete(false) }
+            }
+        }
     }
 
     fun clearLocalTelemetryData() {

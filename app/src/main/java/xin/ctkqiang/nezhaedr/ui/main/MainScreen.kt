@@ -10,6 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -38,10 +39,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -64,6 +66,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -84,12 +87,13 @@ import xin.ctkqiang.nezhaedr.containment.ThreatLogEntry
 import xin.ctkqiang.nezhaedr.data.local.VisitedSiteRecord
 import xin.ctkqiang.nezhaedr.data.model.DetectionRule
 import xin.ctkqiang.nezhaedr.service.telemetry.NezhaVpnService
+import xin.ctkqiang.nezhaedr.ui.theme.AppThemeMode
 import xin.ctkqiang.nezhaedr.ui.theme.NezhaEDRTheme
 import xin.ctkqiang.nezhaedr.util.EDRLogger
 import kotlin.math.sin
 
 private const val TAG = "MainScreenUI"
-private const val CONTRIBUTOR_GITHUB_URL = "https://github.com/placeholder/NezhaEDR-rules"
+private const val CONTRIBUTOR_GITHUB_URL = "https://github.com/ctkqiang/NezhaEDRAndroid"
 
 @Composable
 fun MainScreen(
@@ -117,58 +121,87 @@ fun MainScreen(
         }
     }
 
-    MainScreenContent(
-        uiState = uiState,
-        onSelectTab = { tab ->
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            viewModel.selectTab(tab)
-        },
-        onSelectRule = { rule ->
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            viewModel.selectRule(rule)
-        },
-        onDismissThreatPopup = { viewModel.dismissThreatPopup() },
-        onClearData = {
+    val customYamlPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            viewModel.clearLocalTelemetryData()
-            Toast.makeText(context, context.resources.getString(R.string.data_cleared_toast), Toast.LENGTH_SHORT).show()
-        },
-        onExportYaml = {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            val yamlExport = viewModel.exportTelemetryDataYaml()
-            shareExportData(context, yamlExport, "text/yaml", context.resources.getString(R.string.btn_export_data))
-        },
-        onExportCsv = {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            val csvExport = viewModel.exportTelemetryDataCsv()
-            shareExportData(context, csvExport, "text/csv", context.resources.getString(R.string.btn_export_csv))
-        },
-        onToggleVpn = {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            if (uiState.isVpnActive) {
-                val intent = Intent(context, NezhaVpnService::class.java).apply {
-                    action = NezhaVpnService.ACTION_STOP_VPN
+            viewModel.importCustomYamlRule(it) { success ->
+                val msg = if (success) "Custom YAML rule imported successfully!" else "Failed to import custom rule"
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    NezhaEDRTheme(appTheme = uiState.appTheme) {
+        MainScreenContent(
+            uiState = uiState,
+            onSelectTab = { tab ->
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                viewModel.selectTab(tab)
+            },
+            onSelectRule = { rule ->
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                viewModel.selectRule(rule)
+            },
+            onDismissThreatPopup = { viewModel.dismissThreatPopup() },
+            onSyncRules = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                viewModel.syncRulesFromGithub { success ->
+                    val msg = if (success) "Rules synchronized from GitHub CDN!" else "Failed to sync rules from GitHub"
+                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                 }
-                context.startService(intent)
-            } else {
-                val prepareIntent = VpnService.prepare(context)
-                if (prepareIntent != null) {
-                    vpnPrepareLauncher.launch(prepareIntent)
-                } else {
+            },
+            onImportRuleClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                customYamlPickerLauncher.launch("*/*")
+            },
+            onSelectTheme = { theme ->
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                viewModel.setAppTheme(theme)
+            },
+            onClearData = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                viewModel.clearLocalTelemetryData()
+                Toast.makeText(context, context.resources.getString(R.string.data_cleared_toast), Toast.LENGTH_SHORT).show()
+            },
+            onExportYaml = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                val yamlExport = viewModel.exportTelemetryDataYaml()
+                shareExportData(context, yamlExport, "text/yaml", context.resources.getString(R.string.btn_export_data))
+            },
+            onExportCsv = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                val csvExport = viewModel.exportTelemetryDataCsv()
+                shareExportData(context, csvExport, "text/csv", context.resources.getString(R.string.btn_export_csv))
+            },
+            onToggleVpn = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                if (uiState.isVpnActive) {
                     val intent = Intent(context, NezhaVpnService::class.java).apply {
-                        action = NezhaVpnService.ACTION_START_VPN
+                        action = NezhaVpnService.ACTION_STOP_VPN
                     }
                     context.startService(intent)
+                } else {
+                    val prepareIntent = VpnService.prepare(context)
+                    if (prepareIntent != null) {
+                        vpnPrepareLauncher.launch(prepareIntent)
+                    } else {
+                        val intent = Intent(context, NezhaVpnService::class.java).apply {
+                            action = NezhaVpnService.ACTION_START_VPN
+                        }
+                        context.startService(intent)
+                    }
                 }
-            }
-        },
-        onOpenContributeLink = {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(CONTRIBUTOR_GITHUB_URL))
-            context.startActivity(intent)
-        },
-        modifier = modifier
-    )
+            },
+            onOpenContributeLink = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(CONTRIBUTOR_GITHUB_URL))
+                context.startActivity(intent)
+            },
+            modifier = modifier
+        )
+    }
 }
 
 private fun shareExportData(context: Context, textContent: String, mimeType: String, title: String) {
@@ -188,6 +221,9 @@ fun MainScreenContent(
     onSelectTab: (Int) -> Unit = {},
     onSelectRule: (DetectionRule?) -> Unit = {},
     onDismissThreatPopup: () -> Unit = {},
+    onSyncRules: () -> Unit = {},
+    onImportRuleClick: () -> Unit = {},
+    onSelectTheme: (AppThemeMode) -> Unit = {},
     onClearData: () -> Unit = {},
     onExportYaml: () -> Unit = {},
     onExportCsv: () -> Unit = {},
@@ -196,6 +232,17 @@ fun MainScreenContent(
     modifier: Modifier = Modifier
 ) {
     var showClearDialog by remember { mutableStateOf(false) }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "SyncRotation")
+    val rotationAngle by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "RotationAngle"
+    )
 
     Scaffold(
         topBar = {
@@ -214,6 +261,16 @@ fun MainScreenContent(
                             text = stringResource(id = R.string.edr_dashboard_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onSyncRules) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_refresh),
+                            contentDescription = "Sync Rules",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.rotate(if (uiState.isSyncingRules) rotationAngle else 0f)
                         )
                     }
                 },
@@ -338,11 +395,13 @@ fun MainScreenContent(
                         0 -> MinimalistDashboardTab(
                             uiState = uiState,
                             onToggleVpn = onToggleVpn,
+                            onSelectTheme = onSelectTheme,
                             onOpenContributeLink = onOpenContributeLink
                         )
                         1 -> RulesTabContent(
                             uiState = uiState,
-                            onSelectRule = onSelectRule
+                            onSelectRule = onSelectRule,
+                            onImportRuleClick = onImportRuleClick
                         )
                         2 -> ThreatLogsTabContent(uiState = uiState)
                         3 -> HistoryTabContent(
@@ -437,6 +496,7 @@ fun ThreatAlertPopupDialog(
 fun MinimalistDashboardTab(
     uiState: MainUiState,
     onToggleVpn: () -> Unit,
+    onSelectTheme: (AppThemeMode) -> Unit,
     onOpenContributeLink: () -> Unit
 ) {
     Column(
@@ -457,7 +517,7 @@ fun MinimalistDashboardTab(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = if (uiState.isVpnActive) "NezhaEDR Sentinel Active" else "Tap button to activate EDR sentinel",
+                text = if (uiState.isVpnActive) "NezhaCyberEDR Active" else "Tap button to activate NezhaCyberEDR",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -467,6 +527,44 @@ fun MinimalistDashboardTab(
             isActive = uiState.isVpnActive,
             onClick = onToggleVpn
         )
+
+        // Enterprise Theme Palette Switcher
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Theme Palette",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    FilterChip(
+                        selected = uiState.appTheme == AppThemeMode.RED,
+                        onClick = { onSelectTheme(AppThemeMode.RED) },
+                        label = { Text("Red", style = MaterialTheme.typography.labelSmall) }
+                    )
+                    FilterChip(
+                        selected = uiState.appTheme == AppThemeMode.BLUE,
+                        onClick = { onSelectTheme(AppThemeMode.BLUE) },
+                        label = { Text("Blue", style = MaterialTheme.typography.labelSmall) }
+                    )
+                    FilterChip(
+                        selected = uiState.appTheme == AppThemeMode.PINK,
+                        onClick = { onSelectTheme(AppThemeMode.PINK) },
+                        label = { Text("Pink", style = MaterialTheme.typography.labelSmall) }
+                    )
+                }
+            }
+        }
 
         Surface(
             shape = RoundedCornerShape(24.dp),
@@ -732,7 +830,8 @@ fun SaaS2026TelemetryWave(
 @Composable
 fun RulesTabContent(
     uiState: MainUiState,
-    onSelectRule: (DetectionRule) -> Unit
+    onSelectRule: (DetectionRule) -> Unit,
+    onImportRuleClick: () -> Unit
 ) {
     val rules = uiState.rulePackage?.rules ?: emptyList()
 
@@ -741,11 +840,32 @@ fun RulesTabContent(
             .fillMaxSize()
             .padding(20.dp)
     ) {
-        Text(
-            text = stringResource(id = R.string.rules_header_title),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(id = R.string.rules_header_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Button(
+                    onClick = onImportRuleClick,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_add),
+                        contentDescription = "Import Rule",
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = stringResource(id = R.string.btn_import_rule), style = MaterialTheme.typography.labelSmall)
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.height(12.dp))
 
         if (rules.isEmpty()) {

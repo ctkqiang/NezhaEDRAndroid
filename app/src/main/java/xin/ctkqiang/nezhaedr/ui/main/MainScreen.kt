@@ -8,7 +8,15 @@ import android.net.VpnService
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,15 +27,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -35,9 +46,13 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,13 +61,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import xin.ctkqiang.nezhaedr.R
 import xin.ctkqiang.nezhaedr.containment.SIEMThreatLog
@@ -60,7 +82,10 @@ import xin.ctkqiang.nezhaedr.data.local.VisitedSiteRecord
 import xin.ctkqiang.nezhaedr.data.model.DetectionRule
 import xin.ctkqiang.nezhaedr.service.telemetry.NezhaVpnService
 import xin.ctkqiang.nezhaedr.ui.theme.NezhaEDRTheme
+import xin.ctkqiang.nezhaedr.util.EDRLogger
+import kotlin.math.sin
 
+private const val TAG = "MainScreenUI"
 private const val CONTRIBUTOR_GITHUB_URL = "https://github.com/placeholder/NezhaEDR-rules"
 
 @Composable
@@ -72,31 +97,50 @@ fun MainScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
 
     val vpnPrepareLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
+            EDRLogger.i(TAG, "VPN permission granted -> launching NezhaVpnService")
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             val intent = Intent(context, NezhaVpnService::class.java).apply {
                 action = NezhaVpnService.ACTION_START_VPN
             }
             context.startService(intent)
+        } else {
+            EDRLogger.w(TAG, "VPN permission denied by user")
         }
     }
 
     MainScreenContent(
         uiState = uiState,
-        onSelectTab = { tab -> viewModel.selectTab(tab) },
-        onSelectRule = { rule -> viewModel.selectRule(rule) },
+        onSelectTab = { tab ->
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            viewModel.selectTab(tab)
+        },
+        onSelectRule = { rule ->
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            viewModel.selectRule(rule)
+        },
         onClearData = {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             viewModel.clearLocalTelemetryData()
             Toast.makeText(context, context.resources.getString(R.string.data_cleared_toast), Toast.LENGTH_SHORT).show()
         },
-        onExportData = {
-            val jsonExport = viewModel.exportTelemetryDataJson()
-            shareExportData(context, jsonExport)
+        onExportYaml = {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            val yamlExport = viewModel.exportTelemetryDataYaml()
+            shareExportData(context, yamlExport, "text/yaml", context.resources.getString(R.string.btn_export_data))
+        },
+        onExportCsv = {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            val csvExport = viewModel.exportTelemetryDataCsv()
+            shareExportData(context, csvExport, "text/csv", context.resources.getString(R.string.btn_export_csv))
         },
         onToggleVpn = {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             if (uiState.isVpnActive) {
                 val intent = Intent(context, NezhaVpnService::class.java).apply {
                     action = NezhaVpnService.ACTION_STOP_VPN
@@ -115,6 +159,7 @@ fun MainScreen(
             }
         },
         onOpenContributeLink = {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(CONTRIBUTOR_GITHUB_URL))
             context.startActivity(intent)
         },
@@ -122,13 +167,13 @@ fun MainScreen(
     )
 }
 
-private fun shareExportData(context: Context, json: String) {
+private fun shareExportData(context: Context, textContent: String, mimeType: String, title: String) {
     val sendIntent = Intent().apply {
         action = Intent.ACTION_SEND
-        putExtra(Intent.EXTRA_TEXT, json)
-        type = "application/json"
+        putExtra(Intent.EXTRA_TEXT, textContent)
+        type = mimeType
     }
-    val shareIntent = Intent.createChooser(sendIntent, context.getString(R.string.btn_export_data))
+    val shareIntent = Intent.createChooser(sendIntent, title)
     context.startActivity(shareIntent)
 }
 
@@ -139,7 +184,8 @@ fun MainScreenContent(
     onSelectTab: (Int) -> Unit = {},
     onSelectRule: (DetectionRule?) -> Unit = {},
     onClearData: () -> Unit = {},
-    onExportData: () -> Unit = {},
+    onExportYaml: () -> Unit = {},
+    onExportCsv: () -> Unit = {},
     onToggleVpn: () -> Unit = {},
     onOpenContributeLink: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -149,7 +195,26 @@ fun MainScreenContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.edr_dashboard_title), fontWeight = FontWeight.Bold) }
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.size(10.dp)
+                        ) {}
+                        Text(
+                            text = stringResource(id = R.string.edr_dashboard_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             )
         },
         bottomBar = {
@@ -192,57 +257,87 @@ fun MainScreenContent(
                 CircularProgressIndicator()
             }
         } else {
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                when (uiState.selectedTab) {
-                    0 -> DashboardTabContent(
-                        uiState = uiState,
-                        onToggleVpn = onToggleVpn,
-                        onOpenContributeLink = onOpenContributeLink
+                TabRow(
+                    selectedTabIndex = uiState.selectedTab,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Tab(
+                        selected = uiState.selectedTab == 0,
+                        onClick = { onSelectTab(0) },
+                        text = { Text(stringResource(R.string.nav_dashboard), style = MaterialTheme.typography.labelLarge) }
                     )
-                    1 -> RulesTabContent(
-                        uiState = uiState,
-                        onSelectRule = onSelectRule
+                    Tab(
+                        selected = uiState.selectedTab == 1,
+                        onClick = { onSelectTab(1) },
+                        text = { Text(stringResource(R.string.nav_rules), style = MaterialTheme.typography.labelLarge) }
                     )
-                    2 -> SiemLogsTabContent(uiState = uiState)
-                    3 -> HistoryTabContent(
-                        uiState = uiState,
-                        onExportData = onExportData,
-                        onClearData = { showClearDialog = true }
+                    Tab(
+                        selected = uiState.selectedTab == 2,
+                        onClick = { onSelectTab(2) },
+                        text = { Text(stringResource(R.string.nav_threats), style = MaterialTheme.typography.labelLarge) }
+                    )
+                    Tab(
+                        selected = uiState.selectedTab == 3,
+                        onClick = { onSelectTab(3) },
+                        text = { Text(stringResource(R.string.nav_history), style = MaterialTheme.typography.labelLarge) }
                     )
                 }
 
-                uiState.selectedRule?.let { rule ->
-                    RuleDetailDialog(
-                        rule = rule,
-                        onDismiss = { onSelectRule(null) }
-                    )
-                }
+                Box(modifier = Modifier.fillMaxSize()) {
+                    when (uiState.selectedTab) {
+                        0 -> MinimalistDashboardTab(
+                            uiState = uiState,
+                            onToggleVpn = onToggleVpn,
+                            onOpenContributeLink = onOpenContributeLink
+                        )
+                        1 -> RulesTabContent(
+                            uiState = uiState,
+                            onSelectRule = onSelectRule
+                        )
+                        2 -> SiemLogsTabContent(uiState = uiState)
+                        3 -> HistoryTabContent(
+                            uiState = uiState,
+                            onExportYaml = onExportYaml,
+                            onExportCsv = onExportCsv,
+                            onClearData = { showClearDialog = true }
+                        )
+                    }
 
-                if (showClearDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showClearDialog = false },
-                        title = { Text(stringResource(R.string.confirm_clear_title), fontWeight = FontWeight.Bold) },
-                        text = { Text(stringResource(R.string.confirm_clear_body)) },
-                        confirmButton = {
-                            TextButton(
-                                onClick = {
-                                    showClearDialog = false
-                                    onClearData()
+                    uiState.selectedRule?.let { rule ->
+                        RuleDetailDialog(
+                            rule = rule,
+                            onDismiss = { onSelectRule(null) }
+                        )
+                    }
+
+                    if (showClearDialog) {
+                        AlertDialog(
+                            onDismissRequest = { showClearDialog = false },
+                            title = { Text(stringResource(R.string.confirm_clear_title), fontWeight = FontWeight.Bold) },
+                            text = { Text(stringResource(R.string.confirm_clear_body)) },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        showClearDialog = false
+                                        onClearData()
+                                    }
+                                ) {
+                                    Text(stringResource(R.string.btn_clear_data), color = MaterialTheme.colorScheme.error)
                                 }
-                            ) {
-                                Text(stringResource(R.string.btn_clear_data), color = MaterialTheme.colorScheme.error)
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showClearDialog = false }) {
+                                    Text(stringResource(R.string.btn_cancel))
+                                }
                             }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { showClearDialog = false }) {
-                                Text(stringResource(R.string.btn_cancel))
-                            }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
@@ -250,7 +345,7 @@ fun MainScreenContent(
 }
 
 @Composable
-fun DashboardTabContent(
+fun MinimalistDashboardTab(
     uiState: MainUiState,
     onToggleVpn: () -> Unit,
     onOpenContributeLink: () -> Unit
@@ -258,21 +353,113 @@ fun DashboardTabContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(20.dp)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // Open Source & Privacy Guarantee Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = if (uiState.isVpnActive) "SYSTEM PROTECTED" else "PROTECTION PAUSED",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 2.sp,
+                color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
             )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = if (uiState.isVpnActive) "NezhaEDR Sentinel Active" else "Tap button to activate EDR sentinel",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        MasterProtectionButton(
+            isActive = uiState.isVpnActive,
+            onClick = onToggleVpn
+        )
+
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                MetricColumn(
+                    label = stringResource(R.string.active_rules_count),
+                    value = "${uiState.rulePackage?.rules?.size ?: 0}"
+                )
+                Box(
+                    modifier = Modifier
+                        .height(30.dp)
+                        .width(1.dp)
+                        .background(MaterialTheme.colorScheme.outlineVariant)
+                )
+                MetricColumn(
+                    label = stringResource(R.string.total_threats_blocked),
+                    value = "${uiState.threatLogs.size}",
+                    isHighlight = true
+                )
+                Box(
+                    modifier = Modifier
+                        .height(30.dp)
+                        .width(1.dp)
+                        .background(MaterialTheme.colorScheme.outlineVariant)
+                )
+                MetricColumn(
+                    label = stringResource(R.string.visited_sites_count),
+                    value = "${uiState.visitedSites.size}"
+                )
+            }
+        }
+
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.threat_activity_graph),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "LIVE SENSING",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                SaaS2026TelemetryWave(
+                    isActive = uiState.isVpnActive,
+                    threatCount = uiState.threatLogs.size
+                )
+            }
+        }
+
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f),
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(id = R.string.privacy_disclaimer_title),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
@@ -285,130 +472,37 @@ fun DashboardTabContent(
             }
         }
 
-        // Sentinel VPN Status Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = if (uiState.isVpnActive)
-                    MaterialTheme.colorScheme.primaryContainer
-                else
-                    MaterialTheme.colorScheme.surfaceVariant
-            )
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = stringResource(id = R.string.vpn_service_status),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = if (uiState.isVpnActive)
-                        stringResource(id = R.string.vpn_status_active)
-                    else
-                        stringResource(id = R.string.vpn_status_inactive),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Button(
-                    onClick = onToggleVpn,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (uiState.isVpnActive)
-                            MaterialTheme.colorScheme.error
-                        else
-                            MaterialTheme.colorScheme.primary
-                    )
-                ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = if (uiState.isVpnActive)
-                            stringResource(id = R.string.btn_disable_vpn)
-                        else
-                            stringResource(id = R.string.btn_enable_vpn)
-                    )
-                }
-            }
-        }
-
-        // Metrics Counters Row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Card(modifier = Modifier.weight(1f)) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = stringResource(id = R.string.active_rules_count),
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "${uiState.rulePackage?.rules?.size ?: 0}",
-                        style = MaterialTheme.typography.headlineMedium,
+                        text = stringResource(id = R.string.contribute_rules_title),
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
-                }
-            }
-            Card(modifier = Modifier.weight(1f)) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = stringResource(id = R.string.total_threats_blocked),
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "${uiState.threatLogs.size}",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.error
+                        text = stringResource(id = R.string.contribute_rules_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
-            }
-        }
-
-        // Visual Threat Activity Graph Card
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = stringResource(id = R.string.threat_activity_graph),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                ThreatActivityGraph(
-                    visitedCount = uiState.visitedSites.size,
-                    threatCount = uiState.threatLogs.size
-                )
-            }
-        }
-
-        // Contribute Rules Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer
-            )
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = stringResource(id = R.string.contribute_rules_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = stringResource(id = R.string.contribute_rules_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.width(12.dp))
                 Button(
                     onClick = onOpenContributeLink,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    )
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(text = stringResource(id = R.string.btn_contribute))
+                    Text(text = "YAML", style = MaterialTheme.typography.labelLarge)
                 }
             }
         }
@@ -416,32 +510,133 @@ fun DashboardTabContent(
 }
 
 @Composable
-fun ThreatActivityGraph(visitedCount: Int, threatCount: Int) {
-    val telemetryColor = MaterialTheme.colorScheme.primary
+fun MasterProtectionButton(
+    isActive: Boolean,
+    onClick: () -> Unit
+) {
+    val transition = rememberInfiniteTransition(label = "PulseTransition")
+    val pulseScale by transition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "PulseScale"
+    )
+
+    val buttonColor by animateColorAsState(
+        targetValue = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+        animationSpec = tween(400),
+        label = "ButtonColor"
+    )
+
+    val contentColor by animateColorAsState(
+        targetValue = if (isActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        animationSpec = tween(400),
+        label = "ContentColor"
+    )
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.size(160.dp)
+    ) {
+        if (isActive) {
+            Box(
+                modifier = Modifier
+                    .size(140.dp)
+                    .scale(pulseScale)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+            )
+        }
+
+        Surface(
+            onClick = onClick,
+            shape = CircleShape,
+            color = buttonColor,
+            shadowElevation = if (isActive) 12.dp else 2.dp,
+            modifier = Modifier.size(120.dp)
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Text(
+                    text = if (isActive) "ON" else "OFF",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = contentColor
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MetricColumn(
+    label: String,
+    value: String,
+    isHighlight: Boolean = false
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = if (isHighlight) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+fun SaaS2026TelemetryWave(
+    isActive: Boolean,
+    threatCount: Int
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
     val threatColor = MaterialTheme.colorScheme.error
+
+    val transition = rememberInfiniteTransition(label = "WavePhase")
+    val phase by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 2f * Math.PI.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "PhaseAnimation"
+    )
 
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
+            .height(80.dp)
     ) {
         val width = size.width
         val height = size.height
-        val barCount = 14
-        val barWidth = (width / barCount) - 8.dp.toPx()
+        val centerY = height / 2f
+        val amplitude = if (isActive) height / 3f else 6.dp.toPx()
 
-        for (i in 0 until barCount) {
-            val left = i * (barWidth + 8.dp.toPx())
-            val isThreatBar = (i % 5 == 0 && threatCount > 0)
-            val barFactor = if (visitedCount > 0) 0.3f + ((i % 4) * 0.15f) else 0.1f
-            val barHeight = (height * barFactor).coerceAtMost(height)
+        val path = Path()
+        path.moveTo(0f, centerY)
 
-            drawRect(
-                color = if (isThreatBar) threatColor else telemetryColor,
-                topLeft = Offset(left, height - barHeight),
-                size = Size(barWidth, barHeight)
-            )
+        for (x in 0..width.toInt() step 4) {
+            val normalizedX = x / width
+            val y = centerY + amplitude * sin(normalizedX * 4 * Math.PI.toFloat() + phase)
+            path.lineTo(x.toFloat(), y)
         }
+
+        drawPath(
+            path = path,
+            color = if (threatCount > 0) threatColor else primaryColor,
+            style = Stroke(width = 3.dp.toPx())
+        )
     }
 }
 
@@ -455,11 +650,11 @@ fun RulesTabContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(20.dp)
     ) {
         Text(
             text = stringResource(id = R.string.rules_header_title),
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -469,11 +664,11 @@ fun RulesTabContent(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "No detection rules loaded.")
+                Text(text = "No YAML detection rules loaded.")
             }
         } else {
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(rules) { rule ->
@@ -486,7 +681,10 @@ fun RulesTabContent(
 
 @Composable
 fun RuleItemCard(rule: DetectionRule, onClick: () -> Unit) {
-    Card(
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
@@ -503,20 +701,29 @@ fun RuleItemCard(rule: DetectionRule, onClick: () -> Unit) {
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Text(
-                    text = rule.severity,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
                     color = when (rule.severity) {
-                        "CRITICAL", "HIGH" -> MaterialTheme.colorScheme.error
-                        else -> MaterialTheme.colorScheme.secondary
+                        "CRITICAL", "HIGH" -> MaterialTheme.colorScheme.errorContainer
+                        else -> MaterialTheme.colorScheme.secondaryContainer
                     }
-                )
+                ) {
+                    Text(
+                        text = rule.severity,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        color = when (rule.severity) {
+                            "CRITICAL", "HIGH" -> MaterialTheme.colorScheme.onErrorContainer
+                            else -> MaterialTheme.colorScheme.onSecondaryContainer
+                        }
+                    )
+                }
             }
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = rule.name,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(modifier = Modifier.height(4.dp))
@@ -588,11 +795,11 @@ fun SiemLogsTabContent(uiState: MainUiState) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(20.dp)
     ) {
         Text(
             text = stringResource(id = R.string.siem_threat_logs),
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -610,7 +817,7 @@ fun SiemLogsTabContent(uiState: MainUiState) {
             }
         } else {
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(uiState.threatLogs) { log ->
@@ -624,13 +831,14 @@ fun SiemLogsTabContent(uiState: MainUiState) {
 @Composable
 fun HistoryTabContent(
     uiState: MainUiState,
-    onExportData: () -> Unit,
+    onExportYaml: () -> Unit,
+    onExportCsv: () -> Unit,
     onClearData: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(20.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -646,13 +854,12 @@ fun HistoryTabContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
+            Column(modifier = Modifier.padding(14.dp)) {
                 Text(
                     text = stringResource(id = R.string.privacy_disclaimer_title),
                     style = MaterialTheme.typography.labelMedium,
@@ -671,22 +878,34 @@ fun HistoryTabContent(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Button(
-                onClick = onExportData,
+                onClick = onExportYaml,
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.weight(1f)
             ) {
-                Text(text = stringResource(id = R.string.btn_export_data))
+                Text(text = stringResource(id = R.string.btn_export_data), style = MaterialTheme.typography.labelSmall)
+            }
+            Button(
+                onClick = onExportCsv,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                ),
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(text = stringResource(id = R.string.btn_export_csv), style = MaterialTheme.typography.labelSmall)
             }
             OutlinedButton(
                 onClick = onClearData,
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = MaterialTheme.colorScheme.error
                 )
             ) {
-                Text(text = stringResource(id = R.string.btn_clear_data))
+                Text(text = stringResource(id = R.string.btn_clear_data), style = MaterialTheme.typography.labelSmall)
             }
         }
 
@@ -720,7 +939,12 @@ fun HistoryTabContent(
 
 @Composable
 fun VisitedSiteItemCard(site: VisitedSiteRecord) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -766,11 +990,10 @@ fun VisitedSiteItemCard(site: VisitedSiteRecord) {
 
 @Composable
 fun SIEMThreatLogItem(log: SIEMThreatLog) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer
-        )
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f),
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(

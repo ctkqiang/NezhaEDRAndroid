@@ -20,6 +20,7 @@ import xin.ctkqiang.nezhaedr.data.repository.RuleRepositoryImpl
 import xin.ctkqiang.nezhaedr.engine.EDREvaluationEngine
 import xin.ctkqiang.nezhaedr.service.telemetry.NezhaVpnService
 import xin.ctkqiang.nezhaedr.service.telemetry.PackageTelemetryReceiver
+import xin.ctkqiang.nezhaedr.util.EDRLogger
 
 class MainViewModel(
     application: Application,
@@ -33,6 +34,7 @@ class MainViewModel(
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
     init {
+        EDRLogger.i(TAG, "MainViewModel: Initializing state observers and loading rules")
         observeVpnState()
         observeTelemetry()
         observeSiemLogs()
@@ -41,36 +43,49 @@ class MainViewModel(
     }
 
     fun selectTab(tabIndex: Int) {
+        EDRLogger.d(TAG, "selectTab: User selected tab index $tabIndex")
         _uiState.update { it.copy(selectedTab = tabIndex) }
     }
 
     fun selectRule(rule: DetectionRule?) {
+        EDRLogger.d(TAG, "selectRule: Selected rule '${rule?.id ?: "none"}'")
         _uiState.update { it.copy(selectedRule = rule) }
     }
 
     fun clearLocalTelemetryData() {
+        EDRLogger.w(TAG, "clearLocalTelemetryData: Clearing local SQLite telemetry history")
         viewModelScope.launch(Dispatchers.IO) {
             dbHelper.clearAllVisitedSites()
             withContext(Dispatchers.Main) {
                 _uiState.update { it.copy(visitedSites = emptyList()) }
+                EDRLogger.i(TAG, "clearLocalTelemetryData: Telemetry state cleared successfully")
             }
         }
     }
 
-    fun exportTelemetryDataJson(): String {
-        return dbHelper.exportVisitedSitesToJson()
+    fun exportTelemetryDataYaml(): String {
+        EDRLogger.i(TAG, "exportTelemetryDataYaml: Exporting telemetry data to YAML")
+        return dbHelper.exportVisitedSitesToYaml()
+    }
+
+    fun exportTelemetryDataCsv(): String {
+        EDRLogger.i(TAG, "exportTelemetryDataCsv: Exporting telemetry data to CSV")
+        return dbHelper.exportVisitedSitesToCsv()
     }
 
     private fun loadVisitedSitesFromDb() {
+        EDRLogger.d(TAG, "loadVisitedSitesFromDb: Querying SQLite database")
         viewModelScope.launch(Dispatchers.IO) {
             val sites = dbHelper.getAllVisitedSites()
             withContext(Dispatchers.Main) {
                 _uiState.update { it.copy(visitedSites = sites) }
+                EDRLogger.i(TAG, "loadVisitedSitesFromDb: Loaded ${sites.size} records into state")
             }
         }
     }
 
     private fun recordVisitedSite(record: VisitedSiteRecord) {
+        EDRLogger.v(TAG, "recordVisitedSite: Recording IP '${record.destinationIp}' into SQLite")
         viewModelScope.launch(Dispatchers.IO) {
             dbHelper.insertVisitedSite(record)
             val updatedList = dbHelper.getAllVisitedSites()
@@ -81,13 +96,16 @@ class MainViewModel(
     }
 
     private fun loadRules() {
+        EDRLogger.i(TAG, "loadRules: Fetching rulesets from repository")
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             val result = ruleRepository.fetchRules()
             result.getOrNull()?.let { rules ->
                 evaluationEngine.updateRules(rules)
                 _uiState.update { it.copy(rulePackage = rules, isLoading = false) }
+                EDRLogger.i(TAG, "loadRules: Successfully loaded ${rules.rules.size} rules into engine")
             } ?: run {
+                EDRLogger.e(TAG, "loadRules: Failed to load rules package")
                 _uiState.update { it.copy(isLoading = false) }
             }
         }
@@ -96,6 +114,7 @@ class MainViewModel(
     private fun observeVpnState() {
         viewModelScope.launch {
             NezhaVpnService.vpnState.collect { isActive ->
+                EDRLogger.i(TAG, "observeVpnState: VPN active state changed to $isActive")
                 _uiState.update { it.copy(isVpnActive = isActive) }
             }
         }
@@ -104,9 +123,11 @@ class MainViewModel(
     private fun observeTelemetry() {
         viewModelScope.launch {
             NezhaVpnService.telemetryFlow.collect { netEvent ->
+                EDRLogger.v(TAG, "observeTelemetry: Captured network event for IP '${netEvent.destinationIp}'")
                 val match = evaluationEngine.evaluateNetworkEvent(netEvent)
                 val isThreat = match != null
                 if (match != null) {
+                    EDRLogger.w(TAG, "observeTelemetry: Threat match detected for IP '${netEvent.destinationIp}' -> Rule ${match.rule.id}")
                     containmentManager.handleRuleMatch(match)
                 }
 
@@ -122,8 +143,10 @@ class MainViewModel(
         }
         viewModelScope.launch {
             PackageTelemetryReceiver.packageEvents.collect { pkgEvent ->
+                EDRLogger.d(TAG, "observeTelemetry: Captured package event for '${pkgEvent.packageName}'")
                 val match = evaluationEngine.evaluatePackageEvent(pkgEvent)
                 if (match != null) {
+                    EDRLogger.w(TAG, "observeTelemetry: Threat match detected for package '${pkgEvent.packageName}' -> Rule ${match.rule.id}")
                     containmentManager.handleRuleMatch(match)
                 }
             }
@@ -133,11 +156,16 @@ class MainViewModel(
     private fun observeSiemLogs() {
         viewModelScope.launch {
             containmentManager.siemLogs.collect { log ->
+                EDRLogger.i(TAG, "observeSiemLogs: New SIEM threat log entry '${log.ruleId}'")
                 _uiState.update { current ->
                     current.copy(threatLogs = listOf(log) + current.threatLogs)
                 }
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "MainViewModel"
     }
 
     class Factory(private val application: Application) : ViewModelProvider.Factory {

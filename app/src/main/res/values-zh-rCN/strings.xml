@@ -22,21 +22,30 @@
     <string name="vpn_status_inactive">防护未开启</string>
     <string name="btn_enable_vpn">开启终端防护</string>
     <string name="btn_disable_vpn">关闭终端防护</string>
+    <string name="btn_stop_protection">停止防护</string>
 
     <string name="active_rules_count">已加载规则数</string>
     <string name="total_threats_blocked">已拦截威胁数</string>
     <string name="visited_sites_count">本地记录访问数</string>
     <string name="threat_activity_graph">实时遥测与威胁活动趋势</string>
-    <string name="contribute_rules_title">贡献 YAML 规则至开源社区</string>
-    <string name="contribute_rules_desc">提交声明式 YAML 规则至哪吒网络安全EDR 代码库。</string>
-    <string name="btn_contribute">前往 GitHub 贡献 YAML</string>
+
+    <!-- Dashboard Widget Phrasing -->
+    <string name="endpoint_score_title">终端安全指数</string>
+    <string name="endpoint_score_optimal">安全防护状态最佳</string>
+    <string name="endpoint_score_warning">建议开启防护引擎</string>
+    <string name="telemetry_throughput_title">实时遥测数据吞吐率</string>
+    <string name="protection_vectors_title">正在运行的防护向量</string>
+    <string name="vector_dns">囚笼子网域名过滤</string>
+    <string name="vector_package">应用安装监控感知</string>
+    <string name="vector_engine">YAML 规则评估引擎</string>
+    <string name="vector_status_active">已激活</string>
 
     <!-- Settings Screen Phrasing -->
     <string name="settings_header_title">偏好设置</string>
     <string name="settings_theme_title">主题配色风格</string>
     <string name="settings_theme_desc">自定义终端控制台的主题视觉配色。</string>
-    <string name="settings_gitops_title">GitOps 规则库同步</string>
-    <string name="settings_gitops_desc">从远程 GitHub CDN 实时同步最新威胁检测规则。</string>
+    <string name="settings_gitops_title">规则库在线同步</string>
+    <string name="settings_gitops_desc">从安全资源库实时同步最新威胁检测规则。</string>
     <string name="settings_custom_rule_title">导入本地 YAML 规则</string>
     <string name="settings_custom_rule_desc">从设备本地存储上传自定义 YAML 安全规则。</string>
 
@@ -50,12 +59,20 @@
     <string name="btn_export_csv">导出 CSV</string>
     <string name="btn_clear_data">清空本地历史</string>
     <string name="btn_import_rule">导入 YAML 规则</string>
-    <string name="btn_sync_github">同步 GitHub 规则库</string>
+    <string name="btn_sync_github">同步安全规则库</string>
     <string name="confirm_clear_title">确认删除本地数据？</string>
     <string name="confirm_clear_body">您确定要彻底删除保存在本地 SQLite 数据库中的所有访问记录吗？</string>
     <string name="no_history_recorded">暂无本地访问历史记录。</string>
     <string name="data_exported_toast">遥测数据已成功导出。</string>
     <string name="data_cleared_toast">本地 SQLite 记录已彻底删除。</string>
+
+    <!-- Sync & Import Localized Toasts/Dialogs -->
+    <string name="sync_success_toast">安全规则库已成功同步。</string>
+    <string name="sync_failed_toast">规则库同步失败，请检查网络连接。</string>
+    <string name="syncing_dialog_title">正在同步规则库</string>
+    <string name="syncing_dialog_body">正在从安全服务器下载最新的威胁检测规则库...</string>
+    <string name="custom_import_success">自定义 YAML 规则已成功导入！</string>
+    <string name="custom_import_failed">导入自定义 YAML 规则失败。</string>
 
     <string name="rules_header_title">当前生效检测规则库</string>
     <string name="rule_category_label">规则类别: %1$s</string>

@@ -51,10 +51,10 @@ class NezhaVpnService : VpnService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 FOREGROUND_CHANNEL_ID,
-                "NezhaCyberEDR Protection Service",
+                getString(R.string.notification_channel_name),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Background protection service monitoring endpoint network telemetry."
+                description = getString(R.string.notification_channel_description)
             }
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
@@ -72,13 +72,13 @@ class NezhaVpnService : VpnService() {
 
         val notification = NotificationCompat.Builder(this, FOREGROUND_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("NezhaCyberEDR Active")
-            .setContentText("Monitoring endpoint telemetry and enforcing YAML threat rulesets.")
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.vpn_status_active))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
             .addAction(
                 R.drawable.ic_launcher_foreground,
-                "Stop Protection",
+                getString(R.string.btn_stop_protection),
                 stopPendingIntent
             )
             .build()

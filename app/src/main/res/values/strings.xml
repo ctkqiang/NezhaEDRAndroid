@@ -18,25 +18,34 @@
 
     <string name="edr_dashboard_title">NezhaCyberEDR Protection</string>
     <string name="vpn_service_status">Network Protection Engine</string>
-    <string name="vpn_status_active">Active Protection</string>
+    <string name="vpn_status_active">Active Protection Service</string>
     <string name="vpn_status_inactive">Protection Paused</string>
     <string name="btn_enable_vpn">Enable Protection</string>
     <string name="btn_disable_vpn">Disable Protection</string>
+    <string name="btn_stop_protection">Stop Protection</string>
 
     <string name="active_rules_count">Active Rulesets</string>
     <string name="total_threats_blocked">Threats Contained</string>
     <string name="visited_sites_count">Visited Sites Logged</string>
     <string name="threat_activity_graph">Real-Time Telemetry Analytics</string>
-    <string name="contribute_rules_title">Contribute YAML Rules</string>
-    <string name="contribute_rules_desc">Submit declarative YAML rulesets to NezhaCyberEDR repository.</string>
-    <string name="btn_contribute">Contribute on GitHub</string>
+
+    <!-- Dashboard Widget Phrasing -->
+    <string name="endpoint_score_title">Endpoint Security Index</string>
+    <string name="endpoint_score_optimal">Optimal Security Posture</string>
+    <string name="endpoint_score_warning">Action Recommended</string>
+    <string name="telemetry_throughput_title">Live Telemetry Data Rate</string>
+    <string name="protection_vectors_title">Active Protection Vectors</string>
+    <string name="vector_dns">Captive Subnet Filtering</string>
+    <string name="vector_package">Package Installation Sensor</string>
+    <string name="vector_engine">YAML Rules Engine</string>
+    <string name="vector_status_active">Active</string>
 
     <!-- Settings Screen Phrasing -->
     <string name="settings_header_title">Application Preferences</string>
     <string name="settings_theme_title">Interface Accent Color</string>
     <string name="settings_theme_desc">Customize the visual theme accent for the dashboard.</string>
-    <string name="settings_gitops_title">GitOps Rule Engine Sync</string>
-    <string name="settings_gitops_desc">Synchronize threat rules directly from the remote GitHub CDN repository.</string>
+    <string name="settings_gitops_title">Rule Engine Sync</string>
+    <string name="settings_gitops_desc">Synchronize threat rules directly from the remote security repository.</string>
     <string name="settings_custom_rule_title">Local Custom YAML Rule</string>
     <string name="settings_custom_rule_desc">Upload custom YAML security rules from device storage.</string>
 
@@ -50,12 +59,20 @@
     <string name="btn_export_csv">Export CSV</string>
     <string name="btn_clear_data">Clear Local History</string>
     <string name="btn_import_rule">Import YAML Rule</string>
-    <string name="btn_sync_github">Sync GitHub Rules</string>
+    <string name="btn_sync_github">Sync Security Rules</string>
     <string name="confirm_clear_title">Delete Local History?</string>
     <string name="confirm_clear_body">Are you sure you want to delete all telemetry records from your local SQLite database?</string>
     <string name="no_history_recorded">No telemetry history recorded yet.</string>
     <string name="data_exported_toast">Telemetry data exported.</string>
     <string name="data_cleared_toast">Local SQLite records deleted.</string>
+
+    <!-- Sync & Import Localized Toasts/Dialogs -->
+    <string name="sync_success_toast">Security rulesets synchronized successfully.</string>
+    <string name="sync_failed_toast">Ruleset sync failed. Please check network connection.</string>
+    <string name="syncing_dialog_title">Synchronizing Rulesets</string>
+    <string name="syncing_dialog_body">Downloading latest threat rulesets from secure repository...</string>
+    <string name="custom_import_success">Custom YAML rule imported successfully!</string>
+    <string name="custom_import_failed">Failed to import custom YAML rule.</string>
 
     <string name="rules_header_title">Active Detection Rulesets</string>
     <string name="rule_category_label">Category: %1$s</string>

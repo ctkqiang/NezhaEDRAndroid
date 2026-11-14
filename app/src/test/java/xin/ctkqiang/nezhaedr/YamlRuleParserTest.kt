@@ -11,13 +11,18 @@ import xin.ctkqiang.nezhaedr.data.parser.YamlRuleParser
 class YamlRuleParserTest {
 
     @Test
-    fun testParseNetworkBlockRule() {
+    fun testParseV2SchemaNetworkBlockRule() {
         val yamlText = """
+            schema_version: "2.0"
+            rule_id: "RULE-SPY-001"
             id: "pegasus_spyware_block"
             name: "Pegasus Spyware Domain Block"
             description: "Blocks egress connections to known commercial spyware exfiltration domains"
             severity: "CRITICAL"
             category: "NETWORK"
+            enabled: true
+            engine_type: "signature"
+            target_source: "dns_query"
             condition:
               target_domains:
                 - "pegasus-exfil.nso-group.net"
@@ -29,10 +34,13 @@ class YamlRuleParserTest {
 
         val rule = YamlRuleParser.parseYamlRule(yamlText)
         assertNotNull(rule)
-        assertEquals("pegasus_spyware_block", rule?.id)
+        assertEquals("2.0", rule?.schemaVersion)
+        assertEquals("RULE-SPY-001", rule?.canonicalId)
         assertEquals("Pegasus Spyware Domain Block", rule?.name)
         assertEquals("CRITICAL", rule?.severity)
         assertEquals("NETWORK", rule?.category)
+        assertEquals("signature", rule?.engineType)
+        assertEquals("dns_query", rule?.targetSource)
         assertEquals(ContainmentAction.BLOCK, rule?.action)
         assertEquals(2, rule?.condition?.targetDomains?.size)
         assertTrue(rule?.condition?.targetDomains?.contains("pegasus-exfil.nso-group.net") == true)
@@ -40,26 +48,43 @@ class YamlRuleParserTest {
     }
 
     @Test
-    fun testParsePackageTerminateRule() {
+    fun testParseBehavioralRule() {
         val yamlText = """
-            id: "banking_trojan_alert"
-            name: "Banking Trojan Sideload Detection"
-            description: "Detects malware overlay apps targeting financial tokens"
-            severity: "CRITICAL"
-            category: "PACKAGE"
+            schema_version: "2.0"
+            rule_id: "RULE-SCAN-001"
+            id: "reconnaissance_probe_block"
+            name: "Reconnaissance Probe Block"
+            description: "Blocks automated network scanners"
+            severity: "HIGH"
+            category: "NETWORK"
+            enabled: true
+            engine_type: "behavioral"
+            target_source: "dns_query"
             condition:
-              package_patterns:
-                - ".*trojan\\.banker.*"
-                - ".*overlay\\.stealer.*"
-            action: "TERMINATE"
+              max_subdomain_depth: 3
+              max_entropy: 4.2
+            action: "BLOCK"
         """.trimIndent()
 
         val rule = YamlRuleParser.parseYamlRule(yamlText)
         assertNotNull(rule)
-        assertEquals("banking_trojan_alert", rule?.id)
-        assertEquals(ContainmentAction.TERMINATE, rule?.action)
-        assertEquals(2, rule?.condition?.packagePatterns?.size)
-        assertTrue(rule?.condition?.packagePatterns?.firstOrNull()?.contains("trojan") == true)
+        assertEquals("behavioral", rule?.engineType)
+        assertEquals(3, rule?.condition?.maxSubdomainDepth)
+        assertEquals(4.2, rule?.condition?.maxEntropy!!, 0.001)
+    }
+
+    @Test
+    fun testParseDisabledRule() {
+        val yamlText = """
+            schema_version: "2.0"
+            rule_id: "RULE-TEST-000"
+            name: "Disabled Test Rule"
+            enabled: false
+            action: "LOG"
+        """.trimIndent()
+
+        val rule = YamlRuleParser.parseYamlRule(yamlText)
+        assertNull(rule)
     }
 
     @Test

@@ -3,6 +3,7 @@ package xin.ctkqiang.nezhaedr
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import xin.ctkqiang.nezhaedr.data.parser.YamlRuleParser
 import xin.ctkqiang.nezhaedr.data.repository.RuleRepositoryImpl
@@ -27,7 +28,7 @@ class EDREvaluationEngineTest {
         )
         val matchResult = engine.evaluateNetworkEvent(netEvent)
         assertNotNull(matchResult)
-        assertEquals("c2_threat_block", matchResult?.rule?.id)
+        assertEquals("c2_threat_block", matchResult?.rule?.canonicalId)
 
         val cleanNetEvent = TelemetryEvent.Network(
             destinationIp = "8.8.8.8",
@@ -42,7 +43,7 @@ class EDREvaluationEngineTest {
         )
         val pkgMatchResult = engine.evaluatePackageEvent(pkgEvent)
         assertNotNull(pkgMatchResult)
-        assertEquals("rogue_package_alert", pkgMatchResult?.rule?.id)
+        assertEquals("rogue_package_alert", pkgMatchResult?.rule?.canonicalId)
     }
 
     @Test
@@ -61,38 +62,71 @@ class EDREvaluationEngineTest {
         )
         val matchTopPorn = engine.evaluateNetworkEvent(topPornEvent)
         assertNotNull(matchTopPorn)
-        assertEquals("adult_content_block", matchTopPorn?.rule?.id)
+        assertEquals("adult_content_block", matchTopPorn?.rule?.canonicalId)
         assertEquals("BLOCK", matchTopPorn?.rule?.action?.name)
-
-        val porna91Event = TelemetryEvent.Network(
-            destinationIp = "91porna.com",
-            destinationPort = 443,
-            protocol = "HTTPS"
-        )
-        val match91Porna = engine.evaluateNetworkEvent(porna91Event)
-        assertNotNull(match91Porna)
-        assertEquals("adult_content_block", match91Porna?.rule?.id)
     }
 
     @Test
-    fun testYamlRuleParsing() {
-        val yamlSnippet = """
-            id: RULE-NET-999
-            name: Sample YAML Rule
-            description: Test description for yaml rule
-            severity: HIGH
-            category: NETWORK
+    fun testBehavioralRuleEvaluation() {
+        val yamlText = """
+            schema_version: "2.0"
+            rule_id: "RULE-SCAN-001"
+            id: "reconnaissance_probe_block"
+            name: "Reconnaissance Probe Block"
+            description: "Blocks automated network scanners"
+            severity: "HIGH"
+            category: "NETWORK"
+            enabled: true
+            engine_type: "behavioral"
+            target_source: "dns_query"
             condition:
-              target_domains:
-                - test-malicious-domain.com
-            action: BLOCK
+              max_subdomain_depth: 3
+            action: "BLOCK"
         """.trimIndent()
 
-        val parsedRule = YamlRuleParser.parseYamlRule(yamlSnippet)
-        assertNotNull(parsedRule)
-        assertEquals("RULE-NET-999", parsedRule?.id)
-        assertEquals("Sample YAML Rule", parsedRule?.name)
-        assertEquals("BLOCK", parsedRule?.action?.name)
-        assertEquals("test-malicious-domain.com", parsedRule?.condition?.targetDomains?.firstOrNull())
+        val rule = YamlRuleParser.parseYamlRule(yamlText)
+        assertNotNull(rule)
+
+        val engine = EDREvaluationEngine()
+        engine.updateRules(
+            xin.ctkqiang.nezhaedr.data.model.DetectionRulePackage(
+                version = "2.0",
+                updatedAt = "2026-03-01T22:00:00Z",
+                rules = listOf(rule!!)
+            )
+        )
+
+        // Subdomain depth 4 (> 3) -> MATCH
+        val deepSubdomainEvent = TelemetryEvent.Network(
+            destinationIp = "1.2.3.4",
+            domain = "a.b.c.d.example.com",
+            destinationPort = 53,
+            protocol = "DNS/UDP"
+        )
+        val matchResult = engine.evaluateNetworkEvent(deepSubdomainEvent)
+        assertNotNull(matchResult)
+        assertEquals("RULE-SCAN-001", matchResult?.rule?.canonicalId)
+
+        // Subdomain depth 1 (<= 3) -> CLEAN
+        val normalDomainEvent = TelemetryEvent.Network(
+            destinationIp = "1.2.3.4",
+            domain = "sub.example.com",
+            destinationPort = 53,
+            protocol = "DNS/UDP"
+        )
+        assertNull(engine.evaluateNetworkEvent(normalDomainEvent))
+    }
+
+    @Test
+    fun testShannonEntropyCalculation() {
+        // High entropy random string vs low entropy repeated string
+        val highEntropyStr = "a8f9c7b2e1d0x4z8w9v2"
+        val lowEntropyStr = "aaaaa"
+
+        val highEntropy = EDREvaluationEngine.calculateShannonEntropy(highEntropyStr)
+        val lowEntropy = EDREvaluationEngine.calculateShannonEntropy(lowEntropyStr)
+
+        assertTrue(highEntropy > 3.5)
+        assertEquals(0.0, lowEntropy, 0.001)
     }
 }

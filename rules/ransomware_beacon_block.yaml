@@ -1,8 +1,13 @@
+schema_version: "2.0"
+rule_id: "RULE-RANSOM-001"
 id: "ransomware_beacon_block"
 name: "Ransomware Beaconing Domain Block"
 description: "Prevents outbound botnet beaconing to ransomware command centers"
 severity: "CRITICAL"
 category: "NETWORK"
+enabled: true
+engine_type: "signature"
+target_source: "dns_query"
 condition:
   target_ips:
     - "203.0.113.55"

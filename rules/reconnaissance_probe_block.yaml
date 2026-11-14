@@ -1,10 +1,17 @@
-id: "RULE-NET-008"
+schema_version: "2.0"
+rule_id: "RULE-SCAN-001"
+id: "reconnaissance_probe_block"
 name: "Reconnaissance & Network Probe Scanner Block"
-description: "Blocks active port scanning and vulnerability probing from remote threat actors"
+description: "Blocks automated network scanners probing for open vulnerable endpoints"
 severity: "HIGH"
 category: "NETWORK"
+enabled: true
+engine_type: "behavioral"
+target_source: "dns_query"
 condition:
-  target_ips:
-    - "198.51.100.99"
-    - "203.0.113.200"
+  max_subdomain_depth: 3
+  max_entropy: 4.2
+  target_domains:
+    - "recon-probe.scanner-node.io"
+    - "portscan.target-check.net"
 action: "BLOCK"

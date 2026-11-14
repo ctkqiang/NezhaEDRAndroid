@@ -1,8 +1,13 @@
+schema_version: "2.0"
+rule_id: "RULE-NET-005"
 id: "cryptojacking_pool_block"
 name: "Cryptojacking Mining Pool Network Block"
 description: "Blocks unauthorized background cryptocurrency mining pool connections"
 severity: "HIGH"
 category: "NETWORK"
+enabled: true
+engine_type: "signature"
+target_source: "dns_query"
 condition:
   target_domains:
     - "monero-minepool.com"

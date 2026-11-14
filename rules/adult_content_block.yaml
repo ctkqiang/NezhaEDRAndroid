@@ -1,8 +1,13 @@
+schema_version: "2.0"
+rule_id: "RULE-ADULT-001"
 id: "adult_content_block"
 name: "Adult & Explicit Content Domain Block"
 description: "Blocks outbound connections to flagged adult and explicit web destinations"
 severity: "CRITICAL"
 category: "NETWORK"
+enabled: true
+engine_type: "signature"
+target_source: "dns_query"
 condition:
   target_domains:
     - "toppornsites.com"

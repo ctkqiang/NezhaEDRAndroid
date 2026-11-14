@@ -1,8 +1,13 @@
+schema_version: "2.0"
+rule_id: "RULE-PROC-001"
 id: "backdoor_service_detection"
 name: "Unauthorized Backdoor Service Detection"
 description: "Monitors rogue processes attempting unauthorized background execution"
 severity: "MEDIUM"
 category: "PROCESS"
+enabled: true
+engine_type: "signature"
+target_source: "tcp_connection"
 condition:
   package_patterns:
     - ".*backdoor\\.service.*"

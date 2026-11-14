@@ -1,8 +1,13 @@
+schema_version: "2.0"
+rule_id: "RULE-SPY-001"
 id: "pegasus_spyware_block"
 name: "Pegasus & Advanced Cyber Espionage Domain Block"
 description: "Blocks egress connections to known commercial spyware & zero-day exploit exfiltration domains"
 severity: "CRITICAL"
 category: "NETWORK"
+enabled: true
+engine_type: "signature"
+target_source: "dns_query"
 condition:
   target_domains:
     - "pegasus-exfil.nso-group.net"

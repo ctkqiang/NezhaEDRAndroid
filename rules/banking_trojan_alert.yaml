@@ -1,8 +1,13 @@
+schema_version: "2.0"
+rule_id: "RULE-PKG-003"
 id: "banking_trojan_alert"
 name: "Banking Trojan & Overlay Sideload Detection"
 description: "Detects malware overlay apps targeting financial institutions and MFA tokens"
 severity: "CRITICAL"
 category: "PACKAGE"
+enabled: true
+engine_type: "signature"
+target_source: "http_payload"
 condition:
   package_patterns:
     - ".*trojan\\.banker.*"

@@ -1,8 +1,13 @@
+schema_version: "2.0"
+rule_id: "RULE-AD-001"
 id: "adware_click_farm_block"
 name: "Fraudulent Adware & Click Farm Telemetry Block"
 description: "Blocks background click fraud ad servers draining battery and mobile bandwidth"
 severity: "MEDIUM"
 category: "NETWORK"
+enabled: true
+engine_type: "signature"
+target_source: "dns_query"
 condition:
   target_domains:
     - "click-fraud.ad-tracker.net"

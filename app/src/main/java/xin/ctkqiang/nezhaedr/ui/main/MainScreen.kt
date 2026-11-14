@@ -17,7 +17,6 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,6 +40,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,7 +54,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -97,9 +97,6 @@ import xin.ctkqiang.nezhaedr.data.model.DetectionRule
 import xin.ctkqiang.nezhaedr.data.repository.RemoteRuleCatalogItem
 import xin.ctkqiang.nezhaedr.service.telemetry.NezhaVpnService
 import xin.ctkqiang.nezhaedr.ui.theme.AppThemeMode
-import xin.ctkqiang.nezhaedr.ui.theme.GlassCardAlpha
-import xin.ctkqiang.nezhaedr.ui.theme.GlassObsidianBackground
-import xin.ctkqiang.nezhaedr.ui.theme.GlassSpecularBorder
 import xin.ctkqiang.nezhaedr.ui.theme.NezhaEDRTheme
 import xin.ctkqiang.nezhaedr.util.EDRLogger
 import java.text.SimpleDateFormat
@@ -283,24 +280,22 @@ fun MainScreenContent(
     var showClearDialog by remember { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = GlassObsidianBackground,
         topBar = {
             TopAppBar(
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.3f),
-                            modifier = Modifier.size(8.dp)
+                            color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.size(10.dp)
                         ) {}
                         Text(
                             text = stringResource(id = R.string.edr_dashboard_title),
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 },
@@ -309,105 +304,95 @@ fun MainScreenContent(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_download),
                             contentDescription = "Sync Rules",
-                            tint = Color.White.copy(alpha = 0.85f)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlassObsidianBackground
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
         bottomBar = {
-            // Floating Frosted Glass Specular Navigation Bar
-            Surface(
-                shape = RoundedCornerShape(24.dp),
-                color = Color.White.copy(alpha = 0.05f),
-                border = BorderStroke(1.dp, GlassSpecularBorder),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
             ) {
-                NavigationBar(
-                    containerColor = Color.Transparent,
-                    contentColor = Color.White
-                ) {
-                    NavigationBarItem(
-                        selected = uiState.selectedTab == 0,
-                        onClick = { onSelectTab(0) },
-                        label = { Text(stringResource(R.string.nav_dashboard), style = MaterialTheme.typography.labelSmall) },
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_nav_dashboard),
-                                contentDescription = stringResource(R.string.nav_dashboard)
-                            )
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = Color.White.copy(alpha = 0.1f)
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 0,
+                    onClick = { onSelectTab(0) },
+                    label = { Text(stringResource(R.string.nav_dashboard)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_dashboard),
+                            contentDescription = stringResource(R.string.nav_dashboard)
                         )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
                     )
-                    NavigationBarItem(
-                        selected = uiState.selectedTab == 1,
-                        onClick = { onSelectTab(1) },
-                        label = { Text(stringResource(R.string.nav_rules), style = MaterialTheme.typography.labelSmall) },
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_nav_rules),
-                                contentDescription = stringResource(R.string.nav_rules)
-                            )
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = Color.White.copy(alpha = 0.1f)
+                )
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 1,
+                    onClick = { onSelectTab(1) },
+                    label = { Text(stringResource(R.string.nav_rules)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_rules),
+                            contentDescription = stringResource(R.string.nav_rules)
                         )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
                     )
-                    NavigationBarItem(
-                        selected = uiState.selectedTab == 2,
-                        onClick = { onSelectTab(2) },
-                        label = { Text(stringResource(R.string.nav_threats), style = MaterialTheme.typography.labelSmall) },
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_nav_threats),
-                                contentDescription = stringResource(R.string.nav_threats)
-                            )
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.error,
-                            indicatorColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+                )
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 2,
+                    onClick = { onSelectTab(2) },
+                    label = { Text(stringResource(R.string.nav_threats)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_threats),
+                            contentDescription = stringResource(R.string.nav_threats)
                         )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.error,
+                        indicatorColor = MaterialTheme.colorScheme.errorContainer
                     )
-                    NavigationBarItem(
-                        selected = uiState.selectedTab == 3,
-                        onClick = { onSelectTab(3) },
-                        label = { Text(stringResource(R.string.nav_history), style = MaterialTheme.typography.labelSmall) },
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_nav_history),
-                                contentDescription = stringResource(R.string.nav_history)
-                            )
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = Color.White.copy(alpha = 0.1f)
+                )
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 3,
+                    onClick = { onSelectTab(3) },
+                    label = { Text(stringResource(R.string.nav_history)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_history),
+                            contentDescription = stringResource(R.string.nav_history)
                         )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
                     )
-                    NavigationBarItem(
-                        selected = uiState.selectedTab == 4,
-                        onClick = { onSelectTab(4) },
-                        label = { Text(stringResource(R.string.nav_settings), style = MaterialTheme.typography.labelSmall) },
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_nav_settings),
-                                contentDescription = stringResource(R.string.nav_settings)
-                            )
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = Color.White.copy(alpha = 0.1f)
+                )
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 4,
+                    onClick = { onSelectTab(4) },
+                    label = { Text(stringResource(R.string.nav_settings)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_settings),
+                            contentDescription = stringResource(R.string.nav_settings)
                         )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
                     )
-                }
+                )
             }
         },
         modifier = modifier.fillMaxSize()
@@ -419,7 +404,7 @@ fun MainScreenContent(
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                CircularProgressIndicator()
             }
         } else {
             Box(
@@ -468,9 +453,8 @@ fun MainScreenContent(
                 uiState.deleteRuleConfirm?.let { rule ->
                     AlertDialog(
                         onDismissRequest = { onConfirmDeleteRule(null) },
-                        title = { Text(stringResource(R.string.delete_rule_title), fontWeight = FontWeight.Bold, color = Color.White) },
-                        text = { Text(stringResource(R.string.delete_rule_body, rule.id, rule.name), color = Color.White.copy(alpha = 0.8f)) },
-                        containerColor = GlassObsidianBackground,
+                        title = { Text(stringResource(R.string.delete_rule_title), fontWeight = FontWeight.Bold) },
+                        text = { Text(stringResource(R.string.delete_rule_body, rule.id, rule.name)) },
                         confirmButton = {
                             Button(
                                 onClick = { onExecuteDeleteRule(rule) },
@@ -481,7 +465,7 @@ fun MainScreenContent(
                         },
                         dismissButton = {
                             TextButton(onClick = { onConfirmDeleteRule(null) }) {
-                                Text(stringResource(R.string.btn_cancel), color = Color.White.copy(alpha = 0.7f))
+                                Text(stringResource(R.string.btn_cancel))
                             }
                         }
                     )
@@ -490,15 +474,14 @@ fun MainScreenContent(
                 if (uiState.isSyncingRules) {
                     AlertDialog(
                         onDismissRequest = {},
-                        containerColor = GlassObsidianBackground,
-                        title = { Text(stringResource(R.string.syncing_dialog_title), fontWeight = FontWeight.Bold, color = Color.White) },
+                        title = { Text(stringResource(R.string.syncing_dialog_title), fontWeight = FontWeight.Bold) },
                         text = {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                CircularProgressIndicator(modifier = Modifier.size(36.dp), color = MaterialTheme.colorScheme.primary)
-                                Text(stringResource(R.string.syncing_dialog_body), style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f))
+                                CircularProgressIndicator(modifier = Modifier.size(36.dp))
+                                Text(stringResource(R.string.syncing_dialog_body), style = MaterialTheme.typography.bodyMedium)
                             }
                         },
                         confirmButton = {}
@@ -522,9 +505,8 @@ fun MainScreenContent(
                 if (showClearDialog) {
                     AlertDialog(
                         onDismissRequest = { showClearDialog = false },
-                        containerColor = GlassObsidianBackground,
-                        title = { Text(stringResource(R.string.confirm_clear_title), fontWeight = FontWeight.Bold, color = Color.White) },
-                        text = { Text(stringResource(R.string.confirm_clear_body), color = Color.White.copy(alpha = 0.8f)) },
+                        title = { Text(stringResource(R.string.confirm_clear_title), fontWeight = FontWeight.Bold) },
+                        text = { Text(stringResource(R.string.confirm_clear_body)) },
                         confirmButton = {
                             TextButton(
                                 onClick = {
@@ -537,7 +519,7 @@ fun MainScreenContent(
                         },
                         dismissButton = {
                             TextButton(onClick = { showClearDialog = false }) {
-                                Text(stringResource(R.string.btn_cancel), color = Color.White.copy(alpha = 0.7f))
+                                Text(stringResource(R.string.btn_cancel))
                             }
                         }
                     )
@@ -570,13 +552,11 @@ fun SyncRulesPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = GlassObsidianBackground,
         title = {
             Text(
                 text = stringResource(id = R.string.sync_dialog_title),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+                fontWeight = FontWeight.Bold
             )
         },
         text = {
@@ -588,21 +568,14 @@ fun SyncRulesPickerDialog(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text(stringResource(R.string.search_rules_placeholder), style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.5f)) },
+                    placeholder = { Text(stringResource(R.string.search_rules_placeholder), style = MaterialTheme.typography.bodySmall) },
                     leadingIcon = {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_search),
                             contentDescription = null,
-                            tint = Color.White.copy(alpha = 0.7f),
                             modifier = Modifier.size(18.dp)
                         )
                     },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = GlassSpecularBorder,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
-                    ),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -615,10 +588,10 @@ fun SyncRulesPickerDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onSelectAll) {
-                        Text(stringResource(R.string.btn_select_all), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                        Text(stringResource(R.string.btn_select_all), style = MaterialTheme.typography.labelSmall)
                     }
                     TextButton(onClick = onDeselectAll) {
-                        Text(stringResource(R.string.btn_deselect_all), style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.7f))
+                        Text(stringResource(R.string.btn_deselect_all), style = MaterialTheme.typography.labelSmall)
                     }
                 }
 
@@ -645,13 +618,12 @@ fun SyncRulesPickerDialog(
                                 Text(
                                     text = "${item.ruleId} • ${item.name}",
                                     style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    fontWeight = FontWeight.Bold
                                 )
                                 Text(
                                     text = "Category: ${item.category} | Severity: ${item.severity}",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = Color.White.copy(alpha = 0.6f)
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -670,7 +642,7 @@ fun SyncRulesPickerDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.btn_cancel), color = Color.White.copy(alpha = 0.7f))
+                Text(stringResource(R.string.btn_cancel))
             }
         }
     )
@@ -695,24 +667,26 @@ fun SettingsTabContent(
         Text(
             text = stringResource(id = R.string.settings_header_title),
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
+            fontWeight = FontWeight.Bold
         )
 
-        // Frosted Glass Theme Switcher Card
-        GlassCard {
+        // Theme Switcher Card
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(id = R.string.settings_theme_title),
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = stringResource(id = R.string.settings_theme_desc),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.65f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -744,20 +718,23 @@ fun SettingsTabContent(
             }
         }
 
-        // Frosted Glass Rule Sync Card
-        GlassCard {
+        // Rule Engine Sync Card
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(id = R.string.settings_gitops_title),
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = stringResource(id = R.string.settings_gitops_desc),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.65f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
@@ -778,20 +755,23 @@ fun SettingsTabContent(
             }
         }
 
-        // Frosted Glass Custom Rule Import Card
-        GlassCard {
+        // Local Custom YAML Rule Import Card
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(id = R.string.settings_custom_rule_title),
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = stringResource(id = R.string.settings_custom_rule_desc),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.65f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
@@ -815,20 +795,24 @@ fun SettingsTabContent(
             }
         }
 
-        // Frosted Glass Privacy Disclaimer Card
-        GlassCard {
+        // Open Source & Privacy Disclaimer Card
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(id = R.string.privacy_disclaimer_title),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = stringResource(id = R.string.privacy_disclaimer_body),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.75f)
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
             }
         }
@@ -842,7 +826,6 @@ fun ThreatAlertPopupDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = GlassObsidianBackground,
         title = {
             Text(
                 text = stringResource(id = R.string.threat_alert_popup_title),
@@ -858,8 +841,7 @@ fun ThreatAlertPopupDialog(
                     threat.ruleId,
                     threat.ruleName,
                     threat.details
-                ),
-                color = Color.White.copy(alpha = 0.85f)
+                )
             )
         },
         confirmButton = {
@@ -894,13 +876,13 @@ fun MinimalistDashboardTab(
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 2.sp,
-                color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.4f)
+                color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = if (uiState.isVpnActive) "NezhaCyberEDR Active" else "Tap button to activate NezhaCyberEDR",
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.White.copy(alpha = 0.65f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -909,8 +891,14 @@ fun MinimalistDashboardTab(
             onClick = onToggleVpn
         )
 
-        // Real-Time Endpoint Security Index Frosted Glass Widget
-        GlassCard {
+        // Real-Time Endpoint Security Index Widget (%)
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (uiState.isVpnActive) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -922,7 +910,7 @@ fun MinimalistDashboardTab(
                     Text(
                         text = stringResource(id = R.string.endpoint_score_title),
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.White.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
@@ -935,8 +923,7 @@ fun MinimalistDashboardTab(
                     Text(
                         text = if (uiState.isVpnActive) stringResource(R.string.endpoint_score_optimal) else stringResource(R.string.endpoint_score_warning),
                         style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White.copy(alpha = 0.85f)
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
 
@@ -953,15 +940,18 @@ fun MinimalistDashboardTab(
                     Text(
                         text = if (uiState.isVpnActive) "OK" else "OFF",
                         style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
 
         // Metrics Counters Row
-        GlassCard {
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -977,7 +967,7 @@ fun MinimalistDashboardTab(
                     modifier = Modifier
                         .height(30.dp)
                         .width(1.dp)
-                        .background(GlassSpecularBorder)
+                        .background(MaterialTheme.colorScheme.outlineVariant)
                 )
                 MetricColumn(
                     label = stringResource(R.string.total_threats_blocked),
@@ -988,7 +978,7 @@ fun MinimalistDashboardTab(
                     modifier = Modifier
                         .height(30.dp)
                         .width(1.dp)
-                        .background(GlassSpecularBorder)
+                        .background(MaterialTheme.colorScheme.outlineVariant)
                 )
                 MetricColumn(
                     label = stringResource(R.string.blocked_attempts_count),
@@ -998,9 +988,11 @@ fun MinimalistDashboardTab(
             }
         }
 
-        // NezhaCyberEDR Intercept Trail Glass Widget
-        GlassCard(
-            borderColor = MaterialTheme.colorScheme.error.copy(alpha = 0.3f)
+        // Intercept Trail Widget
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)),
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(18.dp)) {
                 Row(
@@ -1027,7 +1019,7 @@ fun MinimalistDashboardTab(
                     Text(
                         text = "No intercepted banned site connection attempts recorded.",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 } else {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1040,13 +1032,16 @@ fun MinimalistDashboardTab(
         }
 
         // Live Protection Vectors Status Widget
-        GlassCard {
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Column(modifier = Modifier.padding(18.dp)) {
                 Text(
                     text = stringResource(id = R.string.protection_vectors_title),
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(10.dp))
 
@@ -1068,7 +1063,11 @@ fun MinimalistDashboardTab(
         }
 
         // Live Telemetry Wave Analytics Card
-        GlassCard {
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1078,8 +1077,7 @@ fun MinimalistDashboardTab(
                     Text(
                         text = stringResource(id = R.string.threat_activity_graph),
                         style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = if (uiState.isVpnActive) "1.8 KB/s LIVE" else "IDLE",
@@ -1099,29 +1097,13 @@ fun MinimalistDashboardTab(
 }
 
 @Composable
-fun GlassCard(
-    modifier: Modifier = Modifier,
-    borderColor: Color = GlassSpecularBorder,
-    content: @Composable () -> Unit
-) {
-    Surface(
-        shape = RoundedCornerShape(22.dp),
-        color = Color.White.copy(alpha = 0.05f),
-        border = BorderStroke(1.dp, borderColor),
-        modifier = modifier.fillMaxWidth(),
-        content = content
-    )
-}
-
-@Composable
 fun FalconInterceptItem(record: VisitedSiteRecord) {
     val formatter = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
     val timeStr = remember(record.timestamp) { formatter.format(Date(record.timestamp)) }
 
-    Surface(
+    Card(
         shape = RoundedCornerShape(12.dp),
-        color = Color.White.copy(alpha = 0.04f),
-        border = BorderStroke(1.dp, GlassSpecularBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -1143,14 +1125,14 @@ fun FalconInterceptItem(record: VisitedSiteRecord) {
                         Text(
                             text = "(${record.domain})",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.65f)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
                 Text(
                     text = "$timeStr • ${record.protocol}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.White.copy(alpha = 0.5f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Surface(
@@ -1182,16 +1164,16 @@ fun ProtectionVectorRow(label: String, isActive: Boolean) {
         ) {
             Surface(
                 shape = CircleShape,
-                color = if (isActive) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.3f),
+                color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(8.dp)
             ) {}
-            Text(text = label, style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.85f))
+            Text(text = label, style = MaterialTheme.typography.bodySmall)
         }
         Text(
             text = if (isActive) stringResource(R.string.vector_status_active) else "Paused",
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
-            color = if (isActive) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.4f)
+            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
         )
     }
 }
@@ -1213,13 +1195,13 @@ fun MasterProtectionButton(
     )
 
     val buttonColor by animateColorAsState(
-        targetValue = if (isActive) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.08f),
+        targetValue = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
         animationSpec = spring(stiffness = Spring.StiffnessMedium),
         label = "ButtonColor"
     )
 
     val contentColor by animateColorAsState(
-        targetValue = if (isActive) Color.White else Color.White.copy(alpha = 0.6f),
+        targetValue = if (isActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = spring(stiffness = Spring.StiffnessMedium),
         label = "ContentColor"
     )
@@ -1234,7 +1216,7 @@ fun MasterProtectionButton(
                     .size(140.dp)
                     .scale(pulseScale)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
             )
         }
 
@@ -1242,8 +1224,7 @@ fun MasterProtectionButton(
             onClick = onClick,
             shape = CircleShape,
             color = buttonColor,
-            border = BorderStroke(1.dp, GlassSpecularBorder),
-            shadowElevation = if (isActive) 12.dp else 0.dp,
+            shadowElevation = if (isActive) 12.dp else 2.dp,
             modifier = Modifier.size(120.dp)
         ) {
             Box(
@@ -1272,12 +1253,12 @@ fun MetricColumn(
             text = value,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
-            color = if (isHighlight) MaterialTheme.colorScheme.error else Color.White
+            color = if (isHighlight) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = Color.White.copy(alpha = 0.6f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -1360,8 +1341,7 @@ fun RulesTabContent(
             Text(
                 text = stringResource(id = R.string.rules_header_title),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+                fontWeight = FontWeight.Bold
             )
             Button(
                 onClick = onImportRuleClick,
@@ -1382,21 +1362,14 @@ fun RulesTabContent(
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            placeholder = { Text(stringResource(R.string.search_rules_placeholder), style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.5f)) },
+            placeholder = { Text(stringResource(R.string.search_rules_placeholder), style = MaterialTheme.typography.bodySmall) },
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_search),
                     contentDescription = null,
-                    tint = Color.White.copy(alpha = 0.7f),
                     modifier = Modifier.size(18.dp)
                 )
             },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = GlassSpecularBorder,
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White
-            ),
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth()
         )
@@ -1408,7 +1381,7 @@ fun RulesTabContent(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "No YAML detection rules match search.", color = Color.White.copy(alpha = 0.6f))
+                Text(text = "No YAML detection rules match search.")
             }
         } else {
             LazyColumn(
@@ -1433,8 +1406,12 @@ fun RuleItemCard(
     onClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
-    GlassCard(
-        modifier = Modifier.clickable { onClick() }
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -1484,14 +1461,13 @@ fun RuleItemCard(
             Text(
                 text = rule.name,
                 style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.White
+                fontWeight = FontWeight.SemiBold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = rule.description,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.White.copy(alpha = 0.65f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row(
@@ -1500,14 +1476,12 @@ fun RuleItemCard(
             ) {
                 Text(
                     text = stringResource(id = R.string.rule_category_label, rule.category),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White.copy(alpha = 0.6f)
+                    style = MaterialTheme.typography.labelSmall
                 )
                 Text(
                     text = stringResource(id = R.string.rule_action_label, rule.action.name),
                     style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -1520,10 +1494,9 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = GlassObsidianBackground,
         title = {
             Column {
-                Text(text = rule.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium, color = Color.White)
+                Text(text = rule.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(
@@ -1543,8 +1516,7 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
             if (isDeveloperMode) {
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFF141418),
-                    border = BorderStroke(1.dp, GlassSpecularBorder),
+                    color = Color(0xFF1E1E1E),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(280.dp)
@@ -1599,23 +1571,26 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
                     Text(
                         text = rule.description,
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.75f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     if (rule.condition.targetIps.isNotEmpty() || rule.condition.targetDomains.isNotEmpty()) {
                         Text(
                             text = stringResource(id = R.string.rule_condition_targets),
                             style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            fontWeight = FontWeight.Bold
                         )
-                        GlassCard {
+                        Card(
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 rule.condition.targetIps.forEach { ip ->
-                                    Text(text = " • IP: $ip", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.85f))
+                                    Text(text = " • IP: $ip", style = MaterialTheme.typography.bodySmall)
                                 }
                                 rule.condition.targetDomains.forEach { domain ->
-                                    Text(text = " • Domain: $domain", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.85f))
+                                    Text(text = " • Domain: $domain", style = MaterialTheme.typography.bodySmall)
                                 }
                             }
                         }
@@ -1625,13 +1600,16 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
                         Text(
                             text = stringResource(id = R.string.rule_condition_patterns),
                             style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            fontWeight = FontWeight.Bold
                         )
-                        GlassCard {
+                        Card(
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 rule.condition.packagePatterns.forEach { pattern ->
-                                    Text(text = " • $pattern", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.85f))
+                                    Text(text = " • $pattern", style = MaterialTheme.typography.bodySmall)
                                 }
                             }
                         }
@@ -1641,7 +1619,7 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text(text = stringResource(id = R.string.btn_close), color = Color.White)
+                Text(text = stringResource(id = R.string.btn_close))
             }
         }
     )
@@ -1717,8 +1695,7 @@ fun ThreatLogsTabContent(uiState: MainUiState) {
         Text(
             text = stringResource(id = R.string.threat_logs_title),
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
+            fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -1730,7 +1707,7 @@ fun ThreatLogsTabContent(uiState: MainUiState) {
                 Text(
                     text = stringResource(id = R.string.no_threats_detected),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         } else {
@@ -1772,8 +1749,7 @@ fun HistoryTabContent(
             Text(
                 text = stringResource(id = R.string.visited_sites_header),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+                fontWeight = FontWeight.Bold
             )
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 FilterChip(
@@ -1836,7 +1812,7 @@ fun HistoryTabContent(
                 Text(
                     text = stringResource(id = R.string.no_history_recorded),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         } else {
@@ -1854,7 +1830,11 @@ fun HistoryTabContent(
 
 @Composable
 fun VisitedSiteItemCard(site: VisitedSiteRecord) {
-    GlassCard {
+    Card(
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -1864,8 +1844,7 @@ fun VisitedSiteItemCard(site: VisitedSiteRecord) {
                 Text(
                     text = site.destinationIp,
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = if (site.isThreat) "THREAT BLOCKED" else "SAFE",
@@ -1878,7 +1857,7 @@ fun VisitedSiteItemCard(site: VisitedSiteRecord) {
                 Text(
                     text = site.domain,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.65f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -1888,13 +1867,11 @@ fun VisitedSiteItemCard(site: VisitedSiteRecord) {
             ) {
                 Text(
                     text = stringResource(id = R.string.app_name_label, site.appName),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White.copy(alpha = 0.6f)
+                    style = MaterialTheme.typography.labelSmall
                 )
                 Text(
                     text = site.protocol,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White.copy(alpha = 0.6f)
+                    style = MaterialTheme.typography.labelSmall
                 )
             }
         }
@@ -1906,7 +1883,6 @@ fun ThreatLogItemCard(log: ThreatLogEntry) {
     Surface(
         shape = RoundedCornerShape(14.dp),
         color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.75f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.4f)),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(12.dp)) {

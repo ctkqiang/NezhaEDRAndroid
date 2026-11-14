@@ -48,6 +48,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -724,7 +725,11 @@ fun SettingsTabContent(
                                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 onSelectLanguage(code)
                             },
-                            label = { Text(label, style = MaterialTheme.typography.labelSmall) }
+                            label = { Text(label, style = MaterialTheme.typography.labelSmall) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.primary
+                            )
                         )
                     }
                 }
@@ -767,7 +772,11 @@ fun SettingsTabContent(
                                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 onSelectTheme(themeMode)
                             },
-                            label = { Text(label, style = MaterialTheme.typography.labelSmall) }
+                            label = { Text(label, style = MaterialTheme.typography.labelSmall) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.primary
+                            )
                         )
                     }
                 }
@@ -1442,7 +1451,11 @@ fun RulesTabContent(
                 FilterChip(
                     selected = selectedCategory == category,
                     onClick = { selectedCategory = category },
-                    label = { Text(category, style = MaterialTheme.typography.labelSmall) }
+                    label = { Text(category, style = MaterialTheme.typography.labelSmall) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.primary
+                    )
                 )
             }
         }
@@ -1573,12 +1586,20 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
                     FilterChip(
                         selected = !isDeveloperMode,
                         onClick = { isDeveloperMode = false },
-                        label = { Text(stringResource(R.string.mode_user), style = MaterialTheme.typography.labelSmall) }
+                        label = { Text(stringResource(R.string.mode_user), style = MaterialTheme.typography.labelSmall) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.primary
+                        )
                     )
                     FilterChip(
                         selected = isDeveloperMode,
                         onClick = { isDeveloperMode = true },
-                        label = { Text(stringResource(R.string.mode_developer), style = MaterialTheme.typography.labelSmall) }
+                        label = { Text(stringResource(R.string.mode_developer), style = MaterialTheme.typography.labelSmall) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.primary
+                        )
                     )
                 }
             }
@@ -1783,7 +1804,11 @@ fun ThreatLogsTabContent(uiState: MainUiState) {
                 FilterChip(
                     selected = selectedSeverity == sev,
                     onClick = { selectedSeverity = sev },
-                    label = { Text(sev, style = MaterialTheme.typography.labelSmall) }
+                    label = { Text(sev, style = MaterialTheme.typography.labelSmall) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.primary
+                    )
                 )
             }
         }
@@ -1846,12 +1871,20 @@ fun HistoryTabContent(
                 FilterChip(
                     selected = !filterBlockedOnly,
                     onClick = { filterBlockedOnly = false },
-                    label = { Text(stringResource(R.string.filter_all), style = MaterialTheme.typography.labelSmall) }
+                    label = { Text(stringResource(R.string.filter_all), style = MaterialTheme.typography.labelSmall) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.primary
+                    )
                 )
                 FilterChip(
                     selected = filterBlockedOnly,
                     onClick = { filterBlockedOnly = true },
-                    label = { Text(stringResource(R.string.filter_blocked), style = MaterialTheme.typography.labelSmall) }
+                    label = { Text(stringResource(R.string.filter_blocked), style = MaterialTheme.typography.labelSmall) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.primary
+                    )
                 )
             }
         }

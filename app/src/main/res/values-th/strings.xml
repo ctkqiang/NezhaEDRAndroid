@@ -45,7 +45,6 @@
 
     <!-- Dashboard Widget Phrasing -->
     <string name="endpoint_score_title">ดัชนีความปลอดภัยของเอนด์พอยต์</string>
-    <string name="endpoint_score_optimal">สถานะความปลอดภัยสมบูรณ์แบบ</string>
     <string name="endpoint_score_warning">แนะนำให้เปิดใช้งานการป้องกัน</string>
     <string name="telemetry_throughput_title">อัตราข้อมูลโทรมาตรสด</string>
     <string name="protection_vectors_title">เวกเตอร์การป้องกันที่ทำงานอยู่</string>
@@ -67,6 +66,15 @@
     <string name="settings_custom_rule_desc">อัปโหลดกฎความปลอดภัย YAML แบบกำหนดเองจากพื้นที่จัดเก็บในเครื่อง</string>
     <string name="settings_language_title">ภาษาแอปพลิเคชัน</string>
     <string name="settings_language_desc">เลือกภาษาที่ต้องการสำหรับอินเทอร์เฟซผู้ใช้</string>
+    <string name="settings_github_pr_title">ร่วมส่งชุดกฎเกณฑ์และเข้าร่วมโครงการ</string>
+    <string name="settings_github_pr_desc">หากคุณพบ IP C2 ใหม่หรือโดเมนหลอกลวง สามารถส่ง Pull Request ไปยัง GitHub เพื่อร่วมปกป้องผู้ใช้ทั่วโลก!</string>
+    <string name="btn_contribute_pr">ส่งกฎผ่าน GitHub PR</string>
+
+    <!-- Author & Philosophy -->
+    <string name="author_philosophy_title">เกี่ยวกับผู้เขียนและภารกิจโอเพ่นซอร์ส</string>
+    <string name="author_info_label">ผู้เขียน: 钟智强 &lt;ctkqiang&gt;</string>
+    <string name="author_github_url">https://github.com/ctkqiang</string>
+    <string name="author_philosophy_body">NezhaCyberEDR ถูกสร้างขึ้นเพื่อให้ทุกคนสามารถมีส่วนร่วมและแบ่งปันชุดกฎความปลอดภัยแบบโอเพ่นซอร์ส</string>
 
     <!-- Sync Ruleset Selection Dialog -->
     <string name="sync_dialog_title">เลือกชุดกฎเกณฑ์ความปลอดภัยที่จะซิงค์</string>
@@ -81,7 +89,7 @@
 
     <!-- Open Source Privacy Disclaimer -->
     <string name="privacy_disclaimer_title">การรับประกันการเปิดเผยโค้ดและความเป็นส่วนตัว</string>
-    <string name="privacy_disclaimer_body">NezhaCyberEDR เป็นซอฟต์แวร์โอเพ่นซอร์สและไม่เก็บรวบรวมหรือส่งข้อมูลผู้ใช้ไปยังเซิร์ฟเวอร์ระยะไกล บันทึกโทรมาตรและเหตุการณ์ภัยคุกคามทั้งหมดจะถูกจัดเก็บไว้ในฐานข้อมูล SQLite ในเครื่องของคุณอย่างปลอดภัย</string>
+    <string name="privacy_disclaimer_body">NezhaCyberEDR เป็นซอฟต์แวร์โอเพ่นซอร์สและไม่เก็บรวบรวมหรือส่งข้อมูลผู้ใช้ไปยังเซิร์ฟเวอร์ระยะไกล</string>
 
     <!-- SQLite Visited Sites & Actions -->
     <string name="visited_sites_header">ประวัติโทรมาตรในเครื่อง</string>

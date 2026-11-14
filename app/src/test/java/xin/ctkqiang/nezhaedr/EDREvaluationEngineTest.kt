@@ -129,4 +129,55 @@ class EDREvaluationEngineTest {
         assertTrue(highEntropy > 3.5)
         assertEquals(0.0, lowEntropy, 0.001)
     }
+
+    @Test
+    fun testCompoundExpressionKeywordMatching() {
+        val yamlText = """
+            schema_version: "2.0"
+            rule_id: "RULE-SCAM-001"
+            id: "scam_gambling_url_block"
+            name: "Scam & Gambling Keyword URL Block"
+            description: "Detects and blocks suspicious scam, gambling, and credential phishing URLs containing high-risk keywords"
+            severity: "HIGH"
+            category: "NETWORK"
+            enabled: true
+            engine_type: "conditional"
+            target_source: "url_request"
+            condition:
+              expression: "contains(domain, \"888\") || contains(domain, \"vip\") || contains(domain, \"free\") || contains(domain, \"claim\")"
+            action: "BLOCK"
+        """.trimIndent()
+
+        val rule = YamlRuleParser.parseYamlRule(yamlText)
+        assertNotNull(rule)
+
+        val engine = EDREvaluationEngine()
+        engine.updateRules(
+            xin.ctkqiang.nezhaedr.data.model.DetectionRulePackage(
+                version = "2.0",
+                updatedAt = "2026-03-01T22:00:00Z",
+                rules = listOf(rule!!)
+            )
+        )
+
+        // 1. Matches "888"
+        val event888 = TelemetryEvent.Network(destinationIp = "1.1.1.1", domain = "888casino.com", destinationPort = 443, protocol = "HTTPS")
+        assertNotNull(engine.evaluateNetworkEvent(event888))
+
+        // 2. Matches "vip"
+        val eventVip = TelemetryEvent.Network(destinationIp = "1.1.1.1", domain = "portal-vip.com", destinationPort = 443, protocol = "HTTPS")
+        assertNotNull(engine.evaluateNetworkEvent(eventVip))
+
+        // 3. Matches "free"
+        val eventFree = TelemetryEvent.Network(destinationIp = "1.1.1.1", domain = "get-free-bonus.com", destinationPort = 443, protocol = "HTTPS")
+        assertNotNull(engine.evaluateNetworkEvent(eventFree))
+
+        // 4. Matches "claim"
+        val eventClaim = TelemetryEvent.Network(destinationIp = "1.1.1.1", domain = "claim-reward.net", destinationPort = 443, protocol = "HTTPS")
+        assertNotNull(engine.evaluateNetworkEvent(eventClaim))
+
+        // 5. Clean domain (no keyword matches)
+        val eventClean = TelemetryEvent.Network(destinationIp = "1.1.1.1", domain = "google.com", destinationPort = 443, protocol = "HTTPS")
+        assertNull(engine.evaluateNetworkEvent(eventClean))
+    }
 }

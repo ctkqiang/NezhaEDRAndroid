@@ -127,25 +127,43 @@ class EDREvaluationEngine {
 
     private fun evaluateExpression(expr: String, domain: String, ip: String, port: Int): Boolean {
         return try {
-            if (expr.contains("entropy(domain)")) {
-                val entropy = calculateShannonEntropy(domain)
-                if (expr.contains(">")) {
-                    val threshold = expr.substringAfter(">").trim().toDoubleOrNull() ?: 4.0
-                    return entropy > threshold
+            val terms = expr.split("||").map { it.trim() }
+            for (term in terms) {
+                if (evaluateSingleTerm(term, domain, ip, port)) {
+                    return true
                 }
-            }
-            if (expr.contains("contains(domain,")) {
-                val arg = expr.substringAfter("contains(domain,").substringBefore(")").trim().removeSurrounding("\"")
-                if (domain.contains(arg)) return true
-            }
-            if (expr.contains("endswith(domain,")) {
-                val arg = expr.substringAfter("endswith(domain,").substringBefore(")").trim().removeSurrounding("\"")
-                if (domain.endsWith(arg)) return true
             }
             false
         } catch (e: Exception) {
             false
         }
+    }
+
+    private fun evaluateSingleTerm(term: String, domain: String, ip: String, port: Int): Boolean {
+        if (term.contains("entropy(domain)")) {
+            val entropy = calculateShannonEntropy(domain)
+            if (term.contains(">")) {
+                val threshold = term.substringAfter(">").trim().toDoubleOrNull() ?: 4.0
+                return entropy > threshold
+            }
+        }
+        if (term.contains("contains(domain,")) {
+            val arg = term.substringAfter("contains(domain,").substringBefore(")")
+                .trim()
+                .replace("\\\"", "\"")
+                .removeSurrounding("\"")
+                .removeSurrounding("'")
+            if (arg.isNotEmpty() && domain.contains(arg)) return true
+        }
+        if (term.contains("endswith(domain,")) {
+            val arg = term.substringAfter("endswith(domain,").substringBefore(")")
+                .trim()
+                .replace("\\\"", "\"")
+                .removeSurrounding("\"")
+                .removeSurrounding("'")
+            if (arg.isNotEmpty() && domain.endsWith(arg)) return true
+        }
+        return false
     }
 
     companion object {

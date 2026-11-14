@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import xin.ctkqiang.nezhaedr.R
+import xin.ctkqiang.nezhaedr.data.repository.RuleRepositoryImpl
 import xin.ctkqiang.nezhaedr.util.EDRLogger
 import java.io.FileInputStream
 import java.net.DatagramSocket
@@ -111,6 +112,10 @@ class NezhaVpnService : VpnService() {
                 .setMtu(1500)
                 .addAddress("10.0.0.2", 32)
 
+            // Dynamic rule fetching from RuleRepository
+            val ruleRepo = RuleRepositoryImpl(applicationContext)
+            val activeRulesPkg = withContext(Dispatchers.IO) { ruleRepo.fetchRules().getOrNull() }
+
             // Direct static threat IP routes from rulesets
             val threatIps = mutableSetOf(
                 "192.0.2.1",
@@ -119,7 +124,10 @@ class NezhaVpnService : VpnService() {
             )
 
             // Threat domains from rulesets to resolve into captive routes
-            val threatDomains = listOf(
+            val threatDomains = mutableSetOf(
+                "888casino-vip.com",
+                "free-bonus-claim.net",
+                "vip-gambling-portal.org",
                 "toppornsites.com",
                 "91porna.com",
                 "pornhub.com",
@@ -144,6 +152,23 @@ class NezhaVpnService : VpnService() {
                 "botnet.cc-server.io",
                 "malicious-c2.example.com"
             )
+
+            activeRulesPkg?.rules?.filter { it.enabled }?.forEach { rule ->
+                threatIps.addAll(rule.condition.targetIps)
+                threatDomains.addAll(rule.condition.targetDomains)
+            }
+
+            // Route DNS servers through VPN so all DNS query packets (e.g. 888vip.*.com) are captured & inspected
+            val dnsServers = listOf("1.1.1.1", "8.8.8.8", "8.8.4.4", "1.0.0.1")
+            for (dns in dnsServers) {
+                try {
+                    builder.addDnsServer(dns)
+                    builder.addRoute(dns, 32)
+                    EDRLogger.d(TAG, "Configured captive DNS route: $dns/32")
+                } catch (e: Exception) {
+                    EDRLogger.v(TAG, "Skipped DNS route $dns: ${e.message}")
+                }
+            }
 
             for (domain in threatDomains) {
                 try {

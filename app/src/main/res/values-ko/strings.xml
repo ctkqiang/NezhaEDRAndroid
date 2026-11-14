@@ -45,7 +45,6 @@
 
     <!-- Dashboard Widget Phrasing -->
     <string name="endpoint_score_title">엔드포인트 보안 지수</string>
-    <string name="endpoint_score_optimal">최적의 보안 상태</string>
     <string name="endpoint_score_warning">조치 권장</string>
     <string name="telemetry_throughput_title">실시간 텔레메트리 전송률</string>
     <string name="protection_vectors_title">활성 보호 벡터</string>
@@ -67,6 +66,15 @@
     <string name="settings_custom_rule_desc">기기 저장소에서 사용자 지정 YAML 보안 규칙을 업로드합니다.</string>
     <string name="settings_language_title">애플리케이션 언어</string>
     <string name="settings_language_desc">사용자 인터페이스에 사용할 언어를 선택하세요.</string>
+    <string name="settings_github_pr_title">규칙 기여 및 프로젝트 참여</string>
+    <string name="settings_github_pr_desc">새로운 위협 C2 IP나 악성 도메인을 발견했다면 GitHub 저장소에 Pull Request를 제출하여 전 세계 엔드포인트를 함께 보호하세요!</string>
+    <string name="btn_contribute_pr">GitHub PR로 규칙 제출</string>
+
+    <!-- Author & Philosophy -->
+    <string name="author_philosophy_title">작성자 및 오픈 소스 미션</string>
+    <string name="author_info_label">작성자: 钟智强 &lt;ctkqiang&gt;</string>
+    <string name="author_github_url">https://github.com/ctkqiang</string>
+    <string name="author_philosophy_body">NezhaCyberEDR은 누구나 오픈 소스 보안 규칙 세트에 기여하고 공유할 수 있도록 만들어졌습니다.</string>
 
     <!-- Sync Ruleset Selection Dialog -->
     <string name="sync_dialog_title">동기화할 규칙 세트 선택</string>
@@ -81,7 +89,7 @@
 
     <!-- Open Source Privacy Disclaimer -->
     <string name="privacy_disclaimer_title">오픈 소스 및 개인정보 보호 보장</string>
-    <string name="privacy_disclaimer_body">NezhaCyberEDR은 오픈 소스 소프트웨어이며 사용자 데이터를 원격 서버로 수집하거나 전송하지 않습니다. 모든 로그 및 위협 이벤트는 기기 내 SQLite 데이터베이스에 안전하게 저장됩니다.</string>
+    <string name="privacy_disclaimer_body">NezhaCyberEDR은 오픈 소스 소프트웨어이며 사용자 데이터를 원격 서버로 수집하거나 전송하지 않습니다.</string>
 
     <!-- SQLite Visited Sites & Actions -->
     <string name="visited_sites_header">로컬 텔레메트리 기록</string>

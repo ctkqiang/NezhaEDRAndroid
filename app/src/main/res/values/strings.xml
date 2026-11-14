@@ -67,6 +67,9 @@
     <string name="settings_custom_rule_desc">Upload custom YAML security rules from device storage.</string>
     <string name="settings_language_title">Application Language</string>
     <string name="settings_language_desc">Select your preferred language for the user interface.</string>
+    <string name="settings_github_pr_title">Contribute Rulesets &amp; Join Project</string>
+    <string name="settings_github_pr_desc">NezhaCyberEDR thrives on open-source community collaboration. Have a new C2 IP, malware pattern, or scam domain? Submit a Pull Request directly to our open-source repository to protect endpoint users worldwide!</string>
+    <string name="btn_contribute_pr">Submit Ruleset via GitHub PR</string>
 
     <!-- Author & Philosophy -->
     <string name="author_philosophy_title">About Author &amp; Open-Source Mission</string>
@@ -87,7 +90,7 @@
 
     <!-- Open Source Privacy Disclaimer -->
     <string name="privacy_disclaimer_title">Open Source &amp; Privacy Guarantee</string>
-    <string name="privacy_disclaimer_body">NezhaCyberEDR is open-source software and does not collect or transmit user data to remote servers. All telemetry logs and threat events are stored locally inside your device\'s SQLite database. You maintain complete control to export or delete your local data at any time.</string>
+    <string name="privacy_disclaimer_body">NezhaCyberEDR is open-source software and does not collect or transmit user data to remote servers. All telemetry logs and threat events are stored locally inside your device\'s SQLite database. You maintain complete control to export or wipe your local data at any time.</string>
 
     <!-- SQLite Visited Sites & Actions -->
     <string name="visited_sites_header">Local Telemetry History</string>

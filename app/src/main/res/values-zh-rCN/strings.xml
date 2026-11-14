@@ -67,6 +67,9 @@
     <string name="settings_custom_rule_desc">从设备本地存储上传自定义 YAML 安全规则。</string>
     <string name="settings_language_title">应用语言选择</string>
     <string name="settings_language_desc">选择控制台界面显示的语言。</string>
+    <string name="settings_github_pr_title">贡献规则库与项目协作</string>
+    <string name="settings_github_pr_desc">哪吒网络安全EDR 的发展依赖开源社区协作。如果您发现了新的 C2 威胁 IP、恶意软件或诈骗域名，请直接提交 Pull Request 至我们的开源代码库，共同守护全球终端安全！</string>
+    <string name="btn_contribute_pr">通过 GitHub PR 提交规则</string>
 
     <!-- Author & Philosophy -->
     <string name="author_philosophy_title">关于作者与开源愿景</string>

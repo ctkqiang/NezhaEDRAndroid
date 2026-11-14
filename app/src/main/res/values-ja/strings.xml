@@ -45,7 +45,6 @@
 
     <!-- Dashboard Widget Phrasing -->
     <string name="endpoint_score_title">エンドポイントセキュリティインデックス</string>
-    <string name="endpoint_score_optimal">最適なセキュリティ状態</string>
     <string name="endpoint_score_warning">対策を推奨します</string>
     <string name="telemetry_throughput_title">ライブテレメトリデータレート</string>
     <string name="protection_vectors_title">アクティブな保護ベクター</string>
@@ -67,6 +66,15 @@
     <string name="settings_custom_rule_desc">端末ストレージからカスタム YAML セキュリティルールをアップロードします。</string>
     <string name="settings_language_title">アプリの言語</string>
     <string name="settings_language_desc">ユーザーインターフェースの表示言語を選択します。</string>
+    <string name="settings_github_pr_title">ルールセットを投稿・プロジェクトに参加</string>
+    <string name="settings_github_pr_desc">NezhaCyberEDR はオープンソースコミュニティのコラボレーションによって成長します。新しい C2 IP、マルウェア、詐欺ドメインを発見した場合は、GitHub リポジトリに Pull Request を直接送信してください。</string>
+    <string name="btn_contribute_pr">GitHub PR でルールを送信</string>
+
+    <!-- Author & Philosophy -->
+    <string name="author_philosophy_title">著者とオープンソースのミッション</string>
+    <string name="author_info_label">著者: 钟智强 &lt;ctkqiang&gt;</string>
+    <string name="author_github_url">https://github.com/ctkqiang</string>
+    <string name="author_philosophy_body">NezhaCyberEDR は、誰もがオープンソースのセキュリティルールセットに貢献し、共有できるようにするために開発されました。</string>
 
     <!-- Sync Ruleset Selection Dialog -->
     <string name="sync_dialog_title">同期するルールセットを選択</string>
@@ -81,7 +89,7 @@
 
     <!-- Open Source Privacy Disclaimer -->
     <string name="privacy_disclaimer_title">オープンソースとプライバシー保証</string>
-    <string name="privacy_disclaimer_body">NezhaCyberEDR はオープンソースソフトウェアであり、ユーザーデータをリモートサーバーに送信することはありません。すべてのログと脅威イベントは端末内の SQLite データベースに安全に保存されます。</string>
+    <string name="privacy_disclaimer_body">NezhaCyberEDR はオープンソースソフトウェアであり、ユーザーデータをリモートサーバーに送信することはありません。</string>
 
     <!-- SQLite Visited Sites & Actions -->
     <string name="visited_sites_header">ローカルテレメトリ履歴</string>

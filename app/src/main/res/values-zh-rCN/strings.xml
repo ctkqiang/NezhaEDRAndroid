@@ -65,6 +65,8 @@
     <string name="settings_gitops_desc">从安全资源库实时同步最新威胁检测规则。</string>
     <string name="settings_custom_rule_title">导入本地 YAML 规则</string>
     <string name="settings_custom_rule_desc">从设备本地存储上传自定义 YAML 安全规则。</string>
+    <string name="settings_language_title">应用语言选择</string>
+    <string name="settings_language_desc">选择控制台界面显示的语言。</string>
 
     <!-- Sync Ruleset Selection Dialog -->
     <string name="sync_dialog_title">选择要同步的安全规则库</string>

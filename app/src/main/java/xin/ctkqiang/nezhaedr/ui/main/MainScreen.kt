@@ -209,6 +209,10 @@ fun MainScreen(
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 viewModel.setAppTheme(theme)
             },
+            onSelectLanguage = { langCode ->
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                viewModel.setAppLanguage(context, langCode)
+            },
             onClearData = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 viewModel.clearLocalTelemetryData()
@@ -275,6 +279,7 @@ fun MainScreenContent(
     onSyncSelectedRules: () -> Unit = {},
     onImportRuleClick: () -> Unit = {},
     onSelectTheme: (AppThemeMode) -> Unit = {},
+    onSelectLanguage: (String) -> Unit = {},
     onClearData: () -> Unit = {},
     onExportYaml: () -> Unit = {},
     onExportCsv: () -> Unit = {},
@@ -447,6 +452,7 @@ fun MainScreenContent(
                     4 -> SettingsTabContent(
                         uiState = uiState,
                         onSelectTheme = onSelectTheme,
+                        onSelectLanguage = onSelectLanguage,
                         onOpenSyncPicker = onOpenSyncPicker,
                         onImportRuleClick = onImportRuleClick
                     )
@@ -666,6 +672,7 @@ fun SyncRulesPickerDialog(
 fun SettingsTabContent(
     uiState: MainUiState,
     onSelectTheme: (AppThemeMode) -> Unit,
+    onSelectLanguage: (String) -> Unit,
     onOpenSyncPicker: () -> Unit,
     onImportRuleClick: () -> Unit
 ) {
@@ -683,6 +690,48 @@ fun SettingsTabContent(
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
+
+        // Language Selector Card
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(id = R.string.settings_language_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(id = R.string.settings_language_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(
+                        listOf(
+                            "zh" to "中文",
+                            "en" to "English",
+                            "ja" to "日本語",
+                            "ko" to "한국어",
+                            "th" to "ไทย"
+                        )
+                    ) { (code, label) ->
+                        FilterChip(
+                            selected = uiState.appLanguageCode == code,
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                onSelectLanguage(code)
+                            },
+                            label = { Text(label, style = MaterialTheme.typography.labelSmall) }
+                        )
+                    }
+                }
+            }
+        }
 
         // Theme Switcher Card
         Card(

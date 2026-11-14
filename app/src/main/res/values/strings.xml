@@ -65,6 +65,8 @@
     <string name="settings_gitops_desc">Synchronize threat rules directly from the remote security repository.</string>
     <string name="settings_custom_rule_title">Local Custom YAML Rule</string>
     <string name="settings_custom_rule_desc">Upload custom YAML security rules from device storage.</string>
+    <string name="settings_language_title">Application Language</string>
+    <string name="settings_language_desc">Select your preferred language for the user interface.</string>
 
     <!-- Sync Ruleset Selection Dialog -->
     <string name="sync_dialog_title">Select Security Rulesets to Sync</string>

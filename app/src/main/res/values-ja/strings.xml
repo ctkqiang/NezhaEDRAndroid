@@ -1,0 +1,125 @@
+<resources>
+    <string name="app_name">NezhaCyberEDR</string>
+    <string name="notification_channel_name">NezhaCyberEDR 脅威アラート</string>
+    <string name="notification_channel_description">検出されたセキュリティ上の脅威と封じ込めアクションに関する通知。</string>
+    <string name="threat_detected_title">脅威がブロックされました: %1$s</string>
+    <string name="threat_detected_body">アプリケーション %1$s は、NezhaCyberEDR によって %2$s へのアクセスが阻止されました。</string>
+
+    <string name="nav_dashboard">センチネル</string>
+    <string name="nav_rules">ルール</string>
+    <string name="nav_threats">アラート</string>
+    <string name="nav_history">保管庫</string>
+    <string name="nav_settings">設定</string>
+
+    <string name="switch_on">有効</string>
+    <string name="switch_off">無効</string>
+    <string name="mode_user">ユーザーモード</string>
+    <string name="mode_developer">開発者モード</string>
+
+    <string name="header_title">NEZHA EDR</string>
+    <string name="header_subtitle">ゼロテレメトリローカル防御</string>
+    <string name="defense_engaged">ローカル防御有効</string>
+    <string name="defense_paused">ローカル防御停止中</string>
+    <string name="intercepted_attempts_label">ブロックされた脅威試行</string>
+    <string name="yaml_engine_label">YAML 評価ルールエンジン</string>
+    <string name="active_rules_loaded">%1$d 件のルールセットが適用中</string>
+    <string name="manage_action">管理 →</string>
+    <string name="intercept_trail_label">脅威ブロック監査トレイル</string>
+    <string name="realtime_audit">リアルタイム監査</string>
+    <string name="no_intercepted_records">ブロックされた接続試行は記録されていません。</string>
+    <string name="blocked_badge">ブロック済み</string>
+
+    <string name="edr_dashboard_title">NezhaCyberEDR 保護</string>
+    <string name="vpn_service_status">ネットワーク保護エンジン</string>
+    <string name="vpn_status_active">アクティブな保護サービス</string>
+    <string name="vpn_status_inactive">保護停止中</string>
+    <string name="btn_enable_vpn">保護を有効化</string>
+    <string name="btn_disable_vpn">保護を無効化</string>
+    <string name="btn_stop_protection">保護を停止</string>
+
+    <string name="active_rules_count">アクティブルールセット</string>
+    <string name="total_threats_blocked">封じ込められた脅威</string>
+    <string name="visited_sites_count">記録された訪問サイト</string>
+    <string name="blocked_attempts_count">ブロックされたアクセス試行</string>
+    <string name="threat_activity_graph">リアルタイムテレメトリ分析</string>
+
+    <!-- Dashboard Widget Phrasing -->
+    <string name="endpoint_score_title">エンドポイントセキュリティインデックス</string>
+    <string name="endpoint_score_optimal">最適なセキュリティ状態</string>
+    <string name="endpoint_score_warning">対策を推奨します</string>
+    <string name="telemetry_throughput_title">ライブテレメトリデータレート</string>
+    <string name="protection_vectors_title">アクティブな保護ベクター</string>
+    <string name="vector_dns">キャプティブサブネットフィルタリング</string>
+    <string name="vector_package">パッケージインストールセンサー</string>
+    <string name="vector_engine">YAML ルールエンジン</string>
+    <string name="vector_status_active">有効</string>
+    <string name="falcon_trail_title">NezhaCyberEDR ブロックトレイル</string>
+    <string name="filter_all">すべての履歴</string>
+    <string name="filter_blocked">ブロックのみ</string>
+
+    <!-- Settings Screen Phrasing -->
+    <string name="settings_header_title">アプリケーション設定</string>
+    <string name="settings_theme_title">インターフェースのアクセントカラー</string>
+    <string name="settings_theme_desc">ダッシュボードのビジュアルアクセントカラーをカスタマイズします。</string>
+    <string name="settings_gitops_title">ルールエンジンの同期</string>
+    <string name="settings_gitops_desc">リモートセキュリティリポジトリから脅威ルールを同期します。</string>
+    <string name="settings_custom_rule_title">ローカルカスタム YAML ルール</string>
+    <string name="settings_custom_rule_desc">端末ストレージからカスタム YAML セキュリティルールをアップロードします。</string>
+    <string name="settings_language_title">アプリの言語</string>
+    <string name="settings_language_desc">ユーザーインターフェースの表示言語を選択します。</string>
+
+    <!-- Sync Ruleset Selection Dialog -->
+    <string name="sync_dialog_title">同期するルールセットを選択</string>
+    <string name="search_rules_placeholder">ルールセットを検索...</string>
+    <string name="btn_select_all">すべて選択</string>
+    <string name="btn_deselect_all">選択解除</string>
+    <string name="btn_sync_selected">選択したルールを同期 (%1$d)</string>
+    <string name="delete_rule_title">セキュリティルールを削除しますか？</string>
+    <string name="delete_rule_body">ルール \"%1$s\" (%2$s) をローカルストレージから削除してもよろしいですか？</string>
+    <string name="btn_delete">削除</string>
+    <string name="rule_deleted_toast">ルールが正常に削除されました。</string>
+
+    <!-- Open Source Privacy Disclaimer -->
+    <string name="privacy_disclaimer_title">オープンソースとプライバシー保証</string>
+    <string name="privacy_disclaimer_body">NezhaCyberEDR はオープンソースソフトウェアであり、ユーザーデータをリモートサーバーに送信することはありません。すべてのログと脅威イベントは端末内の SQLite データベースに安全に保存されます。</string>
+
+    <!-- SQLite Visited Sites & Actions -->
+    <string name="visited_sites_header">ローカルテレメトリ履歴</string>
+    <string name="btn_export_data">YAML エクスポート</string>
+    <string name="btn_export_csv">CSV エクスポート</string>
+    <string name="btn_clear_data">ローカル履歴を消去</string>
+    <string name="btn_import_rule">YAML ルールをインポート</string>
+    <string name="btn_sync_github">セキュリティルールを同期</string>
+    <string name="confirm_clear_title">ローカル履歴を削除しますか？</string>
+    <string name="confirm_clear_body">SQLite データベースからすべてのテレメトリ記録を削除してもよろしいですか？</string>
+    <string name="no_history_recorded">テレメトリ履歴はまだ記録されていません。</string>
+    <string name="data_exported_toast">テレメトリデータがエクスポートされました。</string>
+    <string name="data_cleared_toast">ローカル記録が削除されました。</string>
+
+    <!-- Sync & Import Localized Toasts/Dialogs -->
+    <string name="sync_success_toast">セキュリティルールセットが同期されました。</string>
+    <string name="sync_failed_toast">同期に失敗しました。ネットワーク接続を確認してください。</string>
+    <string name="syncing_dialog_title">ルールセットを同期中</string>
+    <string name="syncing_dialog_body">安全なリポジトリから最新の脅威ルールセットをダウンロードしています...</string>
+    <string name="custom_import_success">カスタム YAML ルールがインポートされました！</string>
+    <string name="custom_import_failed">カスタム YAML ルールのインポートに失敗しました。</string>
+
+    <string name="rules_header_title">アクティブな検出ルールセット</string>
+    <string name="rule_category_label">カテゴリ: %1$s</string>
+    <string name="rule_severity_label">重大度: %1$s</string>
+    <string name="rule_action_label">封じ込めアクション: %1$s</string>
+    <string name="rule_condition_targets">ターゲット IP / ドメイン:</string>
+    <string name="rule_condition_patterns">パッケージパターン:</string>
+    <string name="rule_detail_dialog_title">ルールの詳細</string>
+    <string name="btn_close">閉じる</string>
+    <string name="btn_cancel">キャンセル</string>
+
+    <!-- Threat Alert Popup Dialog -->
+    <string name="threat_alert_popup_title">セキュリティブロックが発生しました</string>
+    <string name="threat_alert_popup_body">NezhaCyberEDR はルール %2$s (%3$s) に基づいてアプリ \"%1$s\" をブロックしました。\n\n詳細: %4$s</string>
+
+    <string name="threat_logs_title">脅威封じ込めアラート</string>
+    <string name="no_threats_detected">セキュリティ上の脅威は検出されませんでした。端末は安全です。</string>
+    <string name="app_name_label">アプリ: %1$s</string>
+    <string name="package_name_label">パッケージ: %1$s</string>
+</resources>

@@ -1,0 +1,125 @@
+<resources>
+    <string name="app_name">NezhaCyberEDR</string>
+    <string name="notification_channel_name">NezhaCyberEDR 위협 알림</string>
+    <string name="notification_channel_description">감지된 보안 위협 및 격리 조치에 대한 알림입니다.</string>
+    <string name="threat_detected_title">위협 차단됨: %1$s</string>
+    <string name="threat_detected_body">NezhaCyberEDR에 의해 애플리케이션 %1$s의 %2$s 접근이 차단되었습니다.</string>
+
+    <string name="nav_dashboard">센티널</string>
+    <string name="nav_rules">규칙</string>
+    <string name="nav_threats">알림</string>
+    <string name="nav_history">보관함</string>
+    <string name="nav_settings">설정</string>
+
+    <string name="switch_on">켜짐</string>
+    <string name="switch_off">꺼짐</string>
+    <string name="mode_user">사용자 모드</string>
+    <string name="mode_developer">개발자 모드</string>
+
+    <string name="header_title">NEZHA EDR</string>
+    <string name="header_subtitle">제로 텔레메트리 로컬 방어</string>
+    <string name="defense_engaged">로컬 방어 활성화됨</string>
+    <string name="defense_paused">로컬 방어 일시중지됨</string>
+    <string name="intercepted_attempts_label">차단된 위협 시도</string>
+    <string name="yaml_engine_label">YAML 평가 규칙 엔진</string>
+    <string name="active_rules_loaded">%1$d개 규칙 세트 적용 중</string>
+    <string name="manage_action">관리 →</string>
+    <string name="intercept_trail_label">위협 차단 감사 기록</string>
+    <string name="realtime_audit">실시간 감사</string>
+    <string name="no_intercepted_records">차단된 연결 시도가 기록되지 않았습니다.</string>
+    <string name="blocked_badge">차단됨</string>
+
+    <string name="edr_dashboard_title">NezhaCyberEDR 보호</string>
+    <string name="vpn_service_status">네트워크 보호 엔진</string>
+    <string name="vpn_status_active">활성 보호 서비스</string>
+    <string name="vpn_status_inactive">보호 일시중지됨</string>
+    <string name="btn_enable_vpn">보호 활성화</string>
+    <string name="btn_disable_vpn">보호 비활성화</string>
+    <string name="btn_stop_protection">보호 중지</string>
+
+    <string name="active_rules_count">활성 규칙 세트</string>
+    <string name="total_threats_blocked">격리된 위협</string>
+    <string name="visited_sites_count">기록된 방문 사이트</string>
+    <string name="blocked_attempts_count">차단된 시도 횟수</string>
+    <string name="threat_activity_graph">실시간 텔레메트리 분석</string>
+
+    <!-- Dashboard Widget Phrasing -->
+    <string name="endpoint_score_title">엔드포인트 보안 지수</string>
+    <string name="endpoint_score_optimal">최적의 보안 상태</string>
+    <string name="endpoint_score_warning">조치 권장</string>
+    <string name="telemetry_throughput_title">실시간 텔레메트리 전송률</string>
+    <string name="protection_vectors_title">활성 보호 벡터</string>
+    <string name="vector_dns">캡티브 서브넷 필터링</string>
+    <string name="vector_package">패키지 설치 감지 센서</string>
+    <string name="vector_engine">YAML 규칙 엔진</string>
+    <string name="vector_status_active">활성</string>
+    <string name="falcon_trail_title">NezhaCyberEDR 차단 기록</string>
+    <string name="filter_all">전체 기록</string>
+    <string name="filter_blocked">차단 항목만</string>
+
+    <!-- Settings Screen Phrasing -->
+    <string name="settings_header_title">애플리케이션 설정</string>
+    <string name="settings_theme_title">인터페이스 강조 색상</string>
+    <string name="settings_theme_desc">대시보드의 시각적 강조 색상을 설정합니다.</string>
+    <string name="settings_gitops_title">규칙 엔진 동기화</string>
+    <string name="settings_gitops_desc">원격 보안 저장소에서 최신 위협 규칙을 동기화합니다.</string>
+    <string name="settings_custom_rule_title">로컬 사용자 지정 YAML 규칙</string>
+    <string name="settings_custom_rule_desc">기기 저장소에서 사용자 지정 YAML 보안 규칙을 업로드합니다.</string>
+    <string name="settings_language_title">애플리케이션 언어</string>
+    <string name="settings_language_desc">사용자 인터페이스에 사용할 언어를 선택하세요.</string>
+
+    <!-- Sync Ruleset Selection Dialog -->
+    <string name="sync_dialog_title">동기화할 규칙 세트 선택</string>
+    <string name="search_rules_placeholder">규칙 세트 검색...</string>
+    <string name="btn_select_all">전체 선택</string>
+    <string name="btn_deselect_all">선택 해제</string>
+    <string name="btn_sync_selected">선택 항목 동기화 (%1$d)</string>
+    <string name="delete_rule_title">보안 규칙을 삭제하시겠습니까?</string>
+    <string name="delete_rule_body">로컬 저장소에서 규칙 \"%1$s\" (%2$s)를 삭제하시겠습니까?</string>
+    <string name="btn_delete">삭제</string>
+    <string name="rule_deleted_toast">규칙이 성공적으로 삭제되었습니다.</string>
+
+    <!-- Open Source Privacy Disclaimer -->
+    <string name="privacy_disclaimer_title">오픈 소스 및 개인정보 보호 보장</string>
+    <string name="privacy_disclaimer_body">NezhaCyberEDR은 오픈 소스 소프트웨어이며 사용자 데이터를 원격 서버로 수집하거나 전송하지 않습니다. 모든 로그 및 위협 이벤트는 기기 내 SQLite 데이터베이스에 안전하게 저장됩니다.</string>
+
+    <!-- SQLite Visited Sites & Actions -->
+    <string name="visited_sites_header">로컬 텔레메트리 기록</string>
+    <string name="btn_export_data">YAML 내보내기</string>
+    <string name="btn_export_csv">CSV 내보내기</string>
+    <string name="btn_clear_data">로컬 기록 삭제</string>
+    <string name="btn_import_rule">YAML 규칙 가져오기</string>
+    <string name="btn_sync_github">보안 규칙 동기화</string>
+    <string name="confirm_clear_title">로컬 기록을 삭제하시겠습니까?</string>
+    <string name="confirm_clear_body">SQLite 데이터베이스에서 모든 텔레메트리 기록을 삭제하시겠습니까?</string>
+    <string name="no_history_recorded">기록된 텔레메트리가 없습니다.</string>
+    <string name="data_exported_toast">텔레메트리 데이터가 내보내졌습니다.</string>
+    <string name="data_cleared_toast">로컬 기록이 삭제되었습니다.</string>
+
+    <!-- Sync & Import Localized Toasts/Dialogs -->
+    <string name="sync_success_toast">보안 규칙 세트가 동기화되었습니다.</string>
+    <string name="sync_failed_toast">동기화 실패. 네트워크 연결을 확인하세요.</string>
+    <string name="syncing_dialog_title">규칙 세트 동기화 중</string>
+    <string name="syncing_dialog_body">보안 저장소에서 최신 위협 규칙 세트를 다운로드 중입니다...</string>
+    <string name="custom_import_success">사용자 지정 YAML 규칙을 성공적으로 가져왔습니다!</string>
+    <string name="custom_import_failed">사용자 지정 YAML 규칙 가져오기 실패.</string>
+
+    <string name="rules_header_title">활성 감지 규칙 세트</string>
+    <string name="rule_category_label">범주: %1$s</string>
+    <string name="rule_severity_label">심각도: %1$s</string>
+    <string name="rule_action_label">격리 조치: %1$s</string>
+    <string name="rule_condition_targets">대상 IP / 도메인:</string>
+    <string name="rule_condition_patterns">패키지 패턴:</string>
+    <string name="rule_detail_dialog_title">규칙 상세 정보</string>
+    <string name="btn_close">닫기</string>
+    <string name="btn_cancel">취소</string>
+
+    <!-- Threat Alert Popup Dialog -->
+    <string name="threat_alert_popup_title">보안 차단 발생</string>
+    <string name="threat_alert_popup_body">NezhaCyberEDR이 규칙 %2$s (%3$s)에 따라 앱 \"%1$s\"의 접근을 차단했습니다.\n\n상세 정보: %4$s</string>
+
+    <string name="threat_logs_title">위협 격리 알림</string>
+    <string name="no_threats_detected">보안 위협이 감지되지 않았습니다. 엔드포인트가 안전합니다.</string>
+    <string name="app_name_label">앱: %1$s</string>
+    <string name="package_name_label">패키지: %1$s</string>
+</resources>

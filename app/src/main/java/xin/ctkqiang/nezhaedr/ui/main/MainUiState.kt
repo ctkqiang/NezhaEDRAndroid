@@ -21,6 +21,7 @@ data class MainUiState(
     val availableRemoteCatalog: List<RemoteRuleCatalogItem> = emptyList(),
     val selectedRemoteFilesToSync: Set<String> = emptySet(),
     val appTheme: AppThemeMode = AppThemeMode.RED,
+    val appLanguageCode: String = "zh",
     val selectedTab: Int = 0,
     val isLoading: Boolean = false,
     val isSyncingRules: Boolean = false

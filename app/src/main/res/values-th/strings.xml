@@ -1,0 +1,125 @@
+<resources>
+    <string name="app_name">NezhaCyberEDR</string>
+    <string name="notification_channel_name">การแจ้งเตือนภัยคุกคาม NezhaCyberEDR</string>
+    <string name="notification_channel_description">การแจ้งเตือนสำหรับภัยคุกคามความปลอดภัยที่ตรวจพบและการดำเนินการสกัดกั้น</string>
+    <string name="threat_detected_title">บล็อกภัยคุกคามแล้ว: %1$s</string>
+    <string name="threat_detected_body">แอปพลิเคชัน %1$s ถูกบล็อกจากการเข้าถึง %2$s โดย NezhaCyberEDR</string>
+
+    <string name="nav_dashboard">เซนทิเนล</string>
+    <string name="nav_rules">กฎเกณฑ์</string>
+    <string name="nav_threats">การแจ้งเตือน</string>
+    <string name="nav_history">คลังข้อมูล</string>
+    <string name="nav_settings">การตั้งค่า</string>
+
+    <string name="switch_on">เปิด</string>
+    <string name="switch_off">ปิด</string>
+    <string name="mode_user">โหมดผู้ใช้</string>
+    <string name="mode_developer">โหมดนักพัฒนา</string>
+
+    <string name="header_title">NEZHA EDR</string>
+    <string name="header_subtitle">การป้องกันในเครื่องแบบไม่ส่งข้อมูลออก</string>
+    <string name="defense_engaged">เปิดใช้งานการป้องกันในเครื่อง</string>
+    <string name="defense_paused">หยุดการป้องกันในเครื่องชั่วคราว</string>
+    <string name="intercepted_attempts_label">ความพยายามภัยคุกคามที่ถูกสกัดกั้น</string>
+    <string name="yaml_engine_label">เครื่องมือประเมินกฎ YAML</string>
+    <string name="active_rules_loaded">โหลดชุดกฎที่ใช้งานแล้ว %1$d รายการ</string>
+    <string name="manage_action">จัดการ →</string>
+    <string name="intercept_trail_label">ประวัติการตรวจสอบการสกัดกั้นภัยคุกคาม</string>
+    <string name="realtime_audit">การตรวจสอบแบบเรียลไทม์</string>
+    <string name="no_intercepted_records">ยังไม่มีบันทึกความพยายามเชื่อมต่อที่ถูกสกัดกั้น</string>
+    <string name="blocked_badge">ถูกบล็อกแล้ว</string>
+
+    <string name="edr_dashboard_title">การปกป้อง NezhaCyberEDR</string>
+    <string name="vpn_service_status">ระบบป้องกันเครือข่าย</string>
+    <string name="vpn_status_active">บริการป้องกันทำงานอยู่</string>
+    <string name="vpn_status_inactive">หยุดการป้องกันชั่วคราว</string>
+    <string name="btn_enable_vpn">เปิดใช้งานการป้องกัน</string>
+    <string name="btn_disable_vpn">ปิดใช้งานการป้องกัน</string>
+    <string name="btn_stop_protection">หยุดการป้องกัน</string>
+
+    <string name="active_rules_count">ชุดกฎที่ใช้งานอยู่</string>
+    <string name="total_threats_blocked">ภัยคุกคามที่ถูกสกัดกั้น</string>
+    <string name="visited_sites_count">บันทึกประวัติการเข้าชม</string>
+    <string name="blocked_attempts_count">ความพยายามที่ถูกบล็อก</string>
+    <string name="threat_activity_graph">การวิเคราะห์โทรมาตรแบบเรียลไทม์</string>
+
+    <!-- Dashboard Widget Phrasing -->
+    <string name="endpoint_score_title">ดัชนีความปลอดภัยของเอนด์พอยต์</string>
+    <string name="endpoint_score_optimal">สถานะความปลอดภัยสมบูรณ์แบบ</string>
+    <string name="endpoint_score_warning">แนะนำให้เปิดใช้งานการป้องกัน</string>
+    <string name="telemetry_throughput_title">อัตราข้อมูลโทรมาตรสด</string>
+    <string name="protection_vectors_title">เวกเตอร์การป้องกันที่ทำงานอยู่</string>
+    <string name="vector_dns">ระบบกรองซับเน็ตแบบแคปทีฟ</string>
+    <string name="vector_package">เซ็นเซอร์ตรวจจับการติดตั้งแพ็กเกจ</string>
+    <string name="vector_engine">เครื่องมือประมวลผลกฎ YAML</string>
+    <string name="vector_status_active">ทำงานอยู่</string>
+    <string name="falcon_trail_title">เส้นทางการสกัดกั้น NezhaCyberEDR</string>
+    <string name="filter_all">ประวัติทั้งหมด</string>
+    <string name="filter_blocked">เฉพาะที่ถูกบล็อก</string>
+
+    <!-- Settings Screen Phrasing -->
+    <string name="settings_header_title">การตั้งค่าแอปพลิเคชัน</string>
+    <string name="settings_theme_title">สีเน้นอินเทอร์เฟซ</string>
+    <string name="settings_theme_desc">ปรับแต่งสีเน้นสำหรับแดชบอร์ด</string>
+    <string name="settings_gitops_title">ซิงค์เครื่องมือกฎเกณฑ์</string>
+    <string name="settings_gitops_desc">ซิงโครไนซ์กฎภัยคุกคามโดยตรงจากคลังความปลอดภัยระยะไกล</string>
+    <string name="settings_custom_rule_title">กฎ YAML แบบกำหนดเองในเครื่อง</string>
+    <string name="settings_custom_rule_desc">อัปโหลดกฎความปลอดภัย YAML แบบกำหนดเองจากพื้นที่จัดเก็บในเครื่อง</string>
+    <string name="settings_language_title">ภาษาแอปพลิเคชัน</string>
+    <string name="settings_language_desc">เลือกภาษาที่ต้องการสำหรับอินเทอร์เฟซผู้ใช้</string>
+
+    <!-- Sync Ruleset Selection Dialog -->
+    <string name="sync_dialog_title">เลือกชุดกฎเกณฑ์ความปลอดภัยที่จะซิงค์</string>
+    <string name="search_rules_placeholder">ค้นหาชุดกฎ...</string>
+    <string name="btn_select_all">เลือกทั้งหมด</string>
+    <string name="btn_deselect_all">ยกเลิกการเลือกทั้งหมด</string>
+    <string name="btn_sync_selected">ซิงค์รายการที่เลือก (%1$d)</string>
+    <string name="delete_rule_title">ลบกฎความปลอดภัยหรือไม่?</string>
+    <string name="delete_rule_body">คุณแน่ใจหรือไม่ว่าต้องการลบกฎ \"%1$s\" (%2$s) จากพื้นที่จัดเก็บในเครื่อง?</string>
+    <string name="btn_delete">ลบ</string>
+    <string name="rule_deleted_toast">ลบกฎสำเร็จแล้ว</string>
+
+    <!-- Open Source Privacy Disclaimer -->
+    <string name="privacy_disclaimer_title">การรับประกันการเปิดเผยโค้ดและความเป็นส่วนตัว</string>
+    <string name="privacy_disclaimer_body">NezhaCyberEDR เป็นซอฟต์แวร์โอเพ่นซอร์สและไม่เก็บรวบรวมหรือส่งข้อมูลผู้ใช้ไปยังเซิร์ฟเวอร์ระยะไกล บันทึกโทรมาตรและเหตุการณ์ภัยคุกคามทั้งหมดจะถูกจัดเก็บไว้ในฐานข้อมูล SQLite ในเครื่องของคุณอย่างปลอดภัย</string>
+
+    <!-- SQLite Visited Sites & Actions -->
+    <string name="visited_sites_header">ประวัติโทรมาตรในเครื่อง</string>
+    <string name="btn_export_data">ส่งออก YAML</string>
+    <string name="btn_export_csv">ส่งออก CSV</string>
+    <string name="btn_clear_data">ล้างประวัติในเครื่อง</string>
+    <string name="btn_import_rule">นำเข้ากฎ YAML</string>
+    <string name="btn_sync_github">ซิงค์กฎความปลอดภัย</string>
+    <string name="confirm_clear_title">ลบประวัติในเครื่องหรือไม่?</string>
+    <string name="confirm_clear_body">คุณแน่ใจหรือไม่ว่าต้องการลบบันทึกโทรมาตรทั้งหมดจากฐานข้อมูล SQLite ในเครื่องของคุณ?</string>
+    <string name="no_history_recorded">ยังไม่มีบันทึกประวัติโทรมาตร</string>
+    <string name="data_exported_toast">ส่งออกข้อมูลโทรมาตรเรียบร้อยแล้ว</string>
+    <string name="data_cleared_toast">ลบบันทึกในเครื่องเรียบร้อยแล้ว</string>
+
+    <!-- Sync & Import Localized Toasts/Dialogs -->
+    <string name="sync_success_toast">ซิงโครไนซ์ชุดกฎความปลอดภัยเรียบร้อยแล้ว</string>
+    <string name="sync_failed_toast">การซิงค์ชุดกฎล้มเหลว กรุณาตรวจสอบการเชื่อมต่อเครือข่าย</string>
+    <string name="syncing_dialog_title">กำลังซิงค์ชุดกฎเกณฑ์</string>
+    <string name="syncing_dialog_body">กำลังดาวน์โหลดชุดกฎภัยคุกคามล่าสุดจากคลังความปลอดภัย...</string>
+    <string name="custom_import_success">นำเข้ากฎ YAML แบบกำหนดเองเรียบร้อยแล้ว!</string>
+    <string name="custom_import_failed">นำเข้ากฎ YAML แบบกำหนดเองล้มเหลว</string>
+
+    <string name="rules_header_title">ชุดกฎการตรวจจับที่ใช้งานอยู่</string>
+    <string name="rule_category_label">หมวดหมู่: %1$s</string>
+    <string name="rule_severity_label">ระดับความรุนแรง: %1$s</string>
+    <string name="rule_action_label">การดำเนินการสกัดกั้น: %1$s</string>
+    <string name="rule_condition_targets">IP / โดเมนเป้าหมาย:</string>
+    <string name="rule_condition_patterns">รูปแบบแพ็กเกจ:</string>
+    <string name="rule_detail_dialog_title">รายละเอียดกฎ</string>
+    <string name="btn_close">ปิด</string>
+    <string name="btn_cancel">ยกเลิก</string>
+
+    <!-- Threat Alert Popup Dialog -->
+    <string name="threat_alert_popup_title">เกิดการสกัดกั้นความปลอดภัย</string>
+    <string name="threat_alert_popup_body">NezhaCyberEDR บล็อกแอปพลิเคชัน \"%1$s\" ตามกฎ %2$s (%3$s)\n\nรายละเอียด: %4$s</string>
+
+    <string name="threat_logs_title">การแจ้งเตือนการสกัดกั้นภัยคุกคาม</string>
+    <string name="no_threats_detected">ไม่พบภัยคุกคามความปลอดภัย เอนด์พอยต์ปลอดภัยดี</string>
+    <string name="app_name_label">แอป: %1$s</string>
+    <string name="package_name_label">แพ็กเกจ: %1$s</string>
+</resources>

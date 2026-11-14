@@ -24,6 +24,7 @@ import xin.ctkqiang.nezhaedr.service.telemetry.NezhaVpnService
 import xin.ctkqiang.nezhaedr.service.telemetry.PackageTelemetryReceiver
 import xin.ctkqiang.nezhaedr.ui.theme.AppThemeMode
 import xin.ctkqiang.nezhaedr.util.EDRLogger
+import xin.ctkqiang.nezhaedr.util.LocaleHelper
 
 class MainViewModel(
     application: Application,
@@ -38,7 +39,8 @@ class MainViewModel(
     private val _uiState = MutableStateFlow(
         MainUiState(
             isLoading = true,
-            appTheme = loadSavedTheme()
+            appTheme = loadSavedTheme(),
+            appLanguageCode = loadSavedLanguage()
         )
     )
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -65,6 +67,16 @@ class MainViewModel(
         } catch (e: Exception) {
             AppThemeMode.RED
         }
+    }
+
+    fun setAppLanguage(context: Context, languageCode: String) {
+        EDRLogger.i(TAG, "setAppLanguage: Changing app language code to $languageCode")
+        LocaleHelper.applyLanguage(context, languageCode)
+        _uiState.update { it.copy(appLanguageCode = languageCode) }
+    }
+
+    private fun loadSavedLanguage(): String {
+        return LocaleHelper.getSavedLanguage(getApplication())
     }
 
     fun selectTab(tabIndex: Int) {

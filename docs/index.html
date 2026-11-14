@@ -18,6 +18,7 @@
       </div>
     </div>
     <div class="nav-actions">
+      <a href="playground.html" class="btn-toggle" style="border-color:var(--success-color); color:var(--success-color);" data-i18n="playgroundTitle">▶ Rule Playground</a>
       <button class="btn-toggle" onclick="toggleTheme()" data-i18n="toggleTheme">Theme</button>
       <button class="btn-toggle" id="langBtn" onclick="setLanguage(currentLang === 'en' ? 'zh' : 'en')">中文</button>
       <a href="https://github.com/ctkqiang/NezhaEDRAndroid" target="_blank" class="btn-primary" data-i18n="viewGithub">View on GitHub</a>
@@ -29,13 +30,13 @@
     <span class="hero-tag">OPEN-SOURCE ENDPOINT PROTECTION</span>
     <h1 class="hero-title" data-i18n="heroTitle">NezhaEDR Developer API Reference & Rule Flow Playground</h1>
     <p class="hero-subtitle" data-i18n="heroDesc">A comprehensive technical reference for creating, testing, and deploying declarative YAML rulesets for NezhaEDR Android.</p>
+    <a href="playground.html" class="btn-primary" style="background-color:var(--success-color); padding:12px 24px; font-size:1rem;">▶ Launch Standalone DartPad-Style Playground & Execution Visualizer</a>
   </header>
 
   <!-- Navigation Tabs -->
   <div class="tab-nav">
     <button class="tab-btn active" onclick="switchTab('overview')" data-i18n="tabOverview">Architecture & Overview</button>
     <button class="tab-btn" onclick="switchTab('schema')" data-i18n="tabSchema">YAML API Reference</button>
-    <button class="tab-btn" onclick="switchTab('playground')" data-i18n="tabPlayground">Interactive Node Playground</button>
     <button class="tab-btn" onclick="switchTab('contribute')" data-i18n="tabContribute">How to Contribute</button>
     <button class="tab-btn" onclick="switchTab('rules')" data-i18n="tabRules">Conduct & Standards</button>
   </div>
@@ -78,103 +79,67 @@
         <table class="doc-table">
           <thead>
             <tr>
-              <th>Syntax Key</th>
-              <th>Type / Allowed Values</th>
-              <th>What it Means & Design Rationale</th>
-              <th>Usage Guidelines</th>
+              <th>Syntax Key / 语法键</th>
+              <th>Type / 类型与允许值</th>
+              <th>Design Rationale & Meaning / 含义与设计原理</th>
+              <th>Guidelines / 规范</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td><code>schema_version</code></td>
               <td>String ("2.0")</td>
-              <td>Specifies rule specification version. Ensures forward compatibility.</td>
-              <td><span class="badge-can">CAN</span> Set to "2.0".</td>
+              <td>Specifies rule specification version. / 规范规则文件版本号。</td>
+              <td><span class="badge-can">CAN / 可以</span> Set to "2.0".</td>
             </tr>
             <tr>
               <td><code>rule_id</code></td>
               <td>String ("RULE-[CAT]-[ID]")</td>
-              <td>Unique standardized rule identifier (e.g. <code>RULE-PHISH-001</code>).</td>
-              <td><span class="badge-can">CAN</span> Use unique IDs.<br><span class="badge-cannot">CANNOT</span> Duplicate IDs.</td>
+              <td>Unique standardized rule identifier (e.g. <code>RULE-PHISH-001</code>). / 唯一标准化规则 ID。</td>
+              <td><span class="badge-can">CAN / 可以</span> Use unique IDs.<br><span class="badge-cannot">CANNOT / 禁止</span> Duplicate IDs.</td>
             </tr>
             <tr>
               <td><code>severity</code></td>
               <td>CRITICAL | HIGH | MEDIUM | LOG</td>
-              <td>Determines alert priority and notification UI styling.</td>
-              <td><span class="badge-can">CAN</span> Match threat impact.</td>
+              <td>Determines alert priority and notification UI styling. / 决定警报优先级与通知 UI 样式。</td>
+              <td><span class="badge-can">CAN / 可以</span> Match threat impact.</td>
             </tr>
             <tr>
               <td><code>engine_type</code></td>
               <td>signature | behavioral | conditional</td>
-              <td>Selects the processing engine: O(1) HashSet, Shannon Entropy / Subdomain Depth, or Expression Evaluator.</td>
-              <td><span class="badge-can">CAN</span> Combine targets.<br><span class="badge-cannot">CANNOT</span> Embed dynamic scripts.</td>
+              <td>Selects the processing engine: O(1) HashSet, Shannon Entropy / Subdomain Depth, or Expression Evaluator. / 选择匹配引擎：O(1) Hash 表、香农熵 / 子域名深度、或表达式评估器。</td>
+              <td><span class="badge-can">CAN / 可以</span> Combine targets.<br><span class="badge-cannot">CANNOT / 禁止</span> Embed dynamic scripts.</td>
             </tr>
             <tr>
               <td><code>target_source</code></td>
               <td>url_request | dns_query | tcp_connection | http_payload</td>
-              <td>Specifies telemetry event origin sensor.</td>
-              <td><span class="badge-can">CAN</span> Match target layer.</td>
+              <td>Specifies telemetry event origin sensor. / 指定遥测事件来源传感器。</td>
+              <td><span class="badge-can">CAN / 可以</span> Match target layer.</td>
             </tr>
             <tr>
               <td><code>condition.package_patterns</code></td>
               <td>List of Regex Strings</td>
-              <td>Matches package bundle IDs (e.g. <code>.*trojan\\.banker.*</code>). Triggers scam alert & APK purge!</td>
-              <td><span class="badge-can">CAN</span> Match bundle IDs.<br><span class="badge-cannot">CANNOT</span> Use nested ReDoS regex.</td>
+              <td>Matches package bundle IDs (e.g. <code>.*trojan\\.banker.*</code>). Triggers scam alert & APK purge! / 匹配应用安装包名。触发诈骗警报与 APK 自动清理！</td>
+              <td><span class="badge-can">CAN / 可以</span> Match bundle IDs.<br><span class="badge-cannot">CANNOT / 禁止</span> Use nested ReDoS regex.</td>
+            </tr>
+            <tr>
+              <td><code>condition.expression</code></td>
+              <td>Boolean Expression String</td>
+              <td>Evaluates boolean logic (e.g. <code>contains(domain, "888") || contains(domain, "vip")</code>). / 执行布尔逻辑评估。</td>
+              <td><span class="badge-can">CAN / 可以</span> Combine boolean helpers.</td>
             </tr>
             <tr>
               <td><code>action</code></td>
               <td>BLOCK | TERMINATE | NOTIFY | LOG</td>
-              <td>Containment action dispatched upon match.</td>
-              <td><span class="badge-can">CAN</span> Block egress / Kill app.</td>
+              <td>Containment action dispatched upon match. / 匹配成功时执行的安全处置动作。</td>
+              <td><span class="badge-can">CAN / 可以</span> Block egress / Kill app.</td>
             </tr>
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- Tab 3: Interactive Node Playground -->
-    <section id="playground" class="tab-content">
-      <div class="card">
-        <h2 class="card-title">Interactive Rule Execution Flow Visualizer</h2>
-        <p class="card-subtitle">Paste or edit your YAML ruleset on the left to visualize how NezhaEDR evaluates telemetry events step-by-step on the right.</p>
-
-        <div style="margin-bottom: 16px; display: flex; gap: 8px;">
-          <button class="btn-toggle" onclick="loadTemplate('c2')">Load C2 Template</button>
-          <button class="btn-toggle" onclick="loadTemplate('trojan')">Load Trojan Template</button>
-          <button class="btn-toggle" onclick="loadTemplate('entropy')">Load Entropy Template</button>
-        </div>
-
-        <div class="playground-grid">
-          <div class="playground-editor-box">
-            <textarea id="yamlEditor" class="yaml-textarea" oninput="updateNodeVisualizer()"></textarea>
-          </div>
-
-          <div class="node-visualizer">
-            <div class="node-card active">
-              <div class="node-header">1. TELEMETRY EVENT CAPTURED</div>
-              <div class="node-body">VpnService TUN / Package Receiver</div>
-            </div>
-            <div class="node-arrow">↓</div>
-            <div class="node-card active">
-              <div class="node-header">2. TARGET SOURCE SENSOR</div>
-              <div id="nodeSource" class="node-body">Source: DNS_QUERY</div>
-            </div>
-            <div class="node-arrow">↓</div>
-            <div class="node-card active">
-              <div class="node-header">3. MULTI-ENGINE EVALUATION</div>
-              <div id="nodeEngine" class="node-body">Engine: SIGNATURE (ID: RULE-C2-001)</div>
-            </div>
-            <div class="node-arrow">↓</div>
-            <div class="node-card active" style="border-color: var(--primary-color);">
-              <div class="node-header">4. CONTAINMENT ACTION DISPATCHED</div>
-              <div id="nodeAction" class="node-body">Action: BLOCK DISPATCHED</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Tab 4: How to Contribute -->
+    <!-- Tab 3: How to Contribute -->
     <section id="contribute" class="tab-content">
       <div class="card">
         <h2 class="card-title" data-i18n="rulesetContrib">Ruleset Contribution Workflow</h2>
@@ -188,7 +153,7 @@
       </div>
     </section>
 
-    <!-- Tab 5: Conduct & Rules -->
+    <!-- Tab 4: Conduct & Rules -->
     <section id="rules" class="tab-content">
       <div class="card">
         <h2 class="card-title" data-i18n="conductTitle">Code of Conduct & Project Principles</h2>

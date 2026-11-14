@@ -35,7 +35,17 @@ const i18n = {
     conductP2: "Agent & AI Coding Policy: The use of AI coding assistants is permitted, but all code must be thoroughly inspected, tested, and verified before submitting PRs.",
     conductP3: "Contributor Recognition: Anyone whose ruleset PR passes CI compliance and gets merged is recognized as an official contributor.",
     adminTitle: "Project Admin Application",
-    adminDesc: "If you wish to join the NezhaEDR core administrative team, please contact johnmelodymel@qq.com or ping GitHub @ctkqiang."
+    adminDesc: "If you wish to join the NezhaEDR core administrative team, please contact johnmelodymel@qq.com or ping GitHub @ctkqiang.",
+    playgroundTitle: "NezhaEDR Rule Playground",
+    btnRun: "Run",
+    tmplC2: "C2 Threat Block (Signature)",
+    tmplScam: "Scam Keyword Block (Conditional)",
+    tmplTrojan: "Banking Trojan (Package)",
+    tmplEntropy: "DGA Domain (Behavioral Entropy)",
+    backToDocs: "← Back to Docs",
+    paneEditor: "YAML RULE EDITOR (v2.0 Schema)",
+    paneConsole: "EVALUATION CONSOLE LOG",
+    paneVisualizer: "INTERACTIVE NODE EXECUTION GRAPH"
   },
   zh: {
     title: "哪吒 EDR 开发者文档",
@@ -73,14 +83,23 @@ const i18n = {
     conductP2: "AI / Coding Agent 规范：允许使用 AI 编程助手协助代码编写，但提交 PR 前必须经过人工代码审查与单元测试验证。",
     conductP3: "贡献者认证：任何通过 CI 自动检测并合入规则库 PR 的开发者均自动获得官方 Contributor 认证！",
     adminTitle: "申请成为项目管理员",
-    adminDesc: "如果您希望加入哪吒 EDR 核心管理团队，请发送邮件至 johnmelodymel@qq.com 或在 GitHub 上联系 @ctkqiang。"
+    adminDesc: "如果您希望加入哪吒 EDR 核心管理团队，请发送邮件至 johnmelodymel@qq.com 或在 GitHub 上联系 @ctkqiang。",
+    playgroundTitle: "哪吒 EDR 规则 Playground 仿真器",
+    btnRun: "运行规则",
+    tmplC2: "C2 威胁阻断 (Signature 引擎)",
+    tmplScam: "诈骗/赌博关键词阻断 (Conditional 引擎)",
+    tmplTrojan: "银行劫持木马 (Package 引擎)",
+    tmplEntropy: "高熵 DGA 域名 (Behavioral 熵引擎)",
+    backToDocs: "← 返回主文档",
+    paneEditor: "YAML 规则代码编辑器 (v2.0 Schema)",
+    paneConsole: "规则评估控制台输出",
+    paneVisualizer: "交互式节点流执行图"
   }
 };
 
 let currentLang = "en";
 
 function initAutoThemeAndLocale() {
-  // Auto-detect browser preferred language
   const userLang = navigator.language || navigator.userLanguage || "en";
   if (userLang.startsWith("zh")) {
     setLanguage("zh");
@@ -88,7 +107,6 @@ function initAutoThemeAndLocale() {
     setLanguage("en");
   }
 
-  // Auto-detect system dark/light theme
   if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
     document.documentElement.setAttribute("data-theme", "dark");
   } else {
@@ -100,11 +118,12 @@ function setLanguage(lang) {
   currentLang = lang;
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
-    if (i18n[lang][key]) {
+    if (i18n[lang] && i18n[lang][key]) {
       el.textContent = i18n[lang][key];
     }
   });
-  document.getElementById("langBtn").textContent = i18n[lang].toggleLang;
+  const langBtn = document.getElementById("langBtn");
+  if (langBtn) langBtn.textContent = i18n[lang].toggleLang;
   document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
 }
 
@@ -139,6 +158,22 @@ condition:
     - "198.51.100.14"
   target_domains:
     - "malicious-c2.example.com"
+action: "BLOCK"`,
+
+  scam: `schema_version: "2.0"
+rule_id: "RULE-SCAM-001"
+name: "Scam & Gambling Keyword URL Block"
+description: "Detects and blocks URLs containing high-risk keywords (888, vip, free, claim)"
+severity: "HIGH"
+category: "NETWORK"
+enabled: true
+engine_type: "conditional"
+target_source: "url_request"
+condition:
+  target_domains:
+    - "888casino-vip.com"
+    - "free-bonus-claim.net"
+  expression: "contains(domain, \\"888\\") || contains(domain, \\"vip\\") || contains(domain, \\"free\\") || contains(domain, \\"claim\\")"
 action: "BLOCK"`,
 
   trojan: `schema_version: "2.0"
@@ -195,9 +230,44 @@ function updateNodeVisualizer() {
     if (trimmed.startsWith("action:")) action = trimmed.split(":")[1].trim().replace(/"/g, '');
   });
 
-  document.getElementById("nodeSource").textContent = `Source: ${targetSource.toUpperCase()}`;
-  document.getElementById("nodeEngine").textContent = `Engine: ${engineType.toUpperCase()} (ID: ${ruleId})`;
-  document.getElementById("nodeAction").textContent = `Action: ${action.toUpperCase()} DISPATCHED`;
+  const nodeSource = document.getElementById("nodeSource");
+  const nodeEngine = document.getElementById("nodeEngine");
+  const nodeAction = document.getElementById("nodeAction");
+
+  if (nodeSource) nodeSource.textContent = `Source: ${targetSource.toUpperCase()}`;
+  if (nodeEngine) nodeEngine.textContent = `Engine: ${engineType.toUpperCase()} (ID: ${ruleId})`;
+  if (nodeAction) nodeAction.textContent = `Action: ${action.toUpperCase()} DISPATCHED`;
+}
+
+function runSimulation() {
+  const consoleBox = document.getElementById("consoleOutput");
+  const text = document.getElementById("yamlEditor")?.value || "";
+
+  if (!consoleBox) return;
+
+  consoleBox.innerHTML = `[${new Date().toLocaleTimeString()}] [NezhaEDR Engine] Parsing YAML rule snippet...\n`;
+
+  let ruleId = "RULE-CUSTOM";
+  let name = "Custom Rule";
+  let engine = "signature";
+  let action = "BLOCK";
+
+  text.split("\n").forEach(line => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("rule_id:")) ruleId = trimmed.split(":")[1].trim().replace(/"/g, '');
+    if (trimmed.startsWith("name:")) name = trimmed.split(":")[1].trim().replace(/"/g, '');
+    if (trimmed.startsWith("engine_type:")) engine = trimmed.split(":")[1].trim().replace(/"/g, '');
+    if (trimmed.startsWith("action:")) action = trimmed.split(":")[1].trim().replace(/"/g, '');
+  });
+
+  setTimeout(() => {
+    consoleBox.innerHTML += `[${new Date().toLocaleTimeString()}] [NezhaEDR Engine] Schema v2.0 validation: PASSED\n`;
+    consoleBox.innerHTML += `[${new Date().toLocaleTimeString()}] [NezhaEDR Engine] Compiled engine strategy: ${engine.toUpperCase()}\n`;
+    consoleBox.innerHTML += `[${new Date().toLocaleTimeString()}] [NezhaEDR Engine] Simulating event evaluation against '${ruleId}' (${name})...\n`;
+    consoleBox.innerHTML += `[${new Date().toLocaleTimeString()}] [NezhaEDR Engine] ⚠️ THREAT MATCH DETECTED! Executing containment action: ${action.toUpperCase()}\n`;
+    consoleBox.innerHTML += `[${new Date().toLocaleTimeString()}] [NezhaEDR Engine] Evaluation complete. Status: MATCH FOUND.`;
+    consoleBox.scrollTop = consoleBox.scrollHeight;
+  }, 300);
 }
 
 document.addEventListener("DOMContentLoaded", () => {

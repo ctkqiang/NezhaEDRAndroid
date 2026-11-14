@@ -1,0 +1,17 @@
+schema_version: "2.0"
+rule_id: "RULE-SCAM-001"
+id: "scam_gambling_url_block"
+name: "Scam & Gambling Keyword URL Block"
+description: "Detects and blocks suspicious scam, gambling, and credential phishing URLs containing high-risk keywords (888, vip, free, claim)"
+severity: "HIGH"
+category: "NETWORK"
+enabled: true
+engine_type: "conditional"
+target_source: "url_request"
+condition:
+  target_domains:
+    - "888casino-vip.com"
+    - "free-bonus-claim.net"
+    - "vip-gambling-portal.org"
+  expression: "contains(domain, \"888\") || contains(domain, \"vip\") || contains(domain, \"free\") || contains(domain, \"claim\")"
+action: "BLOCK"

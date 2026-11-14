@@ -14,7 +14,7 @@ class RuleRepositoryTest {
         val catalog = repository.getFallbackRemoteRuleCatalog()
 
         assertNotNull(catalog)
-        assertEquals(12, catalog.size)
+        assertEquals(13, catalog.size)
 
         val c2Item = catalog.find { it.fileName == "c2_threat_block.yaml" }
         assertNotNull(c2Item)
@@ -23,11 +23,11 @@ class RuleRepositoryTest {
         assertEquals("NETWORK", c2Item?.category)
         assertEquals("HIGH", c2Item?.severity)
 
-        val adultItem = catalog.find { it.fileName == "adult_content_block.yaml" }
-        assertNotNull(adultItem)
-        assertEquals("adult_content_block", adultItem?.ruleId)
-        assertEquals("Adult & Explicit Content Domain Block", adultItem?.name)
-        assertEquals("CRITICAL", adultItem?.severity)
+        val scamItem = catalog.find { it.fileName == "scam_gambling_url_block.yaml" }
+        assertNotNull(scamItem)
+        assertEquals("scam_gambling_url_block", scamItem?.ruleId)
+        assertEquals("Scam & Gambling Keyword URL Block", scamItem?.name)
+        assertEquals("HIGH", scamItem?.severity)
     }
 
     @Test

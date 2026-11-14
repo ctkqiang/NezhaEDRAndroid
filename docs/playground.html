@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NezhaEDR Rule Playground & Execution Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .playground-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: var(--surface-color);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .toolbar-left, .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-run {
+      background-color: var(--success-color);
+      color: #FFFFFF;
+      border: none;
+      padding: 8px 18px;
+      border-radius: var(--radius-md);
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.15s ease;
+    }
+    .btn-run:hover {
+      transform: scale(1.02);
+    }
+    .playground-main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      flex: 1;
+      overflow: hidden;
+    }
+    .pane {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      border-right: 1px solid var(--border-color);
+    }
+    .pane-header {
+      padding: 10px 16px;
+      background-color: var(--surface-variant);
+      border-bottom: 1px solid var(--border-color);
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .code-editor {
+      flex: 1;
+      width: 100%;
+      background-color: #0D1117;
+      color: #E6EDE3;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      padding: 16px;
+      border: none;
+      resize: none;
+      outline: none;
+      line-height: 1.6;
+    }
+    .console-box {
+      flex: 1;
+      background-color: #090C10;
+      color: #7EE787;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      padding: 16px;
+      overflow-y: auto;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .flow-visualizer-box {
+      height: 280px;
+      padding: 16px;
+      background-color: var(--surface-variant);
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top DartPad-style Toolbar -->
+  <header class="playground-toolbar">
+    <div class="toolbar-left">
+      <img src="../app/src/main/res/drawable/ic_power.xml" alt="Logo" class="brand-logo" style="width:28dp;height:28dp;" onerror="this.style.display='none'">
+      <span class="brand-title" style="font-size:1.1rem;" data-i18n="playgroundTitle">NezhaEDR Rule Playground</span>
+
+      <button class="btn-run" onclick="runSimulation()">
+        <span>▶</span> <span data-i18n="btnRun">Run</span>
+      </button>
+
+      <select id="templateSelect" class="btn-toggle" onchange="loadTemplate(this.value)">
+        <option value="c2" data-i18n="tmplC2">C2 Threat Block (Signature)</option>
+        <option value="scam" data-i18n="tmplScam">Scam Keyword Block (Conditional)</option>
+        <option value="trojan" data-i18n="tmplTrojan">Banking Trojan (Package)</option>
+        <option value="entropy" data-i18n="tmplEntropy">DGA Domain (Behavioral Entropy)</option>
+      </select>
+    </div>
+
+    <div class="toolbar-right">
+      <button class="btn-toggle" onclick="toggleTheme()" data-i18n="toggleTheme">Theme</button>
+      <button class="btn-toggle" id="langBtn" onclick="setLanguage(currentLang === 'en' ? 'zh' : 'en')">中文</button>
+      <a href="index.html" class="btn-toggle" data-i18n="backToDocs">← Back to Docs</a>
+    </div>
+  </header>
+
+  <!-- Split Pane Main Interface -->
+  <main class="playground-main">
+    <!-- Left Pane: YAML Code Editor -->
+    <div class="pane">
+      <div class="pane-header">
+        <span data-i18n="paneEditor">YAML RULE EDITOR (v2.0 Schema)</span>
+        <span style="font-size:0.75rem; color:var(--text-secondary);">O(1) Memory Engine</span>
+      </div>
+      <textarea id="yamlEditor" class="code-editor" oninput="updateNodeVisualizer()"></textarea>
+    </div>
+
+    <!-- Right Pane: Execution Output & Flow Visualizer -->
+    <div class="pane" style="border-right:none;">
+      <div class="pane-header">
+        <span data-i18n="paneConsole">EVALUATION CONSOLE LOG</span>
+        <span id="runStatusBadge" class="badge-can" style="background-color:var(--success-container); color:var(--success-color);">READY</span>
+      </div>
+      <div id="consoleOutput" class="console-box">
+[INFO] NezhaEDR Playground Initialized.
+[INFO] Ready for YAML rule simulation. Press '▶ Run' to execute evaluation engine...
+      </div>
+
+      <div class="pane-header">
+        <span data-i18n="paneVisualizer">INTERACTIVE NODE EXECUTION GRAPH</span>
+      </div>
+      <div class="flow-visualizer-box">
+        <div class="node-visualizer">
+          <div class="node-card active">
+            <div class="node-header">1. TELEMETRY EVENT CAPTURED</div>
+            <div class="node-body">VpnService TUN / Package Receiver</div>
+          </div>
+          <div class="node-arrow">↓</div>
+          <div class="node-card active">
+            <div class="node-header">2. TARGET SOURCE SENSOR</div>
+            <div id="nodeSource" class="node-body">Source: DNS_QUERY</div>
+          </div>
+          <div class="node-arrow">↓</div>
+          <div class="node-card active">
+            <div class="node-header">3. MULTI-ENGINE EVALUATION</div>
+            <div id="nodeEngine" class="node-body">Engine: SIGNATURE (ID: RULE-C2-001)</div>
+          </div>
+          <div class="node-arrow">↓</div>
+          <div class="node-card active" style="border-color: var(--primary-color);">
+            <div class="node-header">4. CONTAINMENT ACTION DISPATCHED</div>
+            <div id="nodeAction" class="node-body">Action: BLOCK DISPATCHED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      loadTemplate("c2");
+    });
+  </script>
+</body>
+</html>

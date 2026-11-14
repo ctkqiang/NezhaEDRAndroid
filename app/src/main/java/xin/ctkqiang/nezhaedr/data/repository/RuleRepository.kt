@@ -58,6 +58,7 @@ class RuleRepositoryImpl(
         "ransomware_beacon_block.yaml",
         "reconnaissance_probe_block.yaml",
         "rogue_package_alert.yaml",
+        "scam_gambling_url_block.yaml",
         "spyware_keylogger_detection.yaml"
     )
 
@@ -71,6 +72,7 @@ class RuleRepositoryImpl(
             RemoteRuleCatalogItem("phishing_credential_block.yaml", "phishing_credential_block", "Phishing & Credential Harvester Block", "NETWORK", "HIGH"),
             RemoteRuleCatalogItem("adware_click_farm_block.yaml", "adware_click_farm_block", "Fraudulent Adware & Click Farm Block", "NETWORK", "MEDIUM"),
             RemoteRuleCatalogItem("reconnaissance_probe_block.yaml", "reconnaissance_probe_block", "Reconnaissance & Network Probe Block", "NETWORK", "HIGH"),
+            RemoteRuleCatalogItem("scam_gambling_url_block.yaml", "scam_gambling_url_block", "Scam & Gambling Keyword URL Block", "NETWORK", "HIGH"),
             RemoteRuleCatalogItem("rogue_package_alert.yaml", "rogue_package_alert", "Suspicious Rogue Package Alert", "PACKAGE", "CRITICAL"),
             RemoteRuleCatalogItem("spyware_keylogger_detection.yaml", "spyware_keylogger_detection", "Spyware & Keylogger Package Detection", "PACKAGE", "HIGH"),
             RemoteRuleCatalogItem("banking_trojan_alert.yaml", "banking_trojan_alert", "Banking Trojan & Overlay Sideload Detection", "PACKAGE", "CRITICAL"),

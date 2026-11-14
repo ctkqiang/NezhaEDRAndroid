@@ -74,8 +74,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -960,52 +958,24 @@ fun AppleMasterStatusCard(
     blockedAttemptsCount: Int,
     onToggleVpn: () -> Unit
 ) {
-    val haptic = LocalHapticFeedback.current
-
-    val stateColor by animateColorAsState(
-        targetValue = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-        label = "StateColorAnimation"
-    )
-
     Card(
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = stateColor,
-                    modifier = Modifier.size(10.dp)
-                ) {}
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (isActive) stringResource(R.string.defense_engaged) else stringResource(R.string.defense_paused),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    color = stateColor
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Massive Central Shield Power Button
+            // Central Master Shield Power Button
             MasterProtectionButton(
                 isActive = isActive,
                 onClick = onToggleVpn
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -1017,7 +987,7 @@ fun AppleMasterStatusCard(
                         fontSize = 56.sp,
                         lineHeight = 60.sp
                     ),
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.ExtraBold,
                     color = if (blockedAttemptsCount > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
                 )
 
@@ -1228,7 +1198,6 @@ fun MasterProtectionButton(
     )
 
     val activeColor = MaterialTheme.colorScheme.primary
-    val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
 
     val mainButtonColor by animateColorAsState(
         targetValue = if (isActive) activeColor else MaterialTheme.colorScheme.surfaceVariant,
@@ -1238,8 +1207,7 @@ fun MasterProtectionButton(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.padding(vertical = 8.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -1270,54 +1238,30 @@ fun MasterProtectionButton(
                 },
                 shape = CircleShape,
                 color = mainButtonColor,
-                shadowElevation = if (isActive) 12.dp else 2.dp,
-                border = BorderStroke(2.dp, if (isActive) activeColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
-                modifier = Modifier.size(120.dp)
+                shadowElevation = if (isActive) 12.dp else 4.dp,
+                border = BorderStroke(2.dp, if (isActive) activeColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)),
+                modifier = Modifier.size(130.dp)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                            contentDescription = "Shield Master Button",
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(54.dp)
-                        )
-                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = "Shield Master Button",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(80.dp)
+                    )
                 }
             }
         }
 
-        // Executive Status Pill Badge
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = if (isActive) activeColor.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant,
-            border = BorderStroke(1.dp, if (isActive) activeColor.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = if (isActive) activeColor else inactiveColor,
-                    modifier = Modifier.size(8.dp)
-                ) {}
-                Text(
-                    text = if (isActive) stringResource(R.string.defense_engaged) else stringResource(R.string.defense_paused),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    color = if (isActive) activeColor else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+        Text(
+            text = if (isActive) stringResource(R.string.switch_on) else stringResource(R.string.switch_off),
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = if (isActive) activeColor else MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

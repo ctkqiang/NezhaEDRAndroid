@@ -16,6 +16,19 @@
     <string name="mode_user">User Mode</string>
     <string name="mode_developer">Developer Mode</string>
 
+    <string name="header_title">NEZHA EDR</string>
+    <string name="header_subtitle">ZERO-TELEMETRY LOCAL DEFENSE</string>
+    <string name="defense_engaged">LOCAL DEFENSE ENGAGED</string>
+    <string name="defense_paused">LOCAL DEFENSE PAUSED</string>
+    <string name="intercepted_attempts_label">INTERCEPTED THREAT ATTEMPTS</string>
+    <string name="yaml_engine_label">YAML EVALUATION ENGINE</string>
+    <string name="active_rules_loaded">%1$d Active Rulesets Loaded</string>
+    <string name="manage_action">Manage →</string>
+    <string name="intercept_trail_label">INTERCEPTED THREAT TRAIL</string>
+    <string name="realtime_audit">REAL-TIME AUDIT</string>
+    <string name="no_intercepted_records">No intercepted banned connection attempts recorded.</string>
+    <string name="blocked_badge">BLOCKED</string>
+
     <string name="edr_dashboard_title">NezhaCyberEDR Protection</string>
     <string name="vpn_service_status">Network Protection Engine</string>
     <string name="vpn_status_active">Active Protection Service</string>

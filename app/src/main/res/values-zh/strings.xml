@@ -16,6 +16,19 @@
     <string name="mode_user">用户视图</string>
     <string name="mode_developer">开发者模式</string>
 
+    <string name="header_title">哪吒 EDR</string>
+    <string name="header_subtitle">零遥测本地安全防御</string>
+    <string name="defense_engaged">终端防御已开启</string>
+    <string name="defense_paused">终端防御已暂停</string>
+    <string name="intercepted_attempts_label">已拦截的违禁访问尝试</string>
+    <string name="yaml_engine_label">YAML 评估规则引擎</string>
+    <string name="active_rules_loaded">已加载 %1$d 条生效规则</string>
+    <string name="manage_action">规则管理 →</string>
+    <string name="intercept_trail_label">威胁拦截审计轨迹</string>
+    <string name="realtime_audit">实时审计</string>
+    <string name="no_intercepted_records">暂未记录到违禁网络访问拦截。</string>
+    <string name="blocked_badge">已被拦截</string>
+
     <string name="edr_dashboard_title">哪吒网络安全EDR 终端防护</string>
     <string name="vpn_service_status">网络遥测防护服务</string>
     <string name="vpn_status_active">正在实时监控与防护</string>

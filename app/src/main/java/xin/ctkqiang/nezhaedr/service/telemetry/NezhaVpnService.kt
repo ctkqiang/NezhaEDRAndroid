@@ -202,21 +202,25 @@ class NezhaVpnService : VpnService() {
                 }
 
                 if (bytesRead > 0) {
-                    val destIp = parseDestinationIp(buffer, bytesRead)
-                    val dnsDomain = parseDnsQueryDomain(buffer, bytesRead)
+                    runCatching {
+                        val destIp = parseDestinationIp(buffer, bytesRead)
+                        val dnsDomain = parseDnsQueryDomain(buffer, bytesRead)
 
-                    if (destIp != null || dnsDomain != null) {
-                        val targetIp = destIp ?: "10.0.0.1"
-                        val domainName = dnsDomain ?: ""
-                        EDRLogger.w(TAG, "CAPTURED CAPTIVE THREAT PACKET -> Target IP: '$targetIp', Domain: '$domainName'")
-                        _telemetryFlow.emit(
-                            TelemetryEvent.Network(
-                                destinationIp = targetIp,
-                                domain = domainName,
-                                destinationPort = if (dnsDomain != null) 53 else 80,
-                                protocol = if (dnsDomain != null) "DNS/UDP" else "IPv4"
+                        if (destIp != null || dnsDomain != null) {
+                            val targetIp = destIp ?: "10.0.0.1"
+                            val domainName = dnsDomain ?: ""
+                            EDRLogger.w(TAG, "CAPTURED CAPTIVE THREAT PACKET -> Target IP: '$targetIp', Domain: '$domainName'")
+                            _telemetryFlow.emit(
+                                TelemetryEvent.Network(
+                                    destinationIp = targetIp,
+                                    domain = domainName,
+                                    destinationPort = if (dnsDomain != null) 53 else 80,
+                                    protocol = if (dnsDomain != null) "DNS/UDP" else "IPv4"
+                                )
                             )
-                        )
+                        }
+                    }.onFailure { e ->
+                        EDRLogger.v(TAG, "Packet inspection exception handled: ${e.message}")
                     }
                 }
             }
@@ -224,34 +228,35 @@ class NezhaVpnService : VpnService() {
     }
 
     private fun parseDnsQueryDomain(buffer: ByteArray, length: Int): String? {
-        if (length < 28) return null
-        val versionAndIhl = buffer[0].toInt() and 0xFF
-        val ipVersion = versionAndIhl shr 4
-        if (ipVersion != 4) return null
+        return runCatching {
+            if (length < 28) return null
+            val versionAndIhl = buffer[0].toInt() and 0xFF
+            val ipVersion = versionAndIhl shr 4
+            if (ipVersion != 4) return null
 
-        val ihl = (versionAndIhl and 0x0F) * 4
-        val protocol = buffer[9].toInt() and 0xFF
-        if (protocol != 17) return null // UDP protocol = 17
+            val ihl = (versionAndIhl and 0x0F) * 4
+            val protocol = buffer[9].toInt() and 0xFF
+            if (protocol != 17) return null // UDP protocol = 17
 
-        val udpHeaderStart = ihl
-        if (length < udpHeaderStart + 8) return null
-        val destPort = ((buffer[udpHeaderStart + 2].toInt() and 0xFF) shl 8) or (buffer[udpHeaderStart + 3].toInt() and 0xFF)
-        if (destPort != 53) return null // DNS Port 53
+            val udpHeaderStart = ihl
+            if (length < udpHeaderStart + 8) return null
+            val destPort = ((buffer[udpHeaderStart + 2].toInt() and 0xFF) shl 8) or (buffer[udpHeaderStart + 3].toInt() and 0xFF)
+            if (destPort != 53) return null // DNS Port 53
 
-        val dnsStart = udpHeaderStart + 8
-        if (length < dnsStart + 12) return null
+            val dnsStart = udpHeaderStart + 8
+            if (length < dnsStart + 12) return null
 
-        var pos = dnsStart + 12
-        val sb = StringBuilder()
-        while (pos < length) {
-            val len = buffer[pos].toInt() and 0xFF
-            if (len == 0) break
-            if (pos + 1 + len > length) break
-            if (sb.isNotEmpty()) sb.append(".")
-            sb.append(String(buffer, pos + 1, len, Charsets.US_ASCII))
-            pos += len + 1
-        }
-        return if (sb.isNotEmpty()) sb.toString() else null
+            var pos = dnsStart + 12
+            val sb = StringBuilder()
+            while (pos < length) {
+                val len = buffer[pos].toInt() and 0xFF
+                if (len == 0 || pos + 1 + len > length) break
+                if (sb.isNotEmpty()) sb.append(".")
+                sb.append(String(buffer, pos + 1, len, Charsets.US_ASCII))
+                pos += len + 1
+            }
+            if (sb.isNotEmpty()) sb.toString() else null
+        }.getOrNull()
     }
 
     fun protectSocket(socket: Socket): Boolean {
@@ -263,16 +268,18 @@ class NezhaVpnService : VpnService() {
     }
 
     private fun parseDestinationIp(buffer: ByteArray, length: Int): String? {
-        if (length < 20) return null
-        val versionAndIhl = buffer[0].toInt() and 0xFF
-        val ipVersion = versionAndIhl shr 4
-        if (ipVersion != 4) return null
+        return runCatching {
+            if (length < 20) return null
+            val versionAndIhl = buffer[0].toInt() and 0xFF
+            val ipVersion = versionAndIhl shr 4
+            if (ipVersion != 4) return null
 
-        val destIp1 = buffer[16].toInt() and 0xFF
-        val destIp2 = buffer[17].toInt() and 0xFF
-        val destIp3 = buffer[18].toInt() and 0xFF
-        val destIp4 = buffer[19].toInt() and 0xFF
-        return "$destIp1.$destIp2.$destIp3.$destIp4"
+            val destIp1 = buffer[16].toInt() and 0xFF
+            val destIp2 = buffer[17].toInt() and 0xFF
+            val destIp3 = buffer[18].toInt() and 0xFF
+            val destIp4 = buffer[19].toInt() and 0xFF
+            "$destIp1.$destIp2.$destIp3.$destIp4"
+        }.getOrNull()
     }
 
     private fun stopVpn() {

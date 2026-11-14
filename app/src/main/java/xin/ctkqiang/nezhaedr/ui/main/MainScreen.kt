@@ -13,7 +13,6 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
@@ -57,7 +56,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -78,7 +76,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -92,7 +89,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -105,14 +101,6 @@ import xin.ctkqiang.nezhaedr.data.model.DetectionRule
 import xin.ctkqiang.nezhaedr.data.repository.RemoteRuleCatalogItem
 import xin.ctkqiang.nezhaedr.service.telemetry.NezhaVpnService
 import xin.ctkqiang.nezhaedr.ui.theme.AppThemeMode
-import xin.ctkqiang.nezhaedr.ui.theme.AppleGlassBottom
-import xin.ctkqiang.nezhaedr.ui.theme.AppleGlassTop
-import xin.ctkqiang.nezhaedr.ui.theme.AppleMutedLabel
-import xin.ctkqiang.nezhaedr.ui.theme.AppleOledBlack
-import xin.ctkqiang.nezhaedr.ui.theme.AppleRefinedCrimson
-import xin.ctkqiang.nezhaedr.ui.theme.AppleSoftEmerald
-import xin.ctkqiang.nezhaedr.ui.theme.AppleSpecularBorderBottom
-import xin.ctkqiang.nezhaedr.ui.theme.AppleSpecularBorderTop
 import xin.ctkqiang.nezhaedr.ui.theme.NezhaEDRTheme
 import xin.ctkqiang.nezhaedr.util.EDRLogger
 import java.text.SimpleDateFormat
@@ -295,551 +283,262 @@ fun MainScreenContent(
 ) {
     var showClearDialog by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(AppleOledBlack)
-            .padding(20.dp)
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // Section 1: Apple-Grade Minimalist Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp, bottom = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = "NEZHA EDR",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 2.sp,
-                        color = Color.White
-                    )
-                    Text(
-                        text = "ZERO-TELEMETRY LOCAL DEFENSE",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        color = AppleMutedLabel
-                    )
-                }
-
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.size(10.dp)
+                        ) {}
+                        Column {
+                            Text(
+                                text = stringResource(id = R.string.header_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = if (uiState.isVpnActive) stringResource(R.string.defense_engaged) else stringResource(R.string.defense_paused),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                            )
+                        }
+                    }
+                },
+                actions = {
                     IconButton(onClick = onOpenSyncPicker) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_download),
                             contentDescription = "Sync Rules",
-                            tint = Color.White.copy(alpha = 0.85f),
-                            modifier = Modifier.size(20.dp)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            )
+        },
+        bottomBar = {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface
+            ) {
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 0,
+                    onClick = { onSelectTab(0) },
+                    label = { Text(stringResource(R.string.nav_dashboard)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_dashboard),
+                            contentDescription = stringResource(R.string.nav_dashboard)
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                )
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 1,
+                    onClick = { onSelectTab(1) },
+                    label = { Text(stringResource(R.string.nav_rules)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_rules),
+                            contentDescription = stringResource(R.string.nav_rules)
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                )
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 2,
+                    onClick = { onSelectTab(2) },
+                    label = { Text(stringResource(R.string.nav_threats)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_threats),
+                            contentDescription = stringResource(R.string.nav_threats)
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.error,
+                        indicatorColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                )
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 3,
+                    onClick = { onSelectTab(3) },
+                    label = { Text(stringResource(R.string.nav_history)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_history),
+                            contentDescription = stringResource(R.string.nav_history)
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                )
+                NavigationBarItem(
+                    selected = uiState.selectedTab == 4,
+                    onClick = { onSelectTab(4) },
+                    label = { Text(stringResource(R.string.nav_settings)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_nav_settings),
+                            contentDescription = stringResource(R.string.nav_settings)
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                )
             }
-
-            // Main Scrollable Area with Spring Dynamics
-            LazyColumn(
+        },
+        modifier = modifier.fillMaxSize()
+    ) { innerPadding ->
+        if (uiState.isLoading) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
             ) {
                 when (uiState.selectedTab) {
-                    0 -> item {
-                        MinimalistDashboardTab(
-                            uiState = uiState,
-                            onToggleVpn = onToggleVpn,
-                            onSelectTab = onSelectTab
-                        )
-                    }
-                    1 -> item {
-                        RulesTabContent(
-                            uiState = uiState,
-                            onSelectRule = onSelectRule,
-                            onConfirmDeleteRule = onConfirmDeleteRule,
-                            onImportRuleClick = onImportRuleClick,
-                            onOpenSyncPicker = onOpenSyncPicker
-                        )
-                    }
-                    2 -> item { ThreatLogsTabContent(uiState = uiState) }
-                    3 -> item {
-                        HistoryTabContent(
-                            uiState = uiState,
-                            onExportYaml = onExportYaml,
-                            onExportCsv = onExportCsv,
-                            onClearData = { showClearDialog = true }
-                        )
-                    }
-                    4 -> item {
-                        SettingsTabContent(
-                            uiState = uiState,
-                            onSelectTheme = onSelectTheme,
-                            onOpenSyncPicker = onOpenSyncPicker,
-                            onImportRuleClick = onImportRuleClick
-                        )
-                    }
+                    0 -> MinimalistDashboardTab(
+                        uiState = uiState,
+                        onToggleVpn = onToggleVpn,
+                        onSelectTab = onSelectTab
+                    )
+                    1 -> RulesTabContent(
+                        uiState = uiState,
+                        onSelectRule = onSelectRule,
+                        onConfirmDeleteRule = onConfirmDeleteRule,
+                        onImportRuleClick = onImportRuleClick,
+                        onOpenSyncPicker = onOpenSyncPicker
+                    )
+                    2 -> ThreatLogsTabContent(uiState = uiState)
+                    3 -> HistoryTabContent(
+                        uiState = uiState,
+                        onExportYaml = onExportYaml,
+                        onExportCsv = onExportCsv,
+                        onClearData = { showClearDialog = true }
+                    )
+                    4 -> SettingsTabContent(
+                        uiState = uiState,
+                        onSelectTheme = onSelectTheme,
+                        onOpenSyncPicker = onOpenSyncPicker,
+                        onImportRuleClick = onImportRuleClick
+                    )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Section 5: Floating Specular Glass Navigation Bar
-            AppleFloatingNavigationBar(
-                selectedTab = uiState.selectedTab,
-                onSelectTab = onSelectTab
-            )
-        }
-
-        // Modals & Dialogs
-        if (uiState.showSyncPickerDialog) {
-            SyncRulesPickerDialog(
-                availableCatalog = uiState.availableRemoteCatalog,
-                selectedFiles = uiState.selectedRemoteFilesToSync,
-                onToggleSelection = onToggleRemoteRuleSelection,
-                onSelectAll = onSelectAllRemoteRules,
-                onDeselectAll = onDeselectAllRemoteRules,
-                onSyncSelected = onSyncSelectedRules,
-                onDismiss = onDismissSyncPicker
-            )
-        }
-
-        uiState.deleteRuleConfirm?.let { rule ->
-            AlertDialog(
-                onDismissRequest = { onConfirmDeleteRule(null) },
-                containerColor = Color(0xFF141418),
-                title = { Text(stringResource(R.string.delete_rule_title), fontWeight = FontWeight.Bold, color = Color.White) },
-                text = { Text(stringResource(R.string.delete_rule_body, rule.id, rule.name), color = AppleMutedLabel) },
-                confirmButton = {
-                    Button(
-                        onClick = { onExecuteDeleteRule(rule) },
-                        colors = ButtonDefaults.buttonColors(containerColor = AppleRefinedCrimson)
-                    ) {
-                        Text(stringResource(R.string.btn_delete))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { onConfirmDeleteRule(null) }) {
-                        Text(stringResource(R.string.btn_cancel), color = Color.White.copy(alpha = 0.7f))
-                    }
+                if (uiState.showSyncPickerDialog) {
+                    SyncRulesPickerDialog(
+                        availableCatalog = uiState.availableRemoteCatalog,
+                        selectedFiles = uiState.selectedRemoteFilesToSync,
+                        onToggleSelection = onToggleRemoteRuleSelection,
+                        onSelectAll = onSelectAllRemoteRules,
+                        onDeselectAll = onDeselectAllRemoteRules,
+                        onSyncSelected = onSyncSelectedRules,
+                        onDismiss = onDismissSyncPicker
+                    )
                 }
-            )
-        }
 
-        if (uiState.isSyncingRules) {
-            AlertDialog(
-                onDismissRequest = {},
-                containerColor = Color(0xFF141418),
-                title = { Text(stringResource(R.string.syncing_dialog_title), fontWeight = FontWeight.Bold, color = Color.White) },
-                text = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        CircularProgressIndicator(modifier = Modifier.size(36.dp), color = AppleSoftEmerald)
-                        Text(stringResource(R.string.syncing_dialog_body), style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f))
-                    }
-                },
-                confirmButton = {}
-            )
-        }
-
-        uiState.selectedRule?.let { rule ->
-            RuleDetailDialog(
-                rule = rule,
-                onDismiss = { onSelectRule(null) }
-            )
-        }
-
-        uiState.activeThreatPopup?.let { threat ->
-            ThreatAlertPopupDialog(
-                threat = threat,
-                onDismiss = onDismissThreatPopup
-            )
-        }
-
-        if (showClearDialog) {
-            AlertDialog(
-                onDismissRequest = { showClearDialog = false },
-                containerColor = Color(0xFF141418),
-                title = { Text(stringResource(R.string.confirm_clear_title), fontWeight = FontWeight.Bold, color = Color.White) },
-                text = { Text(stringResource(R.string.confirm_clear_body), color = AppleMutedLabel) },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            showClearDialog = false
-                            onClearData()
+                uiState.deleteRuleConfirm?.let { rule ->
+                    AlertDialog(
+                        onDismissRequest = { onConfirmDeleteRule(null) },
+                        title = { Text(stringResource(R.string.delete_rule_title), fontWeight = FontWeight.Bold) },
+                        text = { Text(stringResource(R.string.delete_rule_body, rule.id, rule.name)) },
+                        confirmButton = {
+                            Button(
+                                onClick = { onExecuteDeleteRule(rule) },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                            ) {
+                                Text(stringResource(R.string.btn_delete))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { onConfirmDeleteRule(null) }) {
+                                Text(stringResource(R.string.btn_cancel))
+                            }
                         }
-                    ) {
-                        Text(stringResource(R.string.btn_clear_data), color = AppleRefinedCrimson)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showClearDialog = false }) {
-                        Text(stringResource(R.string.btn_cancel), color = Color.White.copy(alpha = 0.7f))
-                    }
-                }
-            )
-        }
-    }
-}
-
-// Specular Glass Card Container Component
-@Composable
-fun AppleGlassCard(
-    modifier: Modifier = Modifier,
-    borderColorTop: Color = AppleSpecularBorderTop,
-    borderColorBottom: Color = AppleSpecularBorderBottom,
-    content: @Composable () -> Unit
-) {
-    Surface(
-        shape = RoundedCornerShape(24.dp),
-        color = Color.Transparent,
-        border = BorderStroke(
-            1.dp,
-            Brush.verticalGradient(
-                colors = listOf(borderColorTop, borderColorBottom)
-            )
-        ),
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(AppleGlassTop, AppleGlassBottom)
-                ),
-                shape = RoundedCornerShape(24.dp)
-            ),
-        content = content
-    )
-}
-
-// Section 2: Master Status Control Card
-@Composable
-fun AppleMasterStatusCard(
-    isActive: Boolean,
-    blockedAttemptsCount: Int,
-    onToggleVpn: () -> Unit
-) {
-    val stateColor by animateColorAsState(
-        targetValue = if (isActive) AppleSoftEmerald else AppleMutedLabel,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-        label = "StateColorAnimation"
-    )
-
-    AppleGlassCard {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = stateColor,
-                        modifier = Modifier.size(10.dp)
-                    ) {}
-                    Text(
-                        text = if (isActive) "LOCAL DEFENSE ENGAGED" else "LOCAL DEFENSE PAUSED",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        color = stateColor
                     )
                 }
 
-                // Native High-End Switch
-                Switch(
-                    checked = isActive,
-                    onCheckedChange = { onToggleVpn() },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = AppleSoftEmerald,
-                        uncheckedThumbColor = Color.White.copy(alpha = 0.8f),
-                        uncheckedTrackColor = Color.White.copy(alpha = 0.1f)
+                if (uiState.isSyncingRules) {
+                    AlertDialog(
+                        onDismissRequest = {},
+                        title = { Text(stringResource(R.string.syncing_dialog_title), fontWeight = FontWeight.Bold) },
+                        text = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(36.dp))
+                                Text(stringResource(R.string.syncing_dialog_body), style = MaterialTheme.typography.bodyMedium)
+                            }
+                        },
+                        confirmButton = {}
                     )
-                )
-            }
+                }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                uiState.selectedRule?.let { rule ->
+                    RuleDetailDialog(
+                        rule = rule,
+                        onDismiss = { onSelectRule(null) }
+                    )
+                }
 
-            // Massive Light-Weight Intercept Typography
-            Text(
-                text = "$blockedAttemptsCount",
-                style = MaterialTheme.typography.displayLarge.copy(
-                    fontSize = 64.sp,
-                    lineHeight = 68.sp
-                ),
-                fontWeight = FontWeight.Light,
-                color = if (blockedAttemptsCount > 0) AppleRefinedCrimson else Color.White
-            )
+                uiState.activeThreatPopup?.let { threat ->
+                    ThreatAlertPopupDialog(
+                        threat = threat,
+                        onDismiss = onDismissThreatPopup
+                    )
+                }
 
-            Text(
-                text = "INTERCEPTED THREAT ATTEMPTS",
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.2.sp,
-                color = AppleMutedLabel
-            )
-        }
-    }
-}
-
-// Section 3: YAML Engine & Rule Quick Status Card
-@Composable
-fun AppleRuleEngineStatusCard(
-    activeRulesCount: Int,
-    onManageClick: () -> Unit
-) {
-    AppleGlassCard(
-        modifier = Modifier.clickable { onManageClick() }
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = "YAML EVALUATION ENGINE",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    color = AppleMutedLabel
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "$activeRulesCount Active Rulesets Loaded",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
-            }
-
-            Text(
-                text = "Manage →",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-    }
-}
-
-// Section 4: Threat Intercept Trail Feed Card
-@Composable
-fun AppleThreatTrailCard(
-    blockedSitesTrail: List<VisitedSiteRecord>
-) {
-    AppleGlassCard(
-        borderColorTop = AppleRefinedCrimson.copy(alpha = 0.3f),
-        borderColorBottom = AppleSpecularBorderBottom
-    ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "INTERCEPTED THREAT TRAIL",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    color = AppleRefinedCrimson
-                )
-                Text(
-                    text = "REAL-TIME AUDIT",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = AppleRefinedCrimson
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            if (blockedSitesTrail.isEmpty()) {
-                Text(
-                    text = "No intercepted banned connection attempts recorded.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = AppleMutedLabel
-                )
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    blockedSitesTrail.take(4).forEach { item ->
-                        AppleThreatItemRow(record = item)
-                    }
+                if (showClearDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showClearDialog = false },
+                        title = { Text(stringResource(R.string.confirm_clear_title), fontWeight = FontWeight.Bold) },
+                        text = { Text(stringResource(R.string.confirm_clear_body)) },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    showClearDialog = false
+                                    onClearData()
+                                }
+                            ) {
+                                Text(stringResource(R.string.btn_clear_data), color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showClearDialog = false }) {
+                                Text(stringResource(R.string.btn_cancel))
+                            }
+                        }
+                    )
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun AppleThreatItemRow(record: VisitedSiteRecord) {
-    val formatter = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
-    val timeStr = remember(record.timestamp) { formatter.format(Date(record.timestamp)) }
-
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = Color.White.copy(alpha = 0.03f),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.06f)),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(
-                        text = record.destinationIp,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = AppleRefinedCrimson
-                    )
-                    if (record.domain.isNotEmpty()) {
-                        Text(
-                            text = "(${record.domain})",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = AppleMutedLabel
-                        )
-                    }
-                }
-                Text(
-                    text = "$timeStr • ${record.protocol}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = AppleMutedLabel
-                )
-            }
-            Surface(
-                shape = RoundedCornerShape(6.dp),
-                color = AppleRefinedCrimson
-            ) {
-                Text(
-                    text = "BLOCKED",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                )
-            }
-        }
-    }
-}
-
-// Section 5: Floating Specular Glass Navigation Bar
-@Composable
-fun AppleFloatingNavigationBar(
-    selectedTab: Int,
-    onSelectTab: (Int) -> Unit
-) {
-    Surface(
-        shape = RoundedCornerShape(24.dp),
-        color = Color.Transparent,
-        border = BorderStroke(
-            1.dp,
-            Brush.verticalGradient(
-                colors = listOf(AppleSpecularBorderTop, AppleSpecularBorderBottom)
-            )
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(AppleGlassTop, AppleGlassBottom)
-                ),
-                shape = RoundedCornerShape(24.dp)
-            )
-    ) {
-        NavigationBar(
-            containerColor = Color.Transparent,
-            contentColor = Color.White
-        ) {
-            NavigationBarItem(
-                selected = selectedTab == 0,
-                onClick = { onSelectTab(0) },
-                label = { Text(stringResource(R.string.nav_dashboard), style = MaterialTheme.typography.labelSmall) },
-                icon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_nav_dashboard),
-                        contentDescription = stringResource(R.string.nav_dashboard)
-                    )
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    indicatorColor = Color.White.copy(alpha = 0.1f)
-                )
-            )
-            NavigationBarItem(
-                selected = selectedTab == 1,
-                onClick = { onSelectTab(1) },
-                label = { Text(stringResource(R.string.nav_rules), style = MaterialTheme.typography.labelSmall) },
-                icon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_nav_rules),
-                        contentDescription = stringResource(R.string.nav_rules)
-                    )
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    indicatorColor = Color.White.copy(alpha = 0.1f)
-                )
-            )
-            NavigationBarItem(
-                selected = selectedTab == 2,
-                onClick = { onSelectTab(2) },
-                label = { Text(stringResource(R.string.nav_threats), style = MaterialTheme.typography.labelSmall) },
-                icon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_nav_threats),
-                        contentDescription = stringResource(R.string.nav_threats)
-                    )
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = AppleRefinedCrimson,
-                    indicatorColor = AppleRefinedCrimson.copy(alpha = 0.2f)
-                )
-            )
-            NavigationBarItem(
-                selected = selectedTab == 3,
-                onClick = { onSelectTab(3) },
-                label = { Text(stringResource(R.string.nav_history), style = MaterialTheme.typography.labelSmall) },
-                icon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_nav_history),
-                        contentDescription = stringResource(R.string.nav_history)
-                    )
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    indicatorColor = Color.White.copy(alpha = 0.1f)
-                )
-            )
-            NavigationBarItem(
-                selected = selectedTab == 4,
-                onClick = { onSelectTab(4) },
-                label = { Text(stringResource(R.string.nav_settings), style = MaterialTheme.typography.labelSmall) },
-                icon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_nav_settings),
-                        contentDescription = stringResource(R.string.nav_settings)
-                    )
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    indicatorColor = Color.White.copy(alpha = 0.1f)
-                )
-            )
         }
     }
 }
@@ -867,13 +566,11 @@ fun SyncRulesPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color(0xFF141418),
         title = {
             Text(
                 text = stringResource(id = R.string.sync_dialog_title),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+                fontWeight = FontWeight.Bold
             )
         },
         text = {
@@ -885,21 +582,14 @@ fun SyncRulesPickerDialog(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text(stringResource(R.string.search_rules_placeholder), style = MaterialTheme.typography.bodySmall, color = AppleMutedLabel) },
+                    placeholder = { Text(stringResource(R.string.search_rules_placeholder), style = MaterialTheme.typography.bodySmall) },
                     leadingIcon = {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_search),
                             contentDescription = null,
-                            tint = AppleMutedLabel,
                             modifier = Modifier.size(18.dp)
                         )
                     },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
-                    ),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -912,10 +602,10 @@ fun SyncRulesPickerDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onSelectAll) {
-                        Text(stringResource(R.string.btn_select_all), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                        Text(stringResource(R.string.btn_select_all), style = MaterialTheme.typography.labelSmall)
                     }
                     TextButton(onClick = onDeselectAll) {
-                        Text(stringResource(R.string.btn_deselect_all), style = MaterialTheme.typography.labelSmall, color = AppleMutedLabel)
+                        Text(stringResource(R.string.btn_deselect_all), style = MaterialTheme.typography.labelSmall)
                     }
                 }
 
@@ -942,13 +632,12 @@ fun SyncRulesPickerDialog(
                                 Text(
                                     text = "${item.fileName} • ${item.name}",
                                     style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    fontWeight = FontWeight.Bold
                                 )
                                 Text(
                                     text = "Category: ${item.category} | Severity: ${item.severity}",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = AppleMutedLabel
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -967,7 +656,7 @@ fun SyncRulesPickerDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.btn_cancel), color = AppleMutedLabel)
+                Text(stringResource(R.string.btn_cancel))
             }
         }
     )
@@ -985,30 +674,33 @@ fun SettingsTabContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(20.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
             text = stringResource(id = R.string.settings_header_title),
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
+            fontWeight = FontWeight.Bold
         )
 
         // Theme Switcher Card
-        AppleGlassCard {
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(id = R.string.settings_theme_title),
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = stringResource(id = R.string.settings_theme_desc),
                     style = MaterialTheme.typography.bodySmall,
-                    color = AppleMutedLabel
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1041,19 +733,22 @@ fun SettingsTabContent(
         }
 
         // Rule Engine Sync Card
-        AppleGlassCard {
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(id = R.string.settings_gitops_title),
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = stringResource(id = R.string.settings_gitops_desc),
                     style = MaterialTheme.typography.bodySmall,
-                    color = AppleMutedLabel
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
@@ -1075,19 +770,22 @@ fun SettingsTabContent(
         }
 
         // Local Custom YAML Rule Import Card
-        AppleGlassCard {
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(id = R.string.settings_custom_rule_title),
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = stringResource(id = R.string.settings_custom_rule_desc),
                     style = MaterialTheme.typography.bodySmall,
-                    color = AppleMutedLabel
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
@@ -1112,19 +810,23 @@ fun SettingsTabContent(
         }
 
         // Open Source & Privacy Disclaimer Card
-        AppleGlassCard {
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(id = R.string.privacy_disclaimer_title),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = stringResource(id = R.string.privacy_disclaimer_body),
                     style = MaterialTheme.typography.bodySmall,
-                    color = AppleMutedLabel
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
             }
         }
@@ -1138,12 +840,11 @@ fun ThreatAlertPopupDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color(0xFF141418),
         title = {
             Text(
                 text = stringResource(id = R.string.threat_alert_popup_title),
                 fontWeight = FontWeight.Bold,
-                color = AppleRefinedCrimson
+                color = MaterialTheme.colorScheme.error
             )
         },
         text = {
@@ -1154,15 +855,14 @@ fun ThreatAlertPopupDialog(
                     threat.ruleId,
                     threat.ruleName,
                     threat.details
-                ),
-                color = Color.White.copy(alpha = 0.85f)
+                )
             )
         },
         confirmButton = {
             Button(
                 onClick = onDismiss,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = AppleRefinedCrimson
+                    containerColor = MaterialTheme.colorScheme.error
                 )
             ) {
                 Text(text = stringResource(id = R.string.btn_close))
@@ -1178,17 +878,21 @@ fun MinimalistDashboardTab(
     onSelectTab: (Int) -> Unit = {}
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Section 2: Master Status Control Specular Glass Card
+        // Section 2: Master Status Control Card
         AppleMasterStatusCard(
             isActive = uiState.isVpnActive,
             blockedAttemptsCount = uiState.blockedAttemptsCount,
             onToggleVpn = onToggleVpn
         )
 
-        // Section 3: YAML Engine Status Card
+        // Section 3: YAML Engine & Rule Status Card
         AppleRuleEngineStatusCard(
             activeRulesCount = uiState.rulePackage?.rules?.size ?: 0,
             onManageClick = { onSelectTab(1) }
@@ -1197,6 +901,389 @@ fun MinimalistDashboardTab(
         // Section 4: Threat Intercept Trail Card
         AppleThreatTrailCard(
             blockedSitesTrail = uiState.blockedSitesTrail
+        )
+    }
+}
+
+@Composable
+fun AppleMasterStatusCard(
+    isActive: Boolean,
+    blockedAttemptsCount: Int,
+    onToggleVpn: () -> Unit
+) {
+    val stateColor by animateColorAsState(
+        targetValue = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "StateColorAnimation"
+    )
+
+    Card(
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = stateColor,
+                        modifier = Modifier.size(10.dp)
+                    ) {}
+                    Text(
+                        text = if (isActive) stringResource(R.string.defense_engaged) else stringResource(R.string.defense_paused),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
+                        color = stateColor
+                    )
+                }
+
+                Switch(
+                    checked = isActive,
+                    onCheckedChange = { onToggleVpn() },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color.White,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "$blockedAttemptsCount",
+                style = MaterialTheme.typography.displayLarge.copy(
+                    fontSize = 56.sp,
+                    lineHeight = 60.sp
+                ),
+                fontWeight = FontWeight.Bold,
+                color = if (blockedAttemptsCount > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+            )
+
+            Text(
+                text = stringResource(R.string.intercepted_attempts_label),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun AppleRuleEngineStatusCard(
+    activeRulesCount: Int,
+    onManageClick: () -> Unit
+) {
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onManageClick() }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = stringResource(R.string.yaml_engine_label),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.active_rules_loaded, activeRulesCount),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Text(
+                text = stringResource(R.string.manage_action),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+@Composable
+fun AppleThreatTrailCard(
+    blockedSitesTrail: List<VisitedSiteRecord>
+) {
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.25f)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.intercept_trail_label),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Text(
+                    text = stringResource(R.string.realtime_audit),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            if (blockedSitesTrail.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.no_intercepted_records),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    blockedSitesTrail.take(4).forEach { item ->
+                        FalconInterceptItem(record = item)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FalconInterceptItem(record: VisitedSiteRecord) {
+    val formatter = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
+    val timeStr = remember(record.timestamp) { formatter.format(Date(record.timestamp)) }
+
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = record.destinationIp,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    if (record.domain.isNotEmpty()) {
+                        Text(
+                            text = "(${record.domain})",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                Text(
+                    text = "$timeStr • ${record.protocol}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Surface(
+                shape = RoundedCornerShape(6.dp),
+                color = MaterialTheme.colorScheme.error
+            ) {
+                Text(
+                    text = stringResource(R.string.blocked_badge),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onError,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ProtectionVectorRow(label: String, isActive: Boolean) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                modifier = Modifier.size(8.dp)
+            ) {}
+            Text(text = label, style = MaterialTheme.typography.bodySmall)
+        }
+        Text(
+            text = if (isActive) stringResource(R.string.vector_status_active) else "Paused",
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+        )
+    }
+}
+
+@Composable
+fun MasterProtectionButton(
+    isActive: Boolean,
+    onClick: () -> Unit
+) {
+    val transition = rememberInfiniteTransition(label = "PulseTransition")
+    val pulseScale by transition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "PulseScale"
+    )
+
+    val buttonColor by animateColorAsState(
+        targetValue = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+        animationSpec = spring(stiffness = Spring.StiffnessMedium),
+        label = "ButtonColor"
+    )
+
+    val contentColor by animateColorAsState(
+        targetValue = if (isActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        animationSpec = spring(stiffness = Spring.StiffnessMedium),
+        label = "ContentColor"
+    )
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.size(160.dp)
+    ) {
+        if (isActive) {
+            Box(
+                modifier = Modifier
+                    .size(140.dp)
+                    .scale(pulseScale)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+            )
+        }
+
+        Surface(
+            onClick = onClick,
+            shape = CircleShape,
+            color = buttonColor,
+            shadowElevation = if (isActive) 12.dp else 2.dp,
+            modifier = Modifier.size(120.dp)
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Text(
+                    text = if (isActive) stringResource(R.string.switch_on) else stringResource(R.string.switch_off),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = contentColor
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MetricColumn(
+    label: String,
+    value: String,
+    isHighlight: Boolean = false
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = if (isHighlight) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+fun SaaS2026TelemetryWave(
+    isActive: Boolean,
+    threatCount: Int
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val threatColor = MaterialTheme.colorScheme.error
+
+    val transition = rememberInfiniteTransition(label = "WavePhase")
+    val phase by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 2f * Math.PI.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "PhaseAnimation"
+    )
+
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp)
+    ) {
+        val width = size.width
+        val height = size.height
+        val centerY = height / 2f
+        val amplitude = if (isActive) height / 3f else 6.dp.toPx()
+
+        val path = Path()
+        path.moveTo(0f, centerY)
+
+        for (x in 0..width.toInt() step 4) {
+            val normalizedX = x / width
+            val y = centerY + amplitude * sin(normalizedX * 4 * Math.PI.toFloat() + phase)
+            path.lineTo(x.toFloat(), y)
+        }
+
+        drawPath(
+            path = path,
+            color = if (threatCount > 0) threatColor else primaryColor,
+            style = Stroke(width = 2.5.dp.toPx())
         )
     }
 }
@@ -1226,24 +1313,26 @@ fun RulesTabContent(
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = stringResource(id = R.string.rules_header_title),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+                fontWeight = FontWeight.Bold
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Button(
                     onClick = onImportRuleClick,
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1f)
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_add),
@@ -1251,12 +1340,17 @@ fun RulesTabContent(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = stringResource(id = R.string.btn_import_rule), style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        text = stringResource(id = R.string.btn_import_rule),
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1
+                    )
                 }
                 Button(
                     onClick = onOpenSyncPicker,
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                    modifier = Modifier.weight(1f)
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_download),
@@ -1264,7 +1358,11 @@ fun RulesTabContent(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Sync", style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        text = stringResource(id = R.string.btn_sync_github),
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1
+                    )
                 }
             }
         }
@@ -1272,21 +1370,14 @@ fun RulesTabContent(
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            placeholder = { Text(stringResource(R.string.search_rules_placeholder), style = MaterialTheme.typography.bodySmall, color = AppleMutedLabel) },
+            placeholder = { Text(stringResource(R.string.search_rules_placeholder), style = MaterialTheme.typography.bodySmall) },
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_search),
                     contentDescription = null,
-                    tint = AppleMutedLabel,
                     modifier = Modifier.size(18.dp)
                 )
             },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White
-            ),
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth()
         )
@@ -1303,16 +1394,17 @@ fun RulesTabContent(
 
         if (filteredRules.isEmpty()) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "No YAML detection rules match search criteria.", color = AppleMutedLabel)
+                Text(text = "No YAML detection rules match search criteria.")
             }
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                filteredRules.forEach { rule ->
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(filteredRules) { rule ->
                     RuleItemCard(
                         rule = rule,
                         onClick = { onSelectRule(rule) },
@@ -1330,8 +1422,12 @@ fun RuleItemCard(
     onClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
-    AppleGlassCard(
-        modifier = Modifier.clickable { onClick() }
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -1349,8 +1445,8 @@ fun RuleItemCard(
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         color = when (rule.severity) {
-                            "CRITICAL", "HIGH" -> AppleRefinedCrimson.copy(alpha = 0.2f)
-                            else -> Color.White.copy(alpha = 0.1f)
+                            "CRITICAL", "HIGH" -> MaterialTheme.colorScheme.errorContainer
+                            else -> MaterialTheme.colorScheme.secondaryContainer
                         }
                     ) {
                         Text(
@@ -1359,8 +1455,8 @@ fun RuleItemCard(
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             color = when (rule.severity) {
-                                "CRITICAL", "HIGH" -> AppleRefinedCrimson
-                                else -> Color.White.copy(alpha = 0.8f)
+                                "CRITICAL", "HIGH" -> MaterialTheme.colorScheme.onErrorContainer
+                                else -> MaterialTheme.colorScheme.onSecondaryContainer
                             }
                         )
                     }
@@ -1371,7 +1467,7 @@ fun RuleItemCard(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_delete),
                             contentDescription = "Delete Rule",
-                            tint = AppleRefinedCrimson,
+                            tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -1381,14 +1477,13 @@ fun RuleItemCard(
             Text(
                 text = rule.name,
                 style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.White
+                fontWeight = FontWeight.SemiBold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = rule.description,
                 style = MaterialTheme.typography.bodySmall,
-                color = AppleMutedLabel
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row(
@@ -1397,14 +1492,12 @@ fun RuleItemCard(
             ) {
                 Text(
                     text = stringResource(id = R.string.rule_category_label, rule.category),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = AppleMutedLabel
+                    style = MaterialTheme.typography.labelSmall
                 )
                 Text(
                     text = stringResource(id = R.string.rule_action_label, rule.action.name),
                     style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -1417,10 +1510,9 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color(0xFF141418),
         title = {
             Column {
-                Text(text = rule.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium, color = Color.White)
+                Text(text = rule.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(
@@ -1440,8 +1532,7 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
             if (isDeveloperMode) {
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFF09090B),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
+                    color = Color(0xFF1E1E1E),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(280.dp)
@@ -1480,16 +1571,15 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
                             color = when (rule.action.name) {
-                                "BLOCK", "TERMINATE" -> AppleRefinedCrimson.copy(alpha = 0.2f)
-                                else -> Color.White.copy(alpha = 0.1f)
+                                "BLOCK", "TERMINATE" -> MaterialTheme.colorScheme.errorContainer
+                                else -> MaterialTheme.colorScheme.secondaryContainer
                             }
                         ) {
                             Text(
                                 text = "Action: ${rule.action.name}",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                color = Color.White
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
                         }
                     }
@@ -1497,23 +1587,26 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
                     Text(
                         text = rule.description,
                         style = MaterialTheme.typography.bodySmall,
-                        color = AppleMutedLabel
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     if (rule.condition.targetIps.isNotEmpty() || rule.condition.targetDomains.isNotEmpty()) {
                         Text(
                             text = stringResource(id = R.string.rule_condition_targets),
                             style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            fontWeight = FontWeight.Bold
                         )
-                        AppleGlassCard {
+                        Card(
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 rule.condition.targetIps.forEach { ip ->
-                                    Text(text = " • IP: $ip", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.85f))
+                                    Text(text = " • IP: $ip", style = MaterialTheme.typography.bodySmall)
                                 }
                                 rule.condition.targetDomains.forEach { domain ->
-                                    Text(text = " • Domain: $domain", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.85f))
+                                    Text(text = " • Domain: $domain", style = MaterialTheme.typography.bodySmall)
                                 }
                             }
                         }
@@ -1523,13 +1616,16 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
                         Text(
                             text = stringResource(id = R.string.rule_condition_patterns),
                             style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            fontWeight = FontWeight.Bold
                         )
-                        AppleGlassCard {
+                        Card(
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 rule.condition.packagePatterns.forEach { pattern ->
-                                    Text(text = " • $pattern", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.85f))
+                                    Text(text = " • $pattern", style = MaterialTheme.typography.bodySmall)
                                 }
                             }
                         }
@@ -1539,7 +1635,7 @@ fun RuleDetailDialog(rule: DetectionRule, onDismiss: () -> Unit) {
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text(text = stringResource(id = R.string.btn_close), color = Color.White)
+                Text(text = stringResource(id = R.string.btn_close))
             }
         }
     )
@@ -1616,15 +1712,16 @@ fun ThreatLogsTabContent(uiState: MainUiState) {
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)
     ) {
         Text(
             text = stringResource(id = R.string.threat_logs_title),
             style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
+            fontWeight = FontWeight.Bold
         )
+        Spacer(modifier = Modifier.height(10.dp))
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             items(listOf("ALL", "CRITICAL", "HIGH", "MEDIUM", "LOG")) { sev ->
@@ -1636,22 +1733,25 @@ fun ThreatLogsTabContent(uiState: MainUiState) {
             }
         }
 
+        Spacer(modifier = Modifier.height(12.dp))
+
         if (filteredLogs.isEmpty()) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = stringResource(id = R.string.no_threats_detected),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = AppleMutedLabel
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                filteredLogs.forEach { log ->
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(filteredLogs) { log ->
                     ThreatLogItemCard(log = log)
                 }
             }
@@ -1673,8 +1773,9 @@ fun HistoryTabContent(
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1684,8 +1785,7 @@ fun HistoryTabContent(
             Text(
                 text = stringResource(id = R.string.visited_sites_header),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+                fontWeight = FontWeight.Bold
             )
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 FilterChip(
@@ -1700,6 +1800,8 @@ fun HistoryTabContent(
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1727,29 +1829,34 @@ fun HistoryTabContent(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = AppleRefinedCrimson
+                    contentColor = MaterialTheme.colorScheme.error
                 )
             ) {
                 Text(text = stringResource(id = R.string.btn_clear_data), style = MaterialTheme.typography.labelSmall)
             }
         }
 
+        Spacer(modifier = Modifier.height(12.dp))
+
         if (displayList.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp),
+                    .weight(1f),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = stringResource(id = R.string.no_history_recorded),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = AppleMutedLabel
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                displayList.forEach { site ->
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(displayList) { site ->
                     VisitedSiteItemCard(site = site)
                 }
             }
@@ -1759,7 +1866,11 @@ fun HistoryTabContent(
 
 @Composable
 fun VisitedSiteItemCard(site: VisitedSiteRecord) {
-    AppleGlassCard {
+    Card(
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -1769,21 +1880,20 @@ fun VisitedSiteItemCard(site: VisitedSiteRecord) {
                 Text(
                     text = site.destinationIp,
                     style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = if (site.isThreat) "THREAT BLOCKED" else "SAFE",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = if (site.isThreat) AppleRefinedCrimson else AppleSoftEmerald
+                    color = if (site.isThreat) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                 )
             }
             if (site.domain.isNotEmpty()) {
                 Text(
                     text = site.domain,
                     style = MaterialTheme.typography.bodySmall,
-                    color = AppleMutedLabel
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -1793,13 +1903,11 @@ fun VisitedSiteItemCard(site: VisitedSiteRecord) {
             ) {
                 Text(
                     text = stringResource(id = R.string.app_name_label, site.appName),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = AppleMutedLabel
+                    style = MaterialTheme.typography.labelSmall
                 )
                 Text(
                     text = site.protocol,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = AppleMutedLabel
+                    style = MaterialTheme.typography.labelSmall
                 )
             }
         }
@@ -1810,8 +1918,7 @@ fun VisitedSiteItemCard(site: VisitedSiteRecord) {
 fun ThreatLogItemCard(log: ThreatLogEntry) {
     Surface(
         shape = RoundedCornerShape(14.dp),
-        color = AppleRefinedCrimson.copy(alpha = 0.15f),
-        border = BorderStroke(1.dp, AppleRefinedCrimson.copy(alpha = 0.3f)),
+        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.75f),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -1823,13 +1930,13 @@ fun ThreatLogItemCard(log: ThreatLogEntry) {
                     text = log.ruleName,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = AppleRefinedCrimson
+                    color = MaterialTheme.colorScheme.onErrorContainer
                 )
                 Text(
                     text = log.severity,
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = AppleRefinedCrimson
+                    color = MaterialTheme.colorScheme.error
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -1837,27 +1944,27 @@ fun ThreatLogItemCard(log: ThreatLogEntry) {
                 text = stringResource(id = R.string.app_name_label, log.appName),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onErrorContainer
             )
             if (log.packageName.isNotEmpty()) {
                 Text(
                     text = stringResource(id = R.string.package_name_label, log.packageName),
                     style = MaterialTheme.typography.labelSmall,
-                    color = AppleMutedLabel
+                    color = MaterialTheme.colorScheme.onErrorContainer
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = log.details,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.White.copy(alpha = 0.85f)
+                color = MaterialTheme.colorScheme.onErrorContainer
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "Action: ${log.actionTaken}",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                color = AppleRefinedCrimson
+                color = MaterialTheme.colorScheme.onErrorContainer
             )
         }
     }

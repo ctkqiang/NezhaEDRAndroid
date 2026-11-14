@@ -1,40 +1,52 @@
 package xin.ctkqiang.nezhaedr.ui.theme
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
-private val RedDarkColorScheme = darkColorScheme(
-    primary = RedPrimaryDark,
-    secondary = RedSecondaryDark,
-    tertiary = RedTertiaryDark,
-    background = AppleOledBlack,
-    surface = AppleOledBlack,
-    surfaceVariant = AppleGlassTop,
-    primaryContainer = RedContainerDark,
-    outline = AppleSpecularBorderTop
+// Red Theme (Default Light)
+private val RedLightColorScheme = lightColorScheme(
+    primary = RedPrimaryLight,
+    secondary = RedSecondaryLight,
+    tertiary = RedTertiaryLight,
+    primaryContainer = RedContainerLight,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceVariant = LightSurfaceVariant,
+    outline = LightOutline,
+    onBackground = LightTextPrimary,
+    onSurface = LightTextPrimary,
+    onSurfaceVariant = LightTextSecondary
 )
 
-private val BlueDarkColorScheme = darkColorScheme(
-    primary = BluePrimaryDark,
-    secondary = BlueSecondaryDark,
-    tertiary = BlueTertiaryDark,
-    background = AppleOledBlack,
-    surface = AppleOledBlack,
-    surfaceVariant = AppleGlassTop,
-    primaryContainer = BlueContainerDark,
-    outline = AppleSpecularBorderTop
+// Blue Theme (Light)
+private val BlueLightColorScheme = lightColorScheme(
+    primary = BluePrimaryLight,
+    secondary = BlueSecondaryLight,
+    tertiary = BlueTertiaryLight,
+    primaryContainer = BlueContainerLight,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceVariant = LightSurfaceVariant,
+    outline = LightOutline,
+    onBackground = LightTextPrimary,
+    onSurface = LightTextPrimary,
+    onSurfaceVariant = LightTextSecondary
 )
 
-private val PinkDarkColorScheme = darkColorScheme(
-    primary = PinkPrimaryDark,
-    secondary = PinkSecondaryDark,
-    tertiary = PinkTertiaryDark,
-    background = AppleOledBlack,
-    surface = AppleOledBlack,
-    surfaceVariant = AppleGlassTop,
-    primaryContainer = PinkContainerDark,
-    outline = AppleSpecularBorderTop
+// Pink Theme (Light)
+private val PinkLightColorScheme = lightColorScheme(
+    primary = PinkPrimaryLight,
+    secondary = PinkSecondaryLight,
+    tertiary = PinkTertiaryLight,
+    primaryContainer = PinkContainerLight,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceVariant = LightSurfaceVariant,
+    outline = LightOutline,
+    onBackground = LightTextPrimary,
+    onSurface = LightTextPrimary,
+    onSurfaceVariant = LightTextSecondary
 )
 
 @Composable
@@ -43,9 +55,9 @@ fun NezhaEDRTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = when (appTheme) {
-        AppThemeMode.RED -> RedDarkColorScheme
-        AppThemeMode.BLUE -> BlueDarkColorScheme
-        AppThemeMode.PINK -> PinkDarkColorScheme
+        AppThemeMode.RED -> RedLightColorScheme
+        AppThemeMode.BLUE -> BlueLightColorScheme
+        AppThemeMode.PINK -> PinkLightColorScheme
     }
 
     MaterialTheme(

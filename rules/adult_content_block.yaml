@@ -1,4 +1,4 @@
-id: "RULE-NET-003"
+id: "adult_content_block"
 name: "Adult & Explicit Content Domain Block"
 description: "Blocks outbound connections to flagged adult and explicit web destinations"
 severity: "CRITICAL"

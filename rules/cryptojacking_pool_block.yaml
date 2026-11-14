@@ -1,4 +1,4 @@
-id: "RULE-NET-005"
+id: "cryptojacking_pool_block"
 name: "Cryptojacking Mining Pool Network Block"
 description: "Blocks unauthorized background cryptocurrency mining pool connections"
 severity: "HIGH"

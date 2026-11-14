@@ -27,7 +27,7 @@ class EDREvaluationEngineTest {
         )
         val matchResult = engine.evaluateNetworkEvent(netEvent)
         assertNotNull(matchResult)
-        assertEquals("RULE-NET-001", matchResult?.rule?.id)
+        assertEquals("c2_threat_block", matchResult?.rule?.id)
 
         val cleanNetEvent = TelemetryEvent.Network(
             destinationIp = "8.8.8.8",
@@ -42,7 +42,7 @@ class EDREvaluationEngineTest {
         )
         val pkgMatchResult = engine.evaluatePackageEvent(pkgEvent)
         assertNotNull(pkgMatchResult)
-        assertEquals("RULE-PKG-001", pkgMatchResult?.rule?.id)
+        assertEquals("rogue_package_alert", pkgMatchResult?.rule?.id)
     }
 
     @Test
@@ -61,7 +61,7 @@ class EDREvaluationEngineTest {
         )
         val matchTopPorn = engine.evaluateNetworkEvent(topPornEvent)
         assertNotNull(matchTopPorn)
-        assertEquals("RULE-NET-003", matchTopPorn?.rule?.id)
+        assertEquals("adult_content_block", matchTopPorn?.rule?.id)
         assertEquals("BLOCK", matchTopPorn?.rule?.action?.name)
 
         val porna91Event = TelemetryEvent.Network(
@@ -71,7 +71,7 @@ class EDREvaluationEngineTest {
         )
         val match91Porna = engine.evaluateNetworkEvent(porna91Event)
         assertNotNull(match91Porna)
-        assertEquals("RULE-NET-003", match91Porna?.rule?.id)
+        assertEquals("adult_content_block", match91Porna?.rule?.id)
     }
 
     @Test

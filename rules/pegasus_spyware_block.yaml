@@ -1,4 +1,4 @@
-id: "RULE-NET-004"
+id: "pegasus_spyware_block"
 name: "Pegasus & Advanced Cyber Espionage Domain Block"
 description: "Blocks egress connections to known commercial spyware & zero-day exploit exfiltration domains"
 severity: "CRITICAL"

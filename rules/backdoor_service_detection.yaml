@@ -1,4 +1,4 @@
-id: "RULE-PROC-001"
+id: "backdoor_service_detection"
 name: "Unauthorized Backdoor Service Detection"
 description: "Monitors rogue processes attempting unauthorized background execution"
 severity: "MEDIUM"

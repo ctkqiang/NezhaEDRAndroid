@@ -1,4 +1,4 @@
-id: "RULE-NET-007"
+id: "adware_click_farm_block"
 name: "Fraudulent Adware & Click Farm Telemetry Block"
 description: "Blocks background click fraud ad servers draining battery and mobile bandwidth"
 severity: "MEDIUM"

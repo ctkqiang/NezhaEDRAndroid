@@ -1,4 +1,4 @@
-id: "RULE-NET-002"
+id: "ransomware_beacon_block"
 name: "Ransomware Beaconing Domain Block"
 description: "Prevents outbound botnet beaconing to ransomware command centers"
 severity: "CRITICAL"

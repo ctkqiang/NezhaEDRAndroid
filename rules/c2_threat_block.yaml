@@ -1,4 +1,4 @@
-id: "RULE-NET-001"
+id: "c2_threat_block"
 name: "Known C2 Threat IP Block"
 description: "Detects and blocks egress connection to known malicious C2 addresses"
 severity: "HIGH"

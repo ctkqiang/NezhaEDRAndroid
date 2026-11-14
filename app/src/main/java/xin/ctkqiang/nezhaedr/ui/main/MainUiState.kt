@@ -22,6 +22,7 @@ data class MainUiState(
     val selectedRemoteFilesToSync: Set<String> = emptySet(),
     val appTheme: AppThemeMode = AppThemeMode.RED,
     val appLanguageCode: String = "zh",
+    val languageRecomposeKey: Int = 0,
     val selectedTab: Int = 0,
     val isLoading: Boolean = false,
     val isSyncingRules: Boolean = false

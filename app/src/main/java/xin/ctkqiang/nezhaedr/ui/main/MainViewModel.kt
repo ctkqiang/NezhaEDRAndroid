@@ -1,5 +1,6 @@
 package xin.ctkqiang.nezhaedr.ui.main
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.net.Uri
@@ -72,7 +73,13 @@ class MainViewModel(
     fun setAppLanguage(context: Context, languageCode: String) {
         EDRLogger.i(TAG, "setAppLanguage: Changing app language code to $languageCode")
         LocaleHelper.applyLanguage(context, languageCode)
-        _uiState.update { it.copy(appLanguageCode = languageCode) }
+        _uiState.update { current ->
+            current.copy(
+                appLanguageCode = languageCode,
+                languageRecomposeKey = current.languageRecomposeKey + 1
+            )
+        }
+        (context as? Activity)?.recreate()
     }
 
     private fun loadSavedLanguage(): String {

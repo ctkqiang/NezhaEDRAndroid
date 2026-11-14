@@ -960,6 +960,8 @@ fun AppleMasterStatusCard(
     blockedAttemptsCount: Int,
     onToggleVpn: () -> Unit
 ) {
+    val haptic = LocalHapticFeedback.current
+
     val stateColor by animateColorAsState(
         targetValue = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
@@ -971,61 +973,62 @@ fun AppleMasterStatusCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = stateColor,
-                        modifier = Modifier.size(10.dp)
-                    ) {}
-                    Text(
-                        text = if (isActive) stringResource(R.string.defense_engaged) else stringResource(R.string.defense_paused),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        color = stateColor
-                    )
-                }
-
-                Switch(
-                    checked = isActive,
-                    onCheckedChange = { onToggleVpn() },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = MaterialTheme.colorScheme.primary,
-                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        uncheckedTrackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
-                    )
+                Surface(
+                    shape = CircleShape,
+                    color = stateColor,
+                    modifier = Modifier.size(10.dp)
+                ) {}
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (isActive) stringResource(R.string.defense_engaged) else stringResource(R.string.defense_paused),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    color = stateColor
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            Text(
-                text = "$blockedAttemptsCount",
-                style = MaterialTheme.typography.displayLarge.copy(
-                    fontSize = 56.sp,
-                    lineHeight = 60.sp
-                ),
-                fontWeight = FontWeight.Bold,
-                color = if (blockedAttemptsCount > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+            // Massive Central Shield Power Button
+            MasterProtectionButton(
+                isActive = isActive,
+                onClick = onToggleVpn
             )
 
-            Text(
-                text = stringResource(R.string.intercepted_attempts_label),
-                style = MaterialTheme.typography.labelSmall,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = "$blockedAttemptsCount",
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontSize = 56.sp,
+                        lineHeight = 60.sp
+                    ),
+                    fontWeight = FontWeight.Bold,
+                    color = if (blockedAttemptsCount > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                )
+
+                Text(
+                    text = stringResource(R.string.intercepted_attempts_label),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
@@ -1211,59 +1214,107 @@ fun MasterProtectionButton(
     isActive: Boolean,
     onClick: () -> Unit
 ) {
+    val haptic = LocalHapticFeedback.current
+
     val transition = rememberInfiniteTransition(label = "PulseTransition")
     val pulseScale by transition.animateFloat(
         initialValue = 1.0f,
-        targetValue = 1.15f,
+        targetValue = 1.18f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
+            animation = tween(1800, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "PulseScale"
     )
 
-    val buttonColor by animateColorAsState(
-        targetValue = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+    val activeColor = MaterialTheme.colorScheme.primary
+    val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+
+    val mainButtonColor by animateColorAsState(
+        targetValue = if (isActive) activeColor else MaterialTheme.colorScheme.surfaceVariant,
         animationSpec = spring(stiffness = Spring.StiffnessMedium),
         label = "ButtonColor"
     )
 
-    val contentColor by animateColorAsState(
-        targetValue = if (isActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
-        label = "ContentColor"
-    )
-
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.size(160.dp)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier.padding(vertical = 8.dp)
     ) {
-        if (isActive) {
-            Box(
-                modifier = Modifier
-                    .size(140.dp)
-                    .scale(pulseScale)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-            )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(170.dp)
+        ) {
+            // Sonar Radar Outer Pulse Ring
+            if (isActive) {
+                Box(
+                    modifier = Modifier
+                        .size(160.dp)
+                        .scale(pulseScale)
+                        .clip(CircleShape)
+                        .background(activeColor.copy(alpha = 0.15f))
+                )
+                Box(
+                    modifier = Modifier
+                        .size(140.dp)
+                        .clip(CircleShape)
+                        .background(activeColor.copy(alpha = 0.25f))
+                )
+            }
+
+            // Central Elevated Shield Sphere Button
+            Surface(
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onClick()
+                },
+                shape = CircleShape,
+                color = mainButtonColor,
+                shadowElevation = if (isActive) 12.dp else 2.dp,
+                border = BorderStroke(2.dp, if (isActive) activeColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+                modifier = Modifier.size(120.dp)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            contentDescription = "Shield Master Button",
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(54.dp)
+                        )
+                    }
+                }
+            }
         }
 
+        // Executive Status Pill Badge
         Surface(
-            onClick = onClick,
-            shape = CircleShape,
-            color = buttonColor,
-            shadowElevation = if (isActive) 12.dp else 2.dp,
-            modifier = Modifier.size(120.dp)
+            shape = RoundedCornerShape(20.dp),
+            color = if (isActive) activeColor.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant,
+            border = BorderStroke(1.dp, if (isActive) activeColor.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
+                Surface(
+                    shape = CircleShape,
+                    color = if (isActive) activeColor else inactiveColor,
+                    modifier = Modifier.size(8.dp)
+                ) {}
                 Text(
-                    text = if (isActive) stringResource(R.string.switch_on) else stringResource(R.string.switch_off),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = contentColor
+                    text = if (isActive) stringResource(R.string.defense_engaged) else stringResource(R.string.defense_paused),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    color = if (isActive) activeColor else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

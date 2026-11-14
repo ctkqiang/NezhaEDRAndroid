@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import xin.ctkqiang.nezhaedr.ui.main.MainScreen
 import xin.ctkqiang.nezhaedr.ui.theme.NezhaEDRTheme
 import xin.ctkqiang.nezhaedr.util.EDRLogger
+import xin.ctkqiang.nezhaedr.util.LocaleHelper
 
 class MainActivity : ComponentActivity() {
 
@@ -26,8 +27,11 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val savedLang = LocaleHelper.getSavedLanguage(this)
+        LocaleHelper.applyLanguage(this, savedLang)
+
         super.onCreate(savedInstanceState)
-        EDRLogger.i(TAG, "onCreate: Activity initializing")
+        EDRLogger.i(TAG, "onCreate: Activity initializing with locale '$savedLang'")
         enableEdgeToEdge()
         requestNotificationPermission()
 

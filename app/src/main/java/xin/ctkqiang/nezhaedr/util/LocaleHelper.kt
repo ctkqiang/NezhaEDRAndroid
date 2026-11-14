@@ -14,7 +14,7 @@ object LocaleHelper {
         return prefs.getString(KEY_LANGUAGE, "zh") ?: "zh"
     }
 
-    fun applyLanguage(context: Context, languageCode: String): Context {
+    fun applyLanguage(context: Context, languageCode: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit().putString(KEY_LANGUAGE, languageCode).apply()
 
@@ -28,9 +28,19 @@ object LocaleHelper {
         }
 
         Locale.setDefault(locale)
-        val config = Configuration(context.resources.configuration)
+
+        val resources = context.resources
+        val config = Configuration(resources.configuration)
         config.setLocale(locale)
+        @Suppress("DEPRECATION")
+        resources.updateConfiguration(config, resources.displayMetrics)
+
+        val appResources = context.applicationContext.resources
+        val appConfig = Configuration(appResources.configuration)
+        appConfig.setLocale(locale)
+        @Suppress("DEPRECATION")
+        appResources.updateConfiguration(appConfig, appResources.displayMetrics)
+
         EDRLogger.i("LocaleHelper", "Applied application locale: $languageCode")
-        return context.createConfigurationContext(config)
     }
 }

@@ -46,6 +46,21 @@ class RuleRepositoryImpl(
 
     private var cachedRules: DetectionRulePackage? = null
 
+    private val knownRepositoryRuleFiles = listOf(
+        "adware_click_farm_block.yaml",
+        "adult_content_block.yaml",
+        "backdoor_service_detection.yaml",
+        "banking_trojan_alert.yaml",
+        "c2_threat_block.yaml",
+        "cryptojacking_pool_block.yaml",
+        "pegasus_spyware_block.yaml",
+        "phishing_credential_block.yaml",
+        "ransomware_beacon_block.yaml",
+        "reconnaissance_probe_block.yaml",
+        "rogue_package_alert.yaml",
+        "spyware_keylogger_detection.yaml"
+    )
+
     override fun getFallbackRemoteRuleCatalog(): List<RemoteRuleCatalogItem> {
         return listOf(
             RemoteRuleCatalogItem("c2_threat_block.yaml", "RULE-NET-001", "Known C2 Threat IP Block", "NETWORK", "HIGH"),
@@ -66,11 +81,13 @@ class RuleRepositoryImpl(
     override suspend fun fetchRemoteGithubCatalog(): List<RemoteRuleCatalogItem> = withContext(Dispatchers.IO) {
         EDRLogger.i(TAG, "fetchRemoteGithubCatalog: Querying live single source of truth at $GITHUB_RULES_TREE_URL")
         val catalogItems = mutableListOf<RemoteRuleCatalogItem>()
+
+        // 1. Attempt GitHub API Directory Listing
         try {
             val url = URL(GITHUB_CONTENTS_API_URL)
             val connection = url.openConnection() as HttpURLConnection
-            connection.connectTimeout = 8000
-            connection.readTimeout = 8000
+            connection.connectTimeout = 6000
+            connection.readTimeout = 6000
             connection.requestMethod = "GET"
             connection.setRequestProperty("User-Agent", "NezhaCyberEDR-Android")
             connection.setRequestProperty("Accept", "application/vnd.github.v3+json")
@@ -99,20 +116,48 @@ class RuleRepositoryImpl(
                         }
                     }
                 }
-                EDRLogger.i(TAG, "fetchRemoteGithubCatalog: Discovered ${catalogItems.size} live rulesets from GitHub single source of truth")
+                EDRLogger.i(TAG, "fetchRemoteGithubCatalog: Discovered ${catalogItems.size} live rulesets via GitHub API")
             } else {
-                EDRLogger.w(TAG, "fetchRemoteGithubCatalog: HTTP ${connection.responseCode} querying GitHub contents API")
+                EDRLogger.w(TAG, "fetchRemoteGithubCatalog: GitHub API returned HTTP ${connection.responseCode}")
             }
             connection.disconnect()
         } catch (e: Exception) {
-            EDRLogger.w(TAG, "fetchRemoteGithubCatalog: Network exception querying GitHub contents API: ${e.message}")
+            EDRLogger.w(TAG, "fetchRemoteGithubCatalog: GitHub API query failed: ${e.message}")
         }
 
+        // 2. Direct Raw GitHub CDN Fetching if API was rate-limited or failed
+        if (catalogItems.isEmpty()) {
+            EDRLogger.i(TAG, "fetchRemoteGithubCatalog: Querying GitHub raw CDN directly for repository rulesets")
+            for (fileName in knownRepositoryRuleFiles) {
+                try {
+                    val rawUrl = "$GITHUB_RULES_BASE_URL/$fileName"
+                    val yamlContent = fetchRawContent(rawUrl)
+                    if (yamlContent != null) {
+                        val parsed = YamlRuleParser.parseYamlRule(yamlContent)
+                        if (parsed != null) {
+                            catalogItems.add(
+                                RemoteRuleCatalogItem(
+                                    fileName = fileName,
+                                    ruleId = parsed.id,
+                                    name = parsed.name,
+                                    category = parsed.category,
+                                    severity = parsed.severity
+                                )
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    EDRLogger.v(TAG, "Failed direct CDN fetch for $fileName: ${e.message}")
+                }
+            }
+        }
+
+        // 3. Ultimate fallback if offline
         if (catalogItems.isEmpty()) {
             EDRLogger.w(TAG, "fetchRemoteGithubCatalog: Returning fallback catalog items")
             return@withContext getFallbackRemoteRuleCatalog()
         }
-        return@withContext catalogItems
+        return@withContext catalogItems.distinctBy { it.fileName }
     }
 
     private fun fetchRawContent(urlString: String): String? {

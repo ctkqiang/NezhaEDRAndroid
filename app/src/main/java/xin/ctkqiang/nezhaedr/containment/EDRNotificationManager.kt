@@ -74,7 +74,8 @@ class EDRNotificationManager(private val context: Context) {
             .setCustomBigContentView(customLayout)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
+            .setOngoing(true)
+            .setAutoCancel(false)
             .build()
 
         try {

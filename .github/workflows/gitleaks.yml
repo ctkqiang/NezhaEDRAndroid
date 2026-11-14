@@ -1,9 +1,7 @@
 name: GitLeaks Secret Scan
 
 on:
-  pull_request:
-    branches:
-      - dev
+  workflow_dispatch:
 
 jobs:
   gitleaks:

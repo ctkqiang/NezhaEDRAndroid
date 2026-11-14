@@ -61,6 +61,14 @@ class MainViewModel(
         _uiState.update { it.copy(appTheme = theme) }
     }
 
+    fun toggleVpnState() {
+        _uiState.update { current ->
+            val nextState = !current.isVpnActive
+            EDRLogger.i(TAG, "toggleVpnState: User toggled protection active state to $nextState")
+            current.copy(isVpnActive = nextState)
+        }
+    }
+
     private fun loadSavedTheme(): AppThemeMode {
         val savedName = prefs.getString("app_theme_mode", AppThemeMode.RED.name)
         return try {

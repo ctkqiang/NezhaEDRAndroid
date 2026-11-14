@@ -1,9 +1,7 @@
 name: Code Security & Backdoor Inspection
 
 on:
-  pull_request:
-    branches:
-      - dev
+  workflow_dispatch:
 
 jobs:
   code-security-audit:

@@ -244,6 +244,7 @@ fun MainScreen(
             },
             onToggleVpn = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                viewModel.toggleVpnState()
                 if (uiState.isVpnActive) {
                     val intent = Intent(context, NezhaVpnService::class.java).apply {
                         action = NezhaVpnService.ACTION_STOP_VPN

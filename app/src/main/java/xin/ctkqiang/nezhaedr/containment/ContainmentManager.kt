@@ -3,6 +3,7 @@ package xin.ctkqiang.nezhaedr.containment
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.os.Environment
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -10,6 +11,7 @@ import xin.ctkqiang.nezhaedr.data.model.ContainmentAction
 import xin.ctkqiang.nezhaedr.engine.RuleMatchResult
 import xin.ctkqiang.nezhaedr.service.telemetry.TelemetryEvent
 import xin.ctkqiang.nezhaedr.util.EDRLogger
+import java.io.File
 import java.util.UUID
 
 data class ThreatLogEntry(
@@ -35,7 +37,7 @@ class ContainmentManager(
     fun handleRuleMatch(matchResult: RuleMatchResult) {
         val rule = matchResult.rule
         val event = matchResult.event
-        EDRLogger.w(TAG, "handleRuleMatch: Processing match for Rule ${rule.id} (${rule.name}) [Severity: ${rule.severity}, Action: ${rule.action}]")
+        EDRLogger.w(TAG, "handleRuleMatch: Processing match for Rule ${rule.canonicalId} (${rule.name}) [Severity: ${rule.severity}, Action: ${rule.action}]")
 
         val (appName, pkgName, eventDetails) = when (event) {
             is TelemetryEvent.Network -> {
@@ -52,13 +54,13 @@ class ContainmentManager(
                 Triple(
                     appLabel,
                     event.packageName,
-                    "Package: ${event.packageName} (${event.action}) — ${rule.description}"
+                    "⚠️ SCAM / MALWARE WARNING: App '${event.packageName}' is flagged as dangerous scam/malware. Traffic blocked. Install at your own risk. — ${rule.description}"
                 )
             }
         }
 
         val logEntry = ThreatLogEntry(
-            ruleId = rule.id,
+            ruleId = rule.canonicalId,
             ruleName = rule.name,
             severity = rule.severity,
             actionTaken = rule.action.name,
@@ -71,20 +73,41 @@ class ContainmentManager(
 
         when (rule.action) {
             ContainmentAction.LOG -> {
-                EDRLogger.i(TAG, "Containment Action LOG executed for Rule ${rule.id}")
+                EDRLogger.i(TAG, "Containment Action LOG executed for Rule ${rule.canonicalId}")
             }
             ContainmentAction.NOTIFY -> {
-                EDRLogger.i(TAG, "Containment Action NOTIFY executed for Rule ${rule.id}")
+                EDRLogger.i(TAG, "Containment Action NOTIFY executed for Rule ${rule.canonicalId}")
                 notificationManager.sendThreatNotification(matchResult)
             }
             ContainmentAction.BLOCK, ContainmentAction.TERMINATE -> {
-                EDRLogger.w(TAG, "Containment Action ${rule.action.name} executed for Rule ${rule.id}")
+                EDRLogger.w(TAG, "Containment Action ${rule.action.name} executed for Rule ${rule.canonicalId}")
                 notificationManager.sendThreatNotification(matchResult)
 
                 if (event is TelemetryEvent.Package || rule.action == ContainmentAction.TERMINATE) {
                     terminateProcessOrReturnHome(pkgName)
+                    purgeMatchingApkFiles(pkgName)
                 }
             }
+        }
+    }
+
+    private fun purgeMatchingApkFiles(packageName: String) {
+        if (packageName.isBlank()) return
+        try {
+            val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            if (downloadDir.exists() && downloadDir.isDirectory) {
+                val targetClean = packageName.lowercase().replace(".*", "").replace("\\.", "")
+                downloadDir.listFiles { _, name -> name.endsWith(".apk", ignoreCase = true) }?.forEach { apkFile ->
+                    val nameLower = apkFile.name.lowercase()
+                    if (nameLower.contains(targetClean) || (targetClean.isNotEmpty() && nameLower.contains(targetClean.take(6)))) {
+                        if (apkFile.delete()) {
+                            EDRLogger.w(TAG, "PURGED SCAM APK FILE: Successfully deleted ${apkFile.absolutePath}")
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            EDRLogger.v(TAG, "APK purge check exception handled: ${e.message}")
         }
     }
 

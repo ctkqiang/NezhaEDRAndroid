@@ -2,12 +2,13 @@ const i18n = {
   en: {
     title: "NezhaEDR Developer Docs",
     subtitle: "ZERO-TELEMETRY LOCAL DEFENSE ENGINE",
-    heroTitle: "NezhaEDR Open-Source Developer & Ruleset Documentation",
-    heroDesc: "A lightweight, high-performance Endpoint Detection & Response engine for Android. Built with Kotlin, Jetpack Compose, and Declarative YAML Rulesets.",
+    heroTitle: "NezhaEDR Developer API Reference & Rule Flow Playground",
+    heroDesc: "A comprehensive technical reference for creating, testing, and deploying declarative YAML rulesets for NezhaEDR Android.",
     tabOverview: "Architecture & Overview",
-    tabSchema: "YAML Ruleset Spec",
+    tabSchema: "YAML API Reference",
+    tabPlayground: "Interactive Node Playground",
     tabContribute: "How to Contribute",
-    tabRules: "Conduct & Rules",
+    tabRules: "Conduct & Standards",
     viewGithub: "View on GitHub",
     toggleTheme: "Theme",
     toggleLang: "中文",
@@ -39,12 +40,13 @@ const i18n = {
   zh: {
     title: "哪吒 EDR 开发者文档",
     subtitle: "零遥测本地安全防护引擎",
-    heroTitle: "哪吒 EDR 开源开发者与规则库技术文档",
-    heroDesc: "一款面向 Android 终端的轻量级、零遥测、高性能终端检测与响应（EDR）防护引擎。基于 Kotlin、Jetpack Compose 及声明式 YAML 规则库构建。",
+    heroTitle: "哪吒 EDR 开发者 API 语法参考与节点流 Playground",
+    heroDesc: "哪吒 EDR Android 声明式 YAML 规则库编写、节点流仿真与部署的完整技术文档。",
     tabOverview: "概述与架构",
-    tabSchema: "YAML 规则定义规范",
+    tabSchema: "YAML API 语法字典",
+    tabPlayground: "节点流仿真 Playground",
     tabContribute: "贡献指南",
-    tabRules: "行为准则与规定",
+    tabRules: "准则与规定",
     viewGithub: "访问 GitHub 仓库",
     toggleTheme: "主题切换",
     toggleLang: "English",
@@ -77,6 +79,23 @@ const i18n = {
 
 let currentLang = "en";
 
+function initAutoThemeAndLocale() {
+  // Auto-detect browser preferred language
+  const userLang = navigator.language || navigator.userLanguage || "en";
+  if (userLang.startsWith("zh")) {
+    setLanguage("zh");
+  } else {
+    setLanguage("en");
+  }
+
+  // Auto-detect system dark/light theme
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute("data-theme", "dark");
+  } else {
+    document.documentElement.setAttribute("data-theme", "light");
+  }
+}
+
 function setLanguage(lang) {
   currentLang = lang;
   document.querySelectorAll("[data-i18n]").forEach(el => {
@@ -104,6 +123,84 @@ function switchTab(tabId) {
   });
 }
 
+const yamlTemplates = {
+  c2: `schema_version: "2.0"
+rule_id: "RULE-C2-001"
+name: "Known C2 Threat IP Block"
+description: "Detects and blocks egress connection to known malicious C2 addresses"
+severity: "HIGH"
+category: "NETWORK"
+enabled: true
+engine_type: "signature"
+target_source: "dns_query"
+condition:
+  target_ips:
+    - "192.0.2.1"
+    - "198.51.100.14"
+  target_domains:
+    - "malicious-c2.example.com"
+action: "BLOCK"`,
+
+  trojan: `schema_version: "2.0"
+rule_id: "RULE-PKG-003"
+name: "Banking Trojan Sideload Detection"
+description: "Detects malware overlay apps targeting financial tokens"
+severity: "CRITICAL"
+category: "PACKAGE"
+enabled: true
+engine_type: "signature"
+target_source: "http_payload"
+condition:
+  package_patterns:
+    - ".*trojan\\\\.banker.*"
+    - ".*overlay\\\\.stealer.*"
+action: "TERMINATE"`,
+
+  entropy: `schema_version: "2.0"
+rule_id: "RULE-SCAN-001"
+name: "High Entropy DGA Domain Block"
+description: "Blocks algorithmic domain generation probes"
+severity: "HIGH"
+category: "NETWORK"
+enabled: true
+engine_type: "behavioral"
+target_source: "dns_query"
+condition:
+  max_subdomain_depth: 3
+  max_entropy: 4.2
+action: "BLOCK"`
+};
+
+function loadTemplate(type) {
+  const editor = document.getElementById("yamlEditor");
+  if (editor && yamlTemplates[type]) {
+    editor.value = yamlTemplates[type];
+    updateNodeVisualizer();
+  }
+}
+
+function updateNodeVisualizer() {
+  const text = document.getElementById("yamlEditor")?.value || "";
+
+  let ruleId = "RULE-CUSTOM-001";
+  let engineType = "signature";
+  let targetSource = "dns_query";
+  let action = "BLOCK";
+
+  text.split("\n").forEach(line => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("rule_id:")) ruleId = trimmed.split(":")[1].trim().replace(/"/g, '');
+    if (trimmed.startsWith("engine_type:")) engineType = trimmed.split(":")[1].trim().replace(/"/g, '');
+    if (trimmed.startsWith("target_source:")) targetSource = trimmed.split(":")[1].trim().replace(/"/g, '');
+    if (trimmed.startsWith("action:")) action = trimmed.split(":")[1].trim().replace(/"/g, '');
+  });
+
+  document.getElementById("nodeSource").textContent = `Source: ${targetSource.toUpperCase()}`;
+  document.getElementById("nodeEngine").textContent = `Engine: ${engineType.toUpperCase()} (ID: ${ruleId})`;
+  document.getElementById("nodeAction").textContent = `Action: ${action.toUpperCase()} DISPATCHED`;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  setLanguage("en");
+  initAutoThemeAndLocale();
+  updateNodeVisualizer();
 });

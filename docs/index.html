@@ -27,16 +27,17 @@
   <!-- Hero Header -->
   <header class="hero">
     <span class="hero-tag">OPEN-SOURCE ENDPOINT PROTECTION</span>
-    <h1 class="hero-title" data-i18n="heroTitle">NezhaEDR Open-Source Developer & Ruleset Documentation</h1>
-    <p class="hero-subtitle" data-i18n="heroDesc">A lightweight, high-performance Endpoint Detection & Response engine for Android. Built with Kotlin, Jetpack Compose, and Declarative YAML Rulesets.</p>
+    <h1 class="hero-title" data-i18n="heroTitle">NezhaEDR Developer API Reference & Rule Flow Playground</h1>
+    <p class="hero-subtitle" data-i18n="heroDesc">A comprehensive technical reference for creating, testing, and deploying declarative YAML rulesets for NezhaEDR Android.</p>
   </header>
 
   <!-- Navigation Tabs -->
   <div class="tab-nav">
     <button class="tab-btn active" onclick="switchTab('overview')" data-i18n="tabOverview">Architecture & Overview</button>
-    <button class="tab-btn" onclick="switchTab('schema')" data-i18n="tabSchema">YAML Ruleset Spec</button>
+    <button class="tab-btn" onclick="switchTab('schema')" data-i18n="tabSchema">YAML API Reference</button>
+    <button class="tab-btn" onclick="switchTab('playground')" data-i18n="tabPlayground">Interactive Node Playground</button>
     <button class="tab-btn" onclick="switchTab('contribute')" data-i18n="tabContribute">How to Contribute</button>
-    <button class="tab-btn" onclick="switchTab('rules')" data-i18n="tabRules">Conduct & Rules</button>
+    <button class="tab-btn" onclick="switchTab('rules')" data-i18n="tabRules">Conduct & Standards</button>
   </div>
 
   <main class="container">
@@ -68,31 +69,112 @@
       </div>
     </section>
 
-    <!-- Tab 2: YAML Ruleset Specification -->
+    <!-- Tab 2: Developer API Reference -->
     <section id="schema" class="tab-content">
       <div class="card">
-        <h2 class="card-title">Declarative YAML Ruleset Schema</h2>
-        <p class="card-subtitle">Rulesets are stored in the <code>/rules</code> directory and synchronized via GitOps.</p>
+        <h2 class="card-title">Declarative YAML Ruleset v2.0 API Reference</h2>
+        <p class="card-subtitle">Complete syntax specification and design rationale for all NezhaEDR v2.0 YAML keys.</p>
 
-        <pre><code><span class="cmt"># Sample Detection Rule: c2_threat_block.yaml</span>
-<span class="kw">id</span>: <span class="str">"c2_threat_block"</span>
-<span class="kw">name</span>: <span class="str">"Known C2 Threat IP Block"</span>
-<span class="kw">description</span>: <span class="str">"Detects and blocks egress connection to known malicious C2 addresses"</span>
-<span class="kw">severity</span>: <span class="val">"HIGH"</span>       <span class="cmt"># CRITICAL | HIGH | MEDIUM | LOG</span>
-<span class="kw">category</span>: <span class="val">"NETWORK"</span>    <span class="cmt"># NETWORK | PACKAGE | PROCESS</span>
-<span class="kw">condition</span>:
-  <span class="kw">target_ips</span>:
-    - <span class="str">"192.0.2.1"</span>
-    - <span class="str">"198.51.100.14"</span>
-  <span class="kw">target_domains</span>:
-    - <span class="str">"malicious-c2.example.com"</span>
-  <span class="kw">package_patterns</span>:
-    - <span class="str">".*trojan\\.banker.*"</span>
-<span class="kw">action</span>: <span class="val">"BLOCK"</span>        <span class="cmt"># BLOCK | TERMINATE | NOTIFY | LOG</span></code></pre>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Syntax Key</th>
+              <th>Type / Allowed Values</th>
+              <th>What it Means & Design Rationale</th>
+              <th>Usage Guidelines</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>schema_version</code></td>
+              <td>String ("2.0")</td>
+              <td>Specifies rule specification version. Ensures forward compatibility.</td>
+              <td><span class="badge-can">CAN</span> Set to "2.0".</td>
+            </tr>
+            <tr>
+              <td><code>rule_id</code></td>
+              <td>String ("RULE-[CAT]-[ID]")</td>
+              <td>Unique standardized rule identifier (e.g. <code>RULE-PHISH-001</code>).</td>
+              <td><span class="badge-can">CAN</span> Use unique IDs.<br><span class="badge-cannot">CANNOT</span> Duplicate IDs.</td>
+            </tr>
+            <tr>
+              <td><code>severity</code></td>
+              <td>CRITICAL | HIGH | MEDIUM | LOG</td>
+              <td>Determines alert priority and notification UI styling.</td>
+              <td><span class="badge-can">CAN</span> Match threat impact.</td>
+            </tr>
+            <tr>
+              <td><code>engine_type</code></td>
+              <td>signature | behavioral | conditional</td>
+              <td>Selects the processing engine: O(1) HashSet, Shannon Entropy / Subdomain Depth, or Expression Evaluator.</td>
+              <td><span class="badge-can">CAN</span> Combine targets.<br><span class="badge-cannot">CANNOT</span> Embed dynamic scripts.</td>
+            </tr>
+            <tr>
+              <td><code>target_source</code></td>
+              <td>url_request | dns_query | tcp_connection | http_payload</td>
+              <td>Specifies telemetry event origin sensor.</td>
+              <td><span class="badge-can">CAN</span> Match target layer.</td>
+            </tr>
+            <tr>
+              <td><code>condition.package_patterns</code></td>
+              <td>List of Regex Strings</td>
+              <td>Matches package bundle IDs (e.g. <code>.*trojan\\.banker.*</code>). Triggers scam alert & APK purge!</td>
+              <td><span class="badge-can">CAN</span> Match bundle IDs.<br><span class="badge-cannot">CANNOT</span> Use nested ReDoS regex.</td>
+            </tr>
+            <tr>
+              <td><code>action</code></td>
+              <td>BLOCK | TERMINATE | NOTIFY | LOG</td>
+              <td>Containment action dispatched upon match.</td>
+              <td><span class="badge-can">CAN</span> Block egress / Kill app.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
-    <!-- Tab 3: How to Contribute -->
+    <!-- Tab 3: Interactive Node Playground -->
+    <section id="playground" class="tab-content">
+      <div class="card">
+        <h2 class="card-title">Interactive Rule Execution Flow Visualizer</h2>
+        <p class="card-subtitle">Paste or edit your YAML ruleset on the left to visualize how NezhaEDR evaluates telemetry events step-by-step on the right.</p>
+
+        <div style="margin-bottom: 16px; display: flex; gap: 8px;">
+          <button class="btn-toggle" onclick="loadTemplate('c2')">Load C2 Template</button>
+          <button class="btn-toggle" onclick="loadTemplate('trojan')">Load Trojan Template</button>
+          <button class="btn-toggle" onclick="loadTemplate('entropy')">Load Entropy Template</button>
+        </div>
+
+        <div class="playground-grid">
+          <div class="playground-editor-box">
+            <textarea id="yamlEditor" class="yaml-textarea" oninput="updateNodeVisualizer()"></textarea>
+          </div>
+
+          <div class="node-visualizer">
+            <div class="node-card active">
+              <div class="node-header">1. TELEMETRY EVENT CAPTURED</div>
+              <div class="node-body">VpnService TUN / Package Receiver</div>
+            </div>
+            <div class="node-arrow">↓</div>
+            <div class="node-card active">
+              <div class="node-header">2. TARGET SOURCE SENSOR</div>
+              <div id="nodeSource" class="node-body">Source: DNS_QUERY</div>
+            </div>
+            <div class="node-arrow">↓</div>
+            <div class="node-card active">
+              <div class="node-header">3. MULTI-ENGINE EVALUATION</div>
+              <div id="nodeEngine" class="node-body">Engine: SIGNATURE (ID: RULE-C2-001)</div>
+            </div>
+            <div class="node-arrow">↓</div>
+            <div class="node-card active" style="border-color: var(--primary-color);">
+              <div class="node-header">4. CONTAINMENT ACTION DISPATCHED</div>
+              <div id="nodeAction" class="node-body">Action: BLOCK DISPATCHED</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 4: How to Contribute -->
     <section id="contribute" class="tab-content">
       <div class="card">
         <h2 class="card-title" data-i18n="rulesetContrib">Ruleset Contribution Workflow</h2>
@@ -106,7 +188,7 @@
       </div>
     </section>
 
-    <!-- Tab 4: Conduct & Rules -->
+    <!-- Tab 5: Conduct & Rules -->
     <section id="rules" class="tab-content">
       <div class="card">
         <h2 class="card-title" data-i18n="conductTitle">Code of Conduct & Project Principles</h2>

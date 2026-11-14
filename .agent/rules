@@ -1,0 +1,8 @@
+# NezhaEDR Mandatory AI Agent Coding Standards
+
+1. Zero Code Truncation: Never output partial code or "// add rest here" comments. Write complete, compiling, production-ready code blocks.
+2. Local Verification: Always run `./gradlew app:testDebugUnitTest` and ensure 100% of unit tests pass before committing.
+3. High-Contrast Light Mode: Ensure status labels and text elements use high-contrast dark slate (#111827 / #374151) on light surfaces.
+4. Unified Theme Colors: Bind selected chips, badges, and buttons to `MaterialTheme.colorScheme.primary` and `primaryContainer`. Zero M3 purple (#E8DEF8) fallbacks.
+5. 100% Localization: Use `stringResource(R.string...)` across all 5 supported locales (English, Chinese, Japanese, Korean, Thai).
+6. Security & Thread Safety: Wrap network packet stream parsing and file IO in `runCatching` blocks. Maintain zero-telemetry local storage.

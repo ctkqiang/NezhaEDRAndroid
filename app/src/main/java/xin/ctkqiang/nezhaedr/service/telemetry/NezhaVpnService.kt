@@ -8,6 +8,7 @@ import android.content.Intent
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -70,14 +71,21 @@ class NezhaVpnService : VpnService() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val customLayout = RemoteViews(packageName, R.layout.notification_foreground_service).apply {
+            setTextViewText(R.id.notif_service_title, getString(R.string.app_name))
+            setTextViewText(R.id.notif_service_desc, getString(R.string.vpn_status_active))
+        }
+
         val notification = NotificationCompat.Builder(this, FOREGROUND_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(getString(R.string.app_name))
-            .setContentText(getString(R.string.vpn_status_active))
+            .setSmallIcon(R.drawable.ic_power)
+            .setCustomContentView(customLayout)
+            .setCustomBigContentView(customLayout)
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
+            .setAutoCancel(false)
             .addAction(
-                R.drawable.ic_launcher_foreground,
+                R.drawable.ic_power,
                 getString(R.string.btn_stop_protection),
                 stopPendingIntent
             )

@@ -75,7 +75,7 @@
       justify-content: space-between;
       align-items: center;
     }
-    /* Syntax Highlighted Editor Container */
+    /* Dual-Layer Syntax Highlighted Editor Container */
     .editor-wrapper {
       position: relative;
       flex: 1;
@@ -84,24 +84,45 @@
       background-color: #0D1117;
       overflow: hidden;
     }
-    .code-editor {
-      width: 100%;
-      height: 100%;
-      background-color: transparent;
-      color: #E6EDE3;
-      font-family: var(--font-mono);
-      font-size: 0.92rem;
-      padding: 16px;
-      border: none;
-      resize: none;
-      outline: none;
-      line-height: 1.6;
-      white-space: pre;
+    .editor-highlighting {
       position: absolute;
       top: 0;
       left: 0;
-      z-index: 2;
+      width: 100%;
+      height: 100%;
+      padding: 16px;
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 1;
+      background: transparent;
+      border: none;
+    }
+    .code-editor {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 16px;
+      background-color: transparent;
+      color: transparent;
       caret-color: #38BDF8;
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      border: none;
+      resize: none;
+      outline: none;
+      z-index: 2;
+      overflow-y: auto;
     }
     /* Prominent n8n-Style Node Execution Visualizer */
     .flow-visualizer-box {
@@ -195,14 +216,15 @@
   <main class="playground-main">
     <!-- Top Split: Left YAML Code Editor | Right Node Visualizer -->
     <div class="top-split-container">
-      <!-- Left Pane: Code Editor -->
+      <!-- Left Pane: Code Editor with Syntax Highlighting -->
       <div class="pane">
         <div class="pane-header">
           <span data-i18n="paneEditor">YAML RULE EDITOR (v2.0 Schema)</span>
           <span style="font-size:0.75rem; color:var(--text-secondary);">O(1) Memory Engine</span>
         </div>
         <div class="editor-wrapper">
-          <textarea id="yamlEditor" class="code-editor" oninput="updateNodeVisualizer()"></textarea>
+          <pre id="editorHighlighting" class="editor-highlighting"><code id="highlightCode"></code></pre>
+          <textarea id="yamlEditor" class="code-editor" oninput="onYamlInput()" onscroll="syncEditorScroll()"></textarea>
         </div>
       </div>
 

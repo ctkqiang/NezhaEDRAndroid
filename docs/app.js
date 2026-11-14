@@ -210,8 +210,62 @@ function loadTemplate(type) {
   const editor = document.getElementById("yamlEditor");
   if (editor && yamlTemplates[type]) {
     editor.value = yamlTemplates[type];
-    updateNodeVisualizer();
+    onYamlInput();
   }
+}
+
+function onYamlInput() {
+  const editor = document.getElementById("yamlEditor");
+  if (!editor) return;
+  renderYamlHighlighting(editor.value);
+  updateNodeVisualizer();
+}
+
+function syncEditorScroll() {
+  const editor = document.getElementById("yamlEditor");
+  const highlighting = document.getElementById("editorHighlighting");
+  if (editor && highlighting) {
+    highlighting.scrollTop = editor.scrollTop;
+    highlighting.scrollLeft = editor.scrollLeft;
+  }
+}
+
+function renderYamlHighlighting(rawText) {
+  const codeEl = document.getElementById("highlightCode");
+  if (!codeEl) return;
+
+  const lines = rawText.split("\n");
+  const highlightedLines = lines.map(line => {
+    let escaped = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    if (escaped.trim().startsWith("#")) {
+      return `<span class="cmt">${escaped}</span>`;
+    }
+
+    if (escaped.includes(":")) {
+      const parts = escaped.split(":");
+      const key = parts[0];
+      const val = parts.slice(1).join(":");
+
+      let valHtml = val;
+      if (val.includes('"')) {
+        valHtml = val.replace(/"([^"]*)"/g, '<span class="str">"$1"</span>');
+      } else if (val.trim() === "true" || val.trim() === "false") {
+        valHtml = val.replace(/(true|false)/g, '<span class="val">$1</span>');
+      } else if (!isNaN(parseFloat(val.trim()))) {
+        valHtml = val.replace(/(\d+(\.\d+)?)/g, '<span class="val">$1</span>');
+      }
+      return `<span class="kw">${key}</span>:${valHtml}`;
+    }
+
+    if (escaped.trim().startsWith("-")) {
+      return escaped.replace(/"([^"]*)"/g, '<span class="str">"$1"</span>');
+    }
+
+    return escaped;
+  });
+
+  codeEl.innerHTML = highlightedLines.join("\n");
 }
 
 function updateNodeVisualizer() {
@@ -272,5 +326,5 @@ function runSimulation() {
 
 document.addEventListener("DOMContentLoaded", () => {
   initAutoThemeAndLocale();
-  updateNodeVisualizer();
+  onYamlInput();
 });

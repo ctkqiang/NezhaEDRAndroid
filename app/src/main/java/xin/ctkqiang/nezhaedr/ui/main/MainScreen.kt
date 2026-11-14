@@ -293,7 +293,7 @@ fun MainScreenContent(
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                            color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(10.dp)
                         ) {}
                         Column {
@@ -306,7 +306,7 @@ fun MainScreenContent(
                                 text = if (uiState.isVpnActive) stringResource(R.string.defense_engaged) else stringResource(R.string.defense_paused),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.SemiBold,
-                                color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                                color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -912,7 +912,7 @@ fun AppleMasterStatusCard(
     onToggleVpn: () -> Unit
 ) {
     val stateColor by animateColorAsState(
-        targetValue = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+        targetValue = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
         label = "StateColorAnimation"
     )
@@ -952,8 +952,8 @@ fun AppleMasterStatusCard(
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
                         checkedTrackColor = MaterialTheme.colorScheme.primary,
-                        uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
                     )
                 )
             }

@@ -16,9 +16,10 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 20px;
+      padding: 12px 24px;
       background-color: var(--surface-color);
       border-bottom: 1px solid var(--border-color);
+      box-shadow: var(--shadow);
     }
     .toolbar-left, .toolbar-right {
       display: flex;
@@ -29,32 +30,42 @@
       background-color: var(--success-color);
       color: #FFFFFF;
       border: none;
-      padding: 8px 18px;
+      padding: 8px 20px;
       border-radius: var(--radius-md);
       font-weight: 800;
+      font-size: 0.9rem;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 6px;
-      transition: transform 0.15s ease;
+      gap: 8px;
+      transition: transform 0.15s ease, opacity 0.2s ease;
     }
     .btn-run:hover {
+      opacity: 0.9;
       transform: scale(1.02);
     }
     .playground-main {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+    .top-split-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
       flex: 1;
-      overflow: hidden;
+      min-height: 0;
+      border-bottom: 1px solid var(--border-color);
     }
     .pane {
       display: flex;
       flex-direction: column;
       height: 100%;
+      overflow: hidden;
       border-right: 1px solid var(--border-color);
     }
     .pane-header {
-      padding: 10px 16px;
+      padding: 10px 18px;
       background-color: var(--surface-variant);
       border-bottom: 1px solid var(--border-color);
       font-weight: 800;
@@ -64,34 +75,92 @@
       justify-content: space-between;
       align-items: center;
     }
-    .code-editor {
+    /* Syntax Highlighted Editor Container */
+    .editor-wrapper {
+      position: relative;
       flex: 1;
       width: 100%;
+      height: 100%;
       background-color: #0D1117;
+      overflow: hidden;
+    }
+    .code-editor {
+      width: 100%;
+      height: 100%;
+      background-color: transparent;
       color: #E6EDE3;
       font-family: var(--font-mono);
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       padding: 16px;
       border: none;
       resize: none;
       outline: none;
       line-height: 1.6;
+      white-space: pre;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
+      caret-color: #38BDF8;
+    }
+    /* Prominent n8n-Style Node Execution Visualizer */
+    .flow-visualizer-box {
+      flex: 1;
+      padding: 20px;
+      background-color: var(--bg-color);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      justify-content: center;
+    }
+    .node-card {
+      background-color: var(--surface-color);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      transition: all 0.25s ease;
+      box-shadow: var(--shadow);
+    }
+    .node-card.active {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 16px rgba(220, 38, 38, 0.2);
+    }
+    .node-header {
+      font-weight: 800;
+      font-size: 0.82rem;
+      color: var(--primary-color);
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .node-body {
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+    .node-arrow {
+      text-align: center;
+      color: var(--primary-color);
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    /* Bottom Terminal Console Box */
+    .bottom-console-pane {
+      height: 220px;
+      display: flex;
+      flex-direction: column;
+      background-color: #090C10;
+      border-top: 1px solid var(--border-color);
     }
     .console-box {
       flex: 1;
-      background-color: #090C10;
       color: #7EE787;
       font-family: var(--font-mono);
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       padding: 16px;
       overflow-y: auto;
-      border-bottom: 1px solid var(--border-color);
-    }
-    .flow-visualizer-box {
-      height: 280px;
-      padding: 16px;
-      background-color: var(--surface-variant);
-      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.6;
     }
   </style>
 </head>
@@ -124,52 +193,59 @@
 
   <!-- Split Pane Main Interface -->
   <main class="playground-main">
-    <!-- Left Pane: YAML Code Editor -->
-    <div class="pane">
-      <div class="pane-header">
-        <span data-i18n="paneEditor">YAML RULE EDITOR (v2.0 Schema)</span>
-        <span style="font-size:0.75rem; color:var(--text-secondary);">O(1) Memory Engine</span>
-      </div>
-      <textarea id="yamlEditor" class="code-editor" oninput="updateNodeVisualizer()"></textarea>
-    </div>
-
-    <!-- Right Pane: Execution Output & Flow Visualizer -->
-    <div class="pane" style="border-right:none;">
-      <div class="pane-header">
-        <span data-i18n="paneConsole">EVALUATION CONSOLE LOG</span>
-        <span id="runStatusBadge" class="badge-can" style="background-color:var(--success-container); color:var(--success-color);">READY</span>
-      </div>
-      <div id="consoleOutput" class="console-box">
-[INFO] NezhaEDR Playground Initialized.
-[INFO] Ready for YAML rule simulation. Press '▶ Run' to execute evaluation engine...
+    <!-- Top Split: Left YAML Code Editor | Right Node Visualizer -->
+    <div class="top-split-container">
+      <!-- Left Pane: Code Editor -->
+      <div class="pane">
+        <div class="pane-header">
+          <span data-i18n="paneEditor">YAML RULE EDITOR (v2.0 Schema)</span>
+          <span style="font-size:0.75rem; color:var(--text-secondary);">O(1) Memory Engine</span>
+        </div>
+        <div class="editor-wrapper">
+          <textarea id="yamlEditor" class="code-editor" oninput="updateNodeVisualizer()"></textarea>
+        </div>
       </div>
 
-      <div class="pane-header">
-        <span data-i18n="paneVisualizer">INTERACTIVE NODE EXECUTION GRAPH</span>
-      </div>
-      <div class="flow-visualizer-box">
-        <div class="node-visualizer">
-          <div class="node-card active">
-            <div class="node-header">1. TELEMETRY EVENT CAPTURED</div>
-            <div class="node-body">VpnService TUN / Package Receiver</div>
-          </div>
-          <div class="node-arrow">↓</div>
-          <div class="node-card active">
-            <div class="node-header">2. TARGET SOURCE SENSOR</div>
-            <div id="nodeSource" class="node-body">Source: DNS_QUERY</div>
-          </div>
-          <div class="node-arrow">↓</div>
-          <div class="node-card active">
-            <div class="node-header">3. MULTI-ENGINE EVALUATION</div>
-            <div id="nodeEngine" class="node-body">Engine: SIGNATURE (ID: RULE-C2-001)</div>
-          </div>
-          <div class="node-arrow">↓</div>
-          <div class="node-card active" style="border-color: var(--primary-color);">
-            <div class="node-header">4. CONTAINMENT ACTION DISPATCHED</div>
-            <div id="nodeAction" class="node-body">Action: BLOCK DISPATCHED</div>
+      <!-- Right Pane: Interactive n8n-Style Node Execution Visualizer -->
+      <div class="pane" style="border-right:none;">
+        <div class="pane-header">
+          <span data-i18n="paneVisualizer">INTERACTIVE NODE EXECUTION GRAPH</span>
+          <span style="font-size:0.75rem; color:var(--success-color); font-weight:bold;">LIVE FLOW</span>
+        </div>
+        <div class="flow-visualizer-box">
+          <div class="node-visualizer">
+            <div class="node-card active">
+              <div class="node-header">1. TELEMETRY EVENT CAPTURED</div>
+              <div class="node-body">VpnService TUN / Package Receiver Sensor</div>
+            </div>
+            <div class="node-arrow">↓</div>
+            <div class="node-card active">
+              <div class="node-header">2. TARGET SOURCE SENSOR FILTER</div>
+              <div id="nodeSource" class="node-body">Source: DNS_QUERY</div>
+            </div>
+            <div class="node-arrow">↓</div>
+            <div class="node-card active">
+              <div class="node-header">3. MULTI-ENGINE EVALUATION</div>
+              <div id="nodeEngine" class="node-body">Engine: SIGNATURE (ID: RULE-C2-001)</div>
+            </div>
+            <div class="node-arrow">↓</div>
+            <div class="node-card active" style="border-color: var(--primary-color);">
+              <div class="node-header">4. CONTAINMENT ACTION DISPATCHED</div>
+              <div id="nodeAction" class="node-body">Action: BLOCK DISPATCHED</div>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Bottom Pane: Evaluation Console Log Terminal -->
+    <div class="bottom-console-pane">
+      <div class="pane-header" style="background-color:#161B22; border-bottom:1px solid #30363D;">
+        <span style="color:#F0F6FC;" data-i18n="paneConsole">EVALUATION CONSOLE LOG</span>
+        <span id="runStatusBadge" class="badge-can" style="background-color:var(--success-container); color:var(--success-color);">READY</span>
+      </div>
+      <div id="consoleOutput" class="console-box">[INFO] NezhaEDR Rule Playground Initialized.
+[INFO] Ready for YAML rule evaluation. Press '▶ Run' to simulate execution engine...</div>
     </div>
   </main>
 

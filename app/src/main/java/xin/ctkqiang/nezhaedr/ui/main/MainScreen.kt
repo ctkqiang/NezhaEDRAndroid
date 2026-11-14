@@ -8,19 +8,31 @@ import android.net.VpnService
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +57,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -75,6 +88,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -428,33 +443,43 @@ fun MainScreenContent(
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                when (uiState.selectedTab) {
-                    0 -> MinimalistDashboardTab(
-                        uiState = uiState,
-                        onToggleVpn = onToggleVpn,
-                        onSelectTab = onSelectTab
-                    )
-                    1 -> RulesTabContent(
-                        uiState = uiState,
-                        onSelectRule = onSelectRule,
-                        onConfirmDeleteRule = onConfirmDeleteRule,
-                        onImportRuleClick = onImportRuleClick,
-                        onOpenSyncPicker = onOpenSyncPicker
-                    )
-                    2 -> ThreatLogsTabContent(uiState = uiState)
-                    3 -> HistoryTabContent(
-                        uiState = uiState,
-                        onExportYaml = onExportYaml,
-                        onExportCsv = onExportCsv,
-                        onClearData = { showClearDialog = true }
-                    )
-                    4 -> SettingsTabContent(
-                        uiState = uiState,
-                        onSelectTheme = onSelectTheme,
-                        onSelectLanguage = onSelectLanguage,
-                        onOpenSyncPicker = onOpenSyncPicker,
-                        onImportRuleClick = onImportRuleClick
-                    )
+                // Fluid Tab Switch Transition
+                AnimatedContent(
+                    targetState = uiState.selectedTab,
+                    transitionSpec = {
+                        (fadeIn(animationSpec = tween(220)) + slideInVertically { height -> height / 8 })
+                            .togetherWith(fadeOut(animationSpec = tween(180)) + slideOutVertically { height -> -height / 8 })
+                    },
+                    label = "TabTransition"
+                ) { targetTab ->
+                    when (targetTab) {
+                        0 -> MinimalistDashboardTab(
+                            uiState = uiState,
+                            onToggleVpn = onToggleVpn,
+                            onSelectTab = onSelectTab
+                        )
+                        1 -> RulesTabContent(
+                            uiState = uiState,
+                            onSelectRule = onSelectRule,
+                            onConfirmDeleteRule = onConfirmDeleteRule,
+                            onImportRuleClick = onImportRuleClick,
+                            onOpenSyncPicker = onOpenSyncPicker
+                        )
+                        2 -> ThreatLogsTabContent(uiState = uiState)
+                        3 -> HistoryTabContent(
+                            uiState = uiState,
+                            onExportYaml = onExportYaml,
+                            onExportCsv = onExportCsv,
+                            onClearData = { showClearDialog = true }
+                        )
+                        4 -> SettingsTabContent(
+                            uiState = uiState,
+                            onSelectTheme = onSelectTheme,
+                            onSelectLanguage = onSelectLanguage,
+                            onOpenSyncPicker = onOpenSyncPicker,
+                            onImportRuleClick = onImportRuleClick
+                        )
+                    }
                 }
 
                 if (uiState.showSyncPickerDialog) {
@@ -564,25 +589,28 @@ fun SyncRulesPickerDialog(
         if (searchQuery.isBlank()) availableCatalog else {
             val q = searchQuery.lowercase()
             availableCatalog.filter {
-                it.name.lowercase().contains(q) || it.ruleId.lowercase().contains(q) || it.category.lowercase().contains(q)
+                it.name.lowercase().contains(q) || it.ruleId.lowercase().contains(q) || it.category.lowercase().contains(q) || it.fileName.lowercase().contains(q)
             }
         }
     }
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(24.dp),
         title = {
             Text(
                 text = stringResource(id = R.string.sync_dialog_title),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
         },
         text = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(340.dp)
+                    .height(360.dp)
             ) {
                 OutlinedTextField(
                     value = searchQuery,
@@ -592,6 +620,7 @@ fun SyncRulesPickerDialog(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_search),
                             contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp)
                         )
                     },
@@ -607,43 +636,102 @@ fun SyncRulesPickerDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onSelectAll) {
-                        Text(stringResource(R.string.btn_select_all), style = MaterialTheme.typography.labelSmall)
+                        Text(
+                            stringResource(R.string.btn_select_all),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                     TextButton(onClick = onDeselectAll) {
-                        Text(stringResource(R.string.btn_deselect_all), style = MaterialTheme.typography.labelSmall)
+                        Text(
+                            stringResource(R.string.btn_deselect_all),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.weight(1f)
                 ) {
                     items(filteredList) { item ->
-                        Row(
+                        val isSelected = selectedFiles.contains(item.fileName)
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            border = BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { onToggleSelection(item.fileName) }
-                                .padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Checkbox(
-                                checked = selectedFiles.contains(item.fileName),
-                                onCheckedChange = { onToggleSelection(item.fileName) }
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Column {
-                                Text(
-                                    text = "${item.fileName} • ${item.name}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = FontWeight.Bold
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = isSelected,
+                                    onCheckedChange = { onToggleSelection(item.fileName) },
+                                    colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
                                 )
-                                Text(
-                                    text = "Category: ${item.category} | Severity: ${item.severity}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = item.fileName,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = item.name,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Surface(
+                                            shape = RoundedCornerShape(6.dp),
+                                            color = MaterialTheme.colorScheme.surface
+                                        ) {
+                                            Text(
+                                                text = item.category,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontSize = 10.sp,
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                        Surface(
+                                            shape = RoundedCornerShape(6.dp),
+                                            color = when (item.severity) {
+                                                "CRITICAL", "HIGH" -> MaterialTheme.colorScheme.errorContainer
+                                                else -> MaterialTheme.colorScheme.secondaryContainer
+                                            }
+                                        ) {
+                                            Text(
+                                                text = item.severity,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                color = when (item.severity) {
+                                                    "CRITICAL", "HIGH" -> MaterialTheme.colorScheme.onErrorContainer
+                                                    else -> MaterialTheme.colorScheme.onSecondaryContainer
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -654,14 +742,21 @@ fun SyncRulesPickerDialog(
             Button(
                 onClick = onSyncSelected,
                 shape = RoundedCornerShape(12.dp),
-                enabled = selectedFiles.isNotEmpty()
+                enabled = selectedFiles.isNotEmpty(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text(stringResource(R.string.btn_sync_selected, selectedFiles.size))
+                Text(
+                    stringResource(R.string.btn_sync_selected, selectedFiles.size),
+                    fontWeight = FontWeight.Bold
+                )
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.btn_cancel))
+                Text(
+                    stringResource(R.string.btn_cancel),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     )
@@ -1023,12 +1118,24 @@ fun AppleRuleEngineStatusCard(
     activeRulesCount: Int,
     onManageClick: () -> Unit
 ) {
+    var isPressed by remember { mutableStateOf(false) }
+    val cardScale by animateFloatAsState(
+        targetValue = if (isPressed) 0.97f else 1.0f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "CardPressScale"
+    )
+
     Card(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onManageClick() }
+            .scale(cardScale)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onManageClick
+            )
     ) {
         Row(
             modifier = Modifier

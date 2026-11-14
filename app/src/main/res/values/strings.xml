@@ -68,6 +68,12 @@
     <string name="settings_language_title">Application Language</string>
     <string name="settings_language_desc">Select your preferred language for the user interface.</string>
 
+    <!-- Author & Philosophy -->
+    <string name="author_philosophy_title">About Author &amp; Open-Source Mission</string>
+    <string name="author_info_label">Author: 钟智强 &lt;ctkqiang&gt;</string>
+    <string name="author_github_url">https://github.com/ctkqiang</string>
+    <string name="author_philosophy_body">NezhaCyberEDR was created to empower everyone to contribute and share open-source security rulesets. In the cybersecurity world, ordinary people must take action together rather than relying passively on big corporations that charge exorbitant subscription fees for solutions that remain uncertain or opaque.</string>
+
     <!-- Sync Ruleset Selection Dialog -->
     <string name="sync_dialog_title">Select Security Rulesets to Sync</string>
     <string name="search_rules_placeholder">Search rulesets...</string>

@@ -858,7 +858,11 @@ fun SettingsTabContent(
                             AppThemeMode.PINK to "Pink (Magenta)",
                             AppThemeMode.GREEN to "Green (Emerald)",
                             AppThemeMode.AMBER to "Amber (Gold)",
-                            AppThemeMode.PURPLE to "Purple (Amethyst)"
+                            AppThemeMode.PURPLE to "Purple (Amethyst)",
+                            AppThemeMode.INDIGO to "Indigo (Electric)",
+                            AppThemeMode.TEAL to "Teal (Cyan)",
+                            AppThemeMode.ORANGE to "Orange (Solar)",
+                            AppThemeMode.SLATE to "Slate (Obsidian)"
                         )
                     ) { (themeMode, label) ->
                         FilterChip(

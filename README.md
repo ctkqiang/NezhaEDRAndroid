@@ -1,6 +1,5 @@
 # 哪吒 EDR (NezhaCyberEDR Android)
 
-[![Android CI](https://github.com/ctkqiang/NezhaEDRAndroid/actions/workflows/android.yml/badge.svg)](https://github.com/ctkqiang/NezhaEDRAndroid/actions)
 ![Kotlin Version](https://img.shields.io/badge/Kotlin-2.1.0-7F52FF?style=flat&logo=kotlin)
 ![Android SDK](https://img.shields.io/badge/API_Level-26%2B-3DDC84?style=flat&logo=android)
 ![Compose Version](https://img.shields.io/badge/Jetpack_Compose-M3-4285F4?style=flat&logo=jetpackcompose)

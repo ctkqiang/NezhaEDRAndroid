@@ -68,6 +68,12 @@
     <string name="settings_language_title">应用语言选择</string>
     <string name="settings_language_desc">选择控制台界面显示的语言。</string>
 
+    <!-- Author & Philosophy -->
+    <string name="author_philosophy_title">关于作者与开源愿景</string>
+    <string name="author_info_label">作者: 钟智强 &lt;ctkqiang&gt;</string>
+    <string name="author_github_url">https://github.com/ctkqiang</string>
+    <string name="author_philosophy_body">哪吒网络安全EDR 的诞生，旨在让每个人都能自由参与并贡献开源威胁检测规则库。在网络安全的世界里，我们相信普通人应当携手并肩、主动防御，而不是无条件依赖那些收取昂贵订阅费、效果却未可知的商业巨头公司。</string>
+
     <!-- Sync Ruleset Selection Dialog -->
     <string name="sync_dialog_title">选择要同步的安全规则库</string>
     <string name="search_rules_placeholder">搜索规则库...</string>

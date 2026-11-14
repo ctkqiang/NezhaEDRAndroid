@@ -124,6 +124,86 @@ private val PurpleLightColorScheme = lightColorScheme(
     onSurfaceVariant = LightTextSecondary
 )
 
+// Indigo Theme (Light)
+private val IndigoLightColorScheme = lightColorScheme(
+    primary = IndigoPrimaryLight,
+    secondary = IndigoSecondaryLight,
+    tertiary = IndigoTertiaryLight,
+    primaryContainer = IndigoContainerLight,
+    secondaryContainer = IndigoContainerLight,
+    onPrimary = LightSurface,
+    onSecondary = LightSurface,
+    onPrimaryContainer = IndigoPrimaryLight,
+    onSecondaryContainer = IndigoPrimaryLight,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceVariant = LightSurfaceVariant,
+    outline = LightOutline,
+    onBackground = LightTextPrimary,
+    onSurface = LightTextPrimary,
+    onSurfaceVariant = LightTextSecondary
+)
+
+// Teal Theme (Light)
+private val TealLightColorScheme = lightColorScheme(
+    primary = TealPrimaryLight,
+    secondary = TealSecondaryLight,
+    tertiary = TealTertiaryLight,
+    primaryContainer = TealContainerLight,
+    secondaryContainer = TealContainerLight,
+    onPrimary = LightSurface,
+    onSecondary = LightSurface,
+    onPrimaryContainer = TealPrimaryLight,
+    onSecondaryContainer = TealPrimaryLight,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceVariant = LightSurfaceVariant,
+    outline = LightOutline,
+    onBackground = LightTextPrimary,
+    onSurface = LightTextPrimary,
+    onSurfaceVariant = LightTextSecondary
+)
+
+// Orange Theme (Light)
+private val OrangeLightColorScheme = lightColorScheme(
+    primary = OrangePrimaryLight,
+    secondary = OrangeSecondaryLight,
+    tertiary = OrangeTertiaryLight,
+    primaryContainer = OrangeContainerLight,
+    secondaryContainer = OrangeContainerLight,
+    onPrimary = LightSurface,
+    onSecondary = LightSurface,
+    onPrimaryContainer = OrangePrimaryLight,
+    onSecondaryContainer = OrangePrimaryLight,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceVariant = LightSurfaceVariant,
+    outline = LightOutline,
+    onBackground = LightTextPrimary,
+    onSurface = LightTextPrimary,
+    onSurfaceVariant = LightTextSecondary
+)
+
+// Slate Theme (Light)
+private val SlateLightColorScheme = lightColorScheme(
+    primary = SlatePrimaryLight,
+    secondary = SlateSecondaryLight,
+    tertiary = SlateTertiaryLight,
+    primaryContainer = SlateContainerLight,
+    secondaryContainer = SlateContainerLight,
+    onPrimary = LightSurface,
+    onSecondary = LightSurface,
+    onPrimaryContainer = SlatePrimaryLight,
+    onSecondaryContainer = SlatePrimaryLight,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceVariant = LightSurfaceVariant,
+    outline = LightOutline,
+    onBackground = LightTextPrimary,
+    onSurface = LightTextPrimary,
+    onSurfaceVariant = LightTextSecondary
+)
+
 @Composable
 fun NezhaEDRTheme(
     appTheme: AppThemeMode = AppThemeMode.RED,
@@ -136,6 +216,10 @@ fun NezhaEDRTheme(
         AppThemeMode.GREEN -> GreenLightColorScheme
         AppThemeMode.AMBER -> AmberLightColorScheme
         AppThemeMode.PURPLE -> PurpleLightColorScheme
+        AppThemeMode.INDIGO -> IndigoLightColorScheme
+        AppThemeMode.TEAL -> TealLightColorScheme
+        AppThemeMode.ORANGE -> OrangeLightColorScheme
+        AppThemeMode.SLATE -> SlateLightColorScheme
     }
 
     MaterialTheme(

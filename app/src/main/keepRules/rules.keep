@@ -1,12 +1,25 @@
-# Add project specific R8 rules here.
-# AGP will combine all keep rule files in src/main/keepRules to pass to R8
-#
-# For more details, see
-#   https://d.android.com/r/tools/r8/keep-rules
+# NezhaCyberEDR R8 / ProGuard Keep Rules
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep Kotlinx Serialization models
+-keepclassmembers class * {
+    @kotlinx.serialization.Serializable *;
+}
+-keepclassmembers class * implements kotlinx.serialization.KSerializer {
+    public static ** INSTANCE;
+}
+-keep,allowobfuscation class *$$serializer { *; }
+
+# Keep NezhaEDR Data Models and YAML Rule Schemas
+-keep class xin.ctkqiang.nezhaedr.data.model.** { *; }
+-keep class xin.ctkqiang.nezhaedr.data.parser.** { *; }
+-keep class xin.ctkqiang.nezhaedr.data.local.** { *; }
+-keep class xin.ctkqiang.nezhaedr.containment.** { *; }
+-keep class xin.ctkqiang.nezhaedr.data.repository.RemoteRuleCatalogItem { *; }
+
+# Keep ViewModel and Compose UI States
+-keep class xin.ctkqiang.nezhaedr.ui.main.MainViewModel { *; }
+-keep class xin.ctkqiang.nezhaedr.ui.main.MainUiState { *; }
+
+# Keep VpnService and Background Telemetry Receivers
+-keep class xin.ctkqiang.nezhaedr.service.telemetry.NezhaVpnService { *; }
+-keep class xin.ctkqiang.nezhaedr.service.telemetry.PackageTelemetryReceiver { *; }

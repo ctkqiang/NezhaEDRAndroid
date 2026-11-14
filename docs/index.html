@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NezhaEDR Developer Documentation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="brand">
+      <img src="../app/src/main/res/drawable/ic_power.xml" alt="Logo" class="brand-logo" onerror="this.style.display='none'">
+      <div>
+        <div class="brand-title" data-i18n="title">NezhaEDR Developer Docs</div>
+        <div class="brand-subtitle" data-i18n="subtitle">ZERO-TELEMETRY LOCAL DEFENSE ENGINE</div>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-toggle" onclick="toggleTheme()" data-i18n="toggleTheme">Theme</button>
+      <button class="btn-toggle" id="langBtn" onclick="setLanguage(currentLang === 'en' ? 'zh' : 'en')">中文</button>
+      <a href="https://github.com/ctkqiang/NezhaEDRAndroid" target="_blank" class="btn-primary" data-i18n="viewGithub">View on GitHub</a>
+    </div>
+  </nav>
+
+  <!-- Hero Header -->
+  <header class="hero">
+    <span class="hero-tag">OPEN-SOURCE ENDPOINT PROTECTION</span>
+    <h1 class="hero-title" data-i18n="heroTitle">NezhaEDR Open-Source Developer & Ruleset Documentation</h1>
+    <p class="hero-subtitle" data-i18n="heroDesc">A lightweight, high-performance Endpoint Detection & Response engine for Android. Built with Kotlin, Jetpack Compose, and Declarative YAML Rulesets.</p>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('overview')" data-i18n="tabOverview">Architecture & Overview</button>
+    <button class="tab-btn" onclick="switchTab('schema')" data-i18n="tabSchema">YAML Ruleset Spec</button>
+    <button class="tab-btn" onclick="switchTab('contribute')" data-i18n="tabContribute">How to Contribute</button>
+    <button class="tab-btn" onclick="switchTab('rules')" data-i18n="tabRules">Conduct & Rules</button>
+  </div>
+
+  <main class="container">
+
+    <!-- Tab 1: Overview & Architecture -->
+    <section id="overview" class="tab-content active">
+      <div class="card">
+        <h2 class="card-title" data-i18n="archTitle">NezhaEDR Security Architecture</h2>
+        <p class="card-subtitle" data-i18n="archDesc">NezhaEDR captures network telemetry and package installations on-device, evaluating events via an O(1) memory rule engine.</p>
+
+        <div class="grid-2">
+          <div class="feature-box">
+            <div class="feature-title" data-i18n="capTitle">Captive Subnet Routing TUN VPN</div>
+            <p class="feature-desc" data-i18n="capDesc">Utilizes Android VpnService to establish a zero-log TUN interface. General traffic bypasses VPN completely for zero performance impact.</p>
+          </div>
+          <div class="feature-box">
+            <div class="feature-title" data-i18n="sensorTitle">Package Installation Sensor</div>
+            <p class="feature-desc" data-i18n="sensorDesc">Monitors app sideloading via BroadcastReceiver and evaluates package names against compiled Regular Expression rulesets.</p>
+          </div>
+          <div class="feature-box">
+            <div class="feature-title" data-i18n="yamlTitle">O(1) Memory Rule Engine</div>
+            <p class="feature-desc" data-i18n="yamlDesc">Uses dual-index memory HashSets for instant domain and IP lookups, evaluating network events in sub-millisecond speeds.</p>
+          </div>
+          <div class="feature-box">
+            <div class="feature-title" data-i18n="dbTitle">Local SQLite Privacy Storage</div>
+            <p class="feature-desc" data-i18n="dbDesc">100% on-device SQLite database. Zero remote telemetry. Users maintain complete ownership to export or wipe data.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 2: YAML Ruleset Specification -->
+    <section id="schema" class="tab-content">
+      <div class="card">
+        <h2 class="card-title">Declarative YAML Ruleset Schema</h2>
+        <p class="card-subtitle">Rulesets are stored in the <code>/rules</code> directory and synchronized via GitOps.</p>
+
+        <pre><code><span class="cmt"># Sample Detection Rule: c2_threat_block.yaml</span>
+<span class="kw">id</span>: <span class="str">"c2_threat_block"</span>
+<span class="kw">name</span>: <span class="str">"Known C2 Threat IP Block"</span>
+<span class="kw">description</span>: <span class="str">"Detects and blocks egress connection to known malicious C2 addresses"</span>
+<span class="kw">severity</span>: <span class="val">"HIGH"</span>       <span class="cmt"># CRITICAL | HIGH | MEDIUM | LOG</span>
+<span class="kw">category</span>: <span class="val">"NETWORK"</span>    <span class="cmt"># NETWORK | PACKAGE | PROCESS</span>
+<span class="kw">condition</span>:
+  <span class="kw">target_ips</span>:
+    - <span class="str">"192.0.2.1"</span>
+    - <span class="str">"198.51.100.14"</span>
+  <span class="kw">target_domains</span>:
+    - <span class="str">"malicious-c2.example.com"</span>
+  <span class="kw">package_patterns</span>:
+    - <span class="str">".*trojan\\.banker.*"</span>
+<span class="kw">action</span>: <span class="val">"BLOCK"</span>        <span class="cmt"># BLOCK | TERMINATE | NOTIFY | LOG</span></code></pre>
+      </div>
+    </section>
+
+    <!-- Tab 3: How to Contribute -->
+    <section id="contribute" class="tab-content">
+      <div class="card">
+        <h2 class="card-title" data-i18n="rulesetContrib">Ruleset Contribution Workflow</h2>
+        <ol class="steps-list">
+          <li data-i18n="stepFork">Fork the NezhaEDRAndroid repository on GitHub.</li>
+          <li data-i18n="stepBranch">Create a branch off 'dev' matching naming conventions: feature/*, bugfix/*, chore/*, or ruleset/*.</li>
+          <li data-i18n="stepEdit">Add or edit YAML detection rules in the /rules directory.</li>
+          <li data-i18n="stepTest">Run local unit tests to verify rule syntax and test cases: ./gradlew app:testDebugUnitTest</li>
+          <li data-i18n="stepPR">Submit a Pull Request targeting the 'dev' branch. CI/CD will validate compliance automatically.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Tab 4: Conduct & Rules -->
+    <section id="rules" class="tab-content">
+      <div class="card">
+        <h2 class="card-title" data-i18n="conductTitle">Code of Conduct & Project Principles</h2>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="feature-box">
+            <p data-i18n="conductP1">Zero Racism & Zero Politics Policy: NezhaEDR is strictly a technical security project created to block malicious actors.</p>
+          </div>
+          <div class="feature-box">
+            <p data-i18n="conductP2">Agent & AI Coding Policy: The use of AI coding assistants is permitted, but all code must be thoroughly inspected, tested, and verified before submitting PRs.</p>
+          </div>
+          <div class="feature-box">
+            <p data-i18n="conductP3">Contributor Recognition: Anyone whose ruleset PR passes CI compliance and gets merged is recognized as an official contributor.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title" data-i18n="adminTitle">Project Admin Application</h2>
+        <p class="card-subtitle" data-i18n="adminDesc">If you wish to join the NezhaEDR core administrative team, please contact johnmelodymel@qq.com or ping GitHub @ctkqiang.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2026 NezhaCyberEDR Android Project by 钟智强 (&lt;ctkqiang&gt;). Distributed under Apache License 2.0.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

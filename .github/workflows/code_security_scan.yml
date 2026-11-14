@@ -1,0 +1,40 @@
+name: Code Security & Backdoor Inspection
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  code-security-audit:
+    name: Code Security & Malicious Intention Inspection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR Source Code
+        uses: actions/checkout@v4
+
+      - name: Scan for Suspicious Code Patterns
+        run: |
+          echo "Scanning Kotlin / Java source code for unauthorized reflection, dynamic dex loading, or hardcoded C2 endpoints..."
+          
+          # Check for dangerous dynamic dex loading or system execution calls
+          SUSPICIOUS_CALLS=$(grep -rnE "Runtime\.getRuntime\(\)\.exec|DexClassLoader|PathClassLoader" app/src/main/java/ || true)
+          if [ -n "$SUSPICIOUS_CALLS" ]; then
+            echo "::warning title=Suspicious Code Found::$SUSPICIOUS_CALLS"
+          else
+            echo "No dangerous dynamic classloader or runtime exec calls detected."
+          fi
+
+      - name: Notify Maintainer @ctkqiang
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "🛡️ **Code Security Inspection Completed**\n\nCC: @ctkqiang - Automated security audit finished. Please review PR code inspection logs before merging."
+            })

@@ -8,7 +8,11 @@ enum class AppThemeMode {
     PINK,
     GREEN,
     AMBER,
-    PURPLE
+    PURPLE,
+    INDIGO,
+    TEAL,
+    ORANGE,
+    SLATE
 }
 
 // Crisp Production Light Canvas Colors
@@ -54,3 +58,27 @@ val PurplePrimaryLight = Color(0xFF7C3AED)
 val PurpleSecondaryLight = Color(0xFF6D28D9)
 val PurpleTertiaryLight = Color(0xFF8B5CF6)
 val PurpleContainerLight = Color(0xFFEDE9FE)
+
+// Indigo Theme Palette
+val IndigoPrimaryLight = Color(0xFF4F46E5)
+val IndigoSecondaryLight = Color(0xFF4338CA)
+val IndigoTertiaryLight = Color(0xFF6366F1)
+val IndigoContainerLight = Color(0xFFE0E7FF)
+
+// Teal Theme Palette
+val TealPrimaryLight = Color(0xFF0D9488)
+val TealSecondaryLight = Color(0xFF0F766E)
+val TealTertiaryLight = Color(0xFF14B8A6)
+val TealContainerLight = Color(0xFFCCFBF1)
+
+// Orange Theme Palette
+val OrangePrimaryLight = Color(0xFFEA580C)
+val OrangeSecondaryLight = Color(0xFFC2410C)
+val OrangeTertiaryLight = Color(0xFFF97316)
+val OrangeContainerLight = Color(0xFFFFEDD5)
+
+// Slate Theme Palette
+val SlatePrimaryLight = Color(0xFF334155)
+val SlateSecondaryLight = Color(0xFF1E293B)
+val SlateTertiaryLight = Color(0xFF475569)
+val SlateContainerLight = Color(0xFFE2E8F0)

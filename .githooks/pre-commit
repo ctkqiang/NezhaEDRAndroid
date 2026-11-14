@@ -1,0 +1,40 @@
+#!/bin/bash
+# NezhaEDR Pre-Commit Git Hook
+
+set -e
+
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+
+echo "🔍 [NezhaEDR Pre-Commit] Validating branch name '$BRANCH_NAME'..."
+
+# Allow 'main' and 'dev'
+if [[ "$BRANCH_NAME" =~ ^(main|dev)$ ]]; then
+    echo "✓ Working on protected core branch ($BRANCH_NAME)."
+else
+    # Require feature/, bugfix/, chore/, or ruleset/
+    if [[ ! "$BRANCH_NAME" =~ ^(feature|bugfix|chore|ruleset)/ ]]; then
+        echo "❌ [ERROR] Invalid branch name '$BRANCH_NAME'!"
+        echo "Branch names MUST start with feature/, bugfix/, chore/, or ruleset/ (e.g. feature/my-cool-rule)."
+        exit 1
+    fi
+    echo "✓ Branch name complies with project standards."
+fi
+
+# Check modified YAML rules
+STAGED_YAML=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^rules/.*\.yaml$' || true)
+
+if [ -n "$STAGED_YAML" ]; then
+    echo "🔍 [NezhaEDR Pre-Commit] Checking modified YAML rulesets..."
+    for file in $STAGED_YAML; do
+        if [ -f "$file" ]; then
+            python3 -c "import yaml; yaml.safe_load(open('$file'))" 2>/dev/null || {
+                echo "❌ [ERROR] Invalid YAML syntax in ruleset: $file"
+                exit 1
+            }
+            echo "✓ Validated $file"
+        fi
+    done
+fi
+
+echo "✅ [NezhaEDR Pre-Commit] All pre-commit checks passed!"
+exit 0

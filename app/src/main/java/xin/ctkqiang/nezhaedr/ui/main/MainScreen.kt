@@ -930,15 +930,76 @@ fun MinimalistDashboardTab(
             .padding(20.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // Section 2: Master Status Control Card
-        AppleMasterStatusCard(
-            isActive = uiState.isVpnActive,
-            blockedAttemptsCount = uiState.blockedAttemptsCount,
-            activeRulesCount = uiState.rulePackage?.rules?.size ?: 0,
-            onToggleVpn = onToggleVpn
-        )
+        // Hero Sentinel Master Stage
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(top = 12.dp, bottom = 8.dp)
+        ) {
+            // One Big Central Master Power Button
+            MasterProtectionButton(
+                isActive = uiState.isVpnActive,
+                onClick = onToggleVpn
+            )
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = if (uiState.isVpnActive) stringResource(R.string.defense_engaged) else stringResource(R.string.defense_paused),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = if (uiState.isVpnActive) "NezhaCyberEDR Real-Time Engine Active" else "Tap shield to engage local endpoint defense",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        // Metrics Row (Clean Unboxed Grid)
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                MetricColumn(
+                    label = stringResource(R.string.blocked_attempts_count),
+                    value = "${uiState.blockedAttemptsCount}",
+                    isHighlight = uiState.blockedAttemptsCount > 0
+                )
+                Box(
+                    modifier = Modifier
+                        .height(32.dp)
+                        .width(1.dp)
+                        .background(MaterialTheme.colorScheme.outlineVariant)
+                )
+                MetricColumn(
+                    label = stringResource(R.string.active_rules_count),
+                    value = "${uiState.rulePackage?.rules?.size ?: 0}"
+                )
+                Box(
+                    modifier = Modifier
+                        .height(32.dp)
+                        .width(1.dp)
+                        .background(MaterialTheme.colorScheme.outlineVariant)
+                )
+                MetricColumn(
+                    label = "Endpoint Score",
+                    value = if (uiState.isVpnActive) "98.4%" else "0.0%"
+                )
+            }
+        }
 
         // Section 3: YAML Engine & Rule Status Card
         AppleRuleEngineStatusCard(
@@ -950,104 +1011,6 @@ fun MinimalistDashboardTab(
         AppleThreatTrailCard(
             blockedSitesTrail = uiState.blockedSitesTrail
         )
-    }
-}
-
-@Composable
-fun AppleMasterStatusCard(
-    isActive: Boolean,
-    blockedAttemptsCount: Int,
-    activeRulesCount: Int,
-    onToggleVpn: () -> Unit
-) {
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
-        ) {
-            // Header Row: Status Indicator + Security Index
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(10.dp)
-                    ) {}
-                    Text(
-                        text = if (isActive) stringResource(R.string.defense_engaged) else stringResource(R.string.defense_paused),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (isActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-                ) {
-                    Text(
-                        text = if (isActive) "98.4% OPTIMAL" else "ACTION NEEDED",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                    )
-                }
-            }
-
-            // Full-Width Tactile Hero Action Bar (Master Protection Button)
-            MasterProtectionButton(
-                isActive = isActive,
-                onClick = onToggleVpn
-            )
-
-            // Integrated 3-Column Metrics Dashboard Grid
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                MetricColumn(
-                    label = stringResource(R.string.blocked_attempts_count),
-                    value = "$blockedAttemptsCount",
-                    isHighlight = blockedAttemptsCount > 0
-                )
-                Box(
-                    modifier = Modifier
-                        .height(32.dp)
-                        .width(1.dp)
-                        .background(MaterialTheme.colorScheme.outlineVariant)
-                )
-                MetricColumn(
-                    label = stringResource(R.string.active_rules_count),
-                    value = "$activeRulesCount"
-                )
-                Box(
-                    modifier = Modifier
-                        .height(32.dp)
-                        .width(1.dp)
-                        .background(MaterialTheme.colorScheme.outlineVariant)
-                )
-                MetricColumn(
-                    label = "Endpoint Score",
-                    value = if (isActive) "98.4%" else "0.0%"
-                )
-            }
-        }
     }
 }
 
@@ -1234,84 +1197,85 @@ fun MasterProtectionButton(
 ) {
     val haptic = LocalHapticFeedback.current
 
+    val transition = rememberInfiniteTransition(label = "PulseTransition")
+    val pulseScale by transition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = 1.20f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "PulseScale"
+    )
+
     val activeColor = MaterialTheme.colorScheme.primary
-    val buttonBgColor by animateColorAsState(
+    val mainButtonColor by animateColorAsState(
         targetValue = if (isActive) activeColor else MaterialTheme.colorScheme.surfaceVariant,
         animationSpec = spring(stiffness = Spring.StiffnessMedium),
-        label = "ButtonBgColor"
+        label = "ButtonColor"
     )
 
-    val contentColor by animateColorAsState(
-        targetValue = if (isActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-        animationSpec = spring(stiffness = Spring.StiffnessMedium),
-        label = "ContentColor"
-    )
-
-    Surface(
-        onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            onClick()
-        },
-        shape = RoundedCornerShape(20.dp),
-        color = buttonBgColor,
-        shadowElevation = if (isActive) 8.dp else 2.dp,
-        border = BorderStroke(1.dp, if (isActive) activeColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(64.dp)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+        modifier = Modifier.padding(vertical = 8.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(180.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            // Sonar Radar Outer Pulse Aura
+            if (isActive) {
+                Box(
+                    modifier = Modifier
+                        .size(170.dp)
+                        .scale(pulseScale)
+                        .clip(CircleShape)
+                        .background(activeColor.copy(alpha = 0.15f))
+                )
+                Box(
+                    modifier = Modifier
+                        .size(150.dp)
+                        .clip(CircleShape)
+                        .background(activeColor.copy(alpha = 0.25f))
+                )
+            }
+
+            // One Big Central Master Power Shield Button (150dp)
+            Surface(
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onClick()
+                },
+                shape = CircleShape,
+                color = mainButtonColor,
+                shadowElevation = if (isActive) 12.dp else 4.dp,
+                border = BorderStroke(3.dp, if (isActive) activeColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)),
+                modifier = Modifier.size(135.dp)
             ) {
-                Surface(
-                    shape = CircleShape,
-                    color = if (isActive) Color.White.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surface,
-                    modifier = Modifier.size(40.dp)
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                            contentDescription = "Master Shield Icon",
+                            contentDescription = "Shield Master Power Button",
                             tint = Color.Unspecified,
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(72.dp)
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = if (isActive) stringResource(R.string.switch_on) else stringResource(R.string.switch_off),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = if (isActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
-
-                Column {
-                    Text(
-                        text = if (isActive) "NezhaCyberEDR Active" else "Activate Local Defense",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = contentColor
-                    )
-                    Text(
-                        text = if (isActive) "Tap to pause local defense" else "Tap to engage real-time protection",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = contentColor.copy(alpha = 0.8f)
-                    )
-                }
-            }
-
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = if (isActive) Color.White.copy(alpha = 0.25f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
-            ) {
-                Text(
-                    text = if (isActive) stringResource(R.string.switch_on) else stringResource(R.string.switch_off),
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = contentColor,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                )
             }
         }
     }

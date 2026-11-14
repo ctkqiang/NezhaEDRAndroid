@@ -158,18 +158,7 @@ class NezhaVpnService : VpnService() {
                 threatDomains.addAll(rule.condition.targetDomains)
             }
 
-            // Route DNS servers through VPN so all DNS query packets (e.g. 888vip.*.com) are captured & inspected
-            val dnsServers = listOf("1.1.1.1", "8.8.8.8", "8.8.4.4", "1.0.0.1")
-            for (dns in dnsServers) {
-                try {
-                    builder.addDnsServer(dns)
-                    builder.addRoute(dns, 32)
-                    EDRLogger.d(TAG, "Configured captive DNS route: $dns/32")
-                } catch (e: Exception) {
-                    EDRLogger.v(TAG, "Skipped DNS route $dns: ${e.message}")
-                }
-            }
-
+            // Resolve threat domains into captive threat IPs
             for (domain in threatDomains) {
                 try {
                     val addresses = withContext(Dispatchers.IO) {
@@ -188,6 +177,7 @@ class NezhaVpnService : VpnService() {
                 }
             }
 
+            // ONLY route specific threat IPs into TUN VPN so general web traffic (YouTube, Google, Spotify) bypasses VPN
             for (ip in threatIps) {
                 try {
                     builder.addRoute(ip, 32)

@@ -63,18 +63,18 @@ class RuleRepositoryImpl(
 
     override fun getFallbackRemoteRuleCatalog(): List<RemoteRuleCatalogItem> {
         return listOf(
-            RemoteRuleCatalogItem("c2_threat_block.yaml", "RULE-NET-001", "Known C2 Threat IP Block", "NETWORK", "HIGH"),
-            RemoteRuleCatalogItem("ransomware_beacon_block.yaml", "RULE-NET-002", "Ransomware Beaconing Domain Block", "NETWORK", "CRITICAL"),
-            RemoteRuleCatalogItem("adult_content_block.yaml", "RULE-NET-003", "Adult & Explicit Content Domain Block", "NETWORK", "CRITICAL"),
-            RemoteRuleCatalogItem("pegasus_spyware_block.yaml", "RULE-NET-004", "Pegasus & Advanced Cyber Espionage Block", "NETWORK", "CRITICAL"),
-            RemoteRuleCatalogItem("cryptojacking_pool_block.yaml", "RULE-NET-005", "Cryptojacking Mining Pool Network Block", "NETWORK", "HIGH"),
-            RemoteRuleCatalogItem("phishing_credential_block.yaml", "RULE-NET-006", "Phishing & Credential Harvester Block", "NETWORK", "HIGH"),
-            RemoteRuleCatalogItem("adware_click_farm_block.yaml", "RULE-NET-007", "Fraudulent Adware & Click Farm Block", "NETWORK", "MEDIUM"),
-            RemoteRuleCatalogItem("reconnaissance_probe_block.yaml", "RULE-NET-008", "Reconnaissance & Network Probe Block", "NETWORK", "HIGH"),
-            RemoteRuleCatalogItem("rogue_package_alert.yaml", "RULE-PKG-001", "Suspicious Rogue Package Alert", "PACKAGE", "CRITICAL"),
-            RemoteRuleCatalogItem("spyware_keylogger_detection.yaml", "RULE-PKG-002", "Spyware & Keylogger Package Detection", "PACKAGE", "HIGH"),
-            RemoteRuleCatalogItem("banking_trojan_alert.yaml", "RULE-PKG-003", "Banking Trojan & Overlay Sideload Detection", "PACKAGE", "CRITICAL"),
-            RemoteRuleCatalogItem("backdoor_service_detection.yaml", "RULE-PROC-001", "Unauthorized Backdoor Service Detection", "PROCESS", "MEDIUM")
+            RemoteRuleCatalogItem("c2_threat_block.yaml", "c2_threat_block", "Known C2 Threat IP Block", "NETWORK", "HIGH"),
+            RemoteRuleCatalogItem("ransomware_beacon_block.yaml", "ransomware_beacon_block", "Ransomware Beaconing Domain Block", "NETWORK", "CRITICAL"),
+            RemoteRuleCatalogItem("adult_content_block.yaml", "adult_content_block", "Adult & Explicit Content Domain Block", "NETWORK", "CRITICAL"),
+            RemoteRuleCatalogItem("pegasus_spyware_block.yaml", "pegasus_spyware_block", "Pegasus & Advanced Cyber Espionage Block", "NETWORK", "CRITICAL"),
+            RemoteRuleCatalogItem("cryptojacking_pool_block.yaml", "cryptojacking_pool_block", "Cryptojacking Mining Pool Network Block", "NETWORK", "HIGH"),
+            RemoteRuleCatalogItem("phishing_credential_block.yaml", "phishing_credential_block", "Phishing & Credential Harvester Block", "NETWORK", "HIGH"),
+            RemoteRuleCatalogItem("adware_click_farm_block.yaml", "adware_click_farm_block", "Fraudulent Adware & Click Farm Block", "NETWORK", "MEDIUM"),
+            RemoteRuleCatalogItem("reconnaissance_probe_block.yaml", "reconnaissance_probe_block", "Reconnaissance & Network Probe Block", "NETWORK", "HIGH"),
+            RemoteRuleCatalogItem("rogue_package_alert.yaml", "rogue_package_alert", "Suspicious Rogue Package Alert", "PACKAGE", "CRITICAL"),
+            RemoteRuleCatalogItem("spyware_keylogger_detection.yaml", "spyware_keylogger_detection", "Spyware & Keylogger Package Detection", "PACKAGE", "HIGH"),
+            RemoteRuleCatalogItem("banking_trojan_alert.yaml", "banking_trojan_alert", "Banking Trojan & Overlay Sideload Detection", "PACKAGE", "CRITICAL"),
+            RemoteRuleCatalogItem("backdoor_service_detection.yaml", "backdoor_service_detection", "Unauthorized Backdoor Service Detection", "PROCESS", "MEDIUM")
         )
     }
 
@@ -82,7 +82,6 @@ class RuleRepositoryImpl(
         EDRLogger.i(TAG, "fetchRemoteGithubCatalog: Querying live single source of truth at $GITHUB_RULES_TREE_URL")
         val catalogItems = mutableListOf<RemoteRuleCatalogItem>()
 
-        // 1. Attempt GitHub API Directory Listing
         try {
             val url = URL(GITHUB_CONTENTS_API_URL)
             val connection = url.openConnection() as HttpURLConnection
@@ -125,7 +124,6 @@ class RuleRepositoryImpl(
             EDRLogger.w(TAG, "fetchRemoteGithubCatalog: GitHub API query failed: ${e.message}")
         }
 
-        // 2. Direct Raw GitHub CDN Fetching if API was rate-limited or failed
         if (catalogItems.isEmpty()) {
             EDRLogger.i(TAG, "fetchRemoteGithubCatalog: Querying GitHub raw CDN directly for repository rulesets")
             for (fileName in knownRepositoryRuleFiles) {
@@ -152,7 +150,6 @@ class RuleRepositoryImpl(
             }
         }
 
-        // 3. Ultimate fallback if offline
         if (catalogItems.isEmpty()) {
             EDRLogger.w(TAG, "fetchRemoteGithubCatalog: Returning fallback catalog items")
             return@withContext getFallbackRemoteRuleCatalog()
@@ -362,7 +359,7 @@ class RuleRepositoryImpl(
           "updated_at": "2026-03-01T15:00:00Z",
           "rules": [
             {
-              "id": "RULE-NET-001",
+              "id": "c2_threat_block",
               "name": "Known C2 Threat IP Block",
               "description": "Detects and blocks egress connection to known malicious C2 addresses",
               "severity": "HIGH",
@@ -374,7 +371,7 @@ class RuleRepositoryImpl(
               "action": "BLOCK"
             },
             {
-              "id": "RULE-NET-002",
+              "id": "ransomware_beacon_block",
               "name": "Ransomware Beaconing Domain Block",
               "description": "Prevents outbound botnet beaconing to ransomware command centers",
               "severity": "CRITICAL",
@@ -386,7 +383,7 @@ class RuleRepositoryImpl(
               "action": "BLOCK"
             },
             {
-              "id": "RULE-NET-003",
+              "id": "adult_content_block",
               "name": "Adult & Explicit Content Domain Block",
               "description": "Blocks outbound connections to flagged adult and explicit web destinations",
               "severity": "CRITICAL",
@@ -418,7 +415,7 @@ class RuleRepositoryImpl(
               "action": "BLOCK"
             },
             {
-              "id": "RULE-PKG-001",
+              "id": "rogue_package_alert",
               "name": "Suspicious Rogue Package Alert",
               "description": "Detects rogue software installers attempting sideload persistence",
               "severity": "CRITICAL",
@@ -429,7 +426,7 @@ class RuleRepositoryImpl(
               "action": "NOTIFY"
             },
             {
-              "id": "RULE-PKG-002",
+              "id": "spyware_keylogger_detection",
               "name": "Spyware & Keylogger Package Detection",
               "description": "Flags unauthorized background keyloggers and telemetry stealers",
               "severity": "HIGH",
@@ -440,7 +437,7 @@ class RuleRepositoryImpl(
               "action": "NOTIFY"
             },
             {
-              "id": "RULE-PROC-001",
+              "id": "backdoor_service_detection",
               "name": "Unauthorized Backdoor Service Detection",
               "description": "Monitors rogue processes attempting unauthorized background execution",
               "severity": "MEDIUM",

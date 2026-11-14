@@ -17,6 +17,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,6 +33,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -285,18 +287,26 @@ fun MainScreenContent(
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Surface(
                             shape = CircleShape,
                             color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
                             modifier = Modifier.size(10.dp)
                         ) {}
-                        Text(
-                            text = stringResource(id = R.string.edr_dashboard_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Column {
+                            Text(
+                                text = stringResource(id = R.string.edr_dashboard_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = if (uiState.isVpnActive) "PROTECTION ACTIVE" else "PROTECTION PAUSED",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (uiState.isVpnActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                            )
+                        }
                     }
                 },
                 actions = {
@@ -421,7 +431,8 @@ fun MainScreenContent(
                         uiState = uiState,
                         onSelectRule = onSelectRule,
                         onConfirmDeleteRule = onConfirmDeleteRule,
-                        onImportRuleClick = onImportRuleClick
+                        onImportRuleClick = onImportRuleClick,
+                        onOpenSyncPicker = onOpenSyncPicker
                     )
                     2 -> ThreatLogsTabContent(uiState = uiState)
                     3 -> HistoryTabContent(
@@ -616,7 +627,7 @@ fun SyncRulesPickerDialog(
                             Spacer(modifier = Modifier.width(6.dp))
                             Column {
                                 Text(
-                                    text = "${item.ruleId} • ${item.name}",
+                                    text = "${item.fileName} • ${item.name}",
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -1314,17 +1325,22 @@ fun RulesTabContent(
     uiState: MainUiState,
     onSelectRule: (DetectionRule) -> Unit,
     onConfirmDeleteRule: (DetectionRule?) -> Unit,
-    onImportRuleClick: () -> Unit
+    onImportRuleClick: () -> Unit,
+    onOpenSyncPicker: () -> Unit
 ) {
     val rules = uiState.rulePackage?.rules ?: emptyList()
     var searchQuery by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf("ALL") }
 
-    val filteredRules = remember(rules, searchQuery) {
-        if (searchQuery.isBlank()) rules else {
-            val q = searchQuery.lowercase()
-            rules.filter {
-                it.name.lowercase().contains(q) || it.id.lowercase().contains(q) || it.category.lowercase().contains(q)
-            }
+    val filteredRules = remember(rules, searchQuery, selectedCategory) {
+        rules.filter { rule ->
+            val matchesCategory = (selectedCategory == "ALL" || rule.category.equals(selectedCategory, ignoreCase = true))
+            val matchesQuery = searchQuery.isBlank() || (
+                rule.name.lowercase().contains(searchQuery.lowercase()) ||
+                rule.id.lowercase().contains(searchQuery.lowercase()) ||
+                rule.description.lowercase().contains(searchQuery.lowercase())
+            )
+            matchesCategory && matchesQuery
         }
     }
 
@@ -1343,17 +1359,32 @@ fun RulesTabContent(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            Button(
-                onClick = onImportRuleClick,
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_add),
-                    contentDescription = "Import Rule",
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = stringResource(id = R.string.btn_import_rule), style = MaterialTheme.typography.labelSmall)
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Button(
+                    onClick = onImportRuleClick,
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_add),
+                        contentDescription = "Import Rule",
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = stringResource(id = R.string.btn_import_rule), style = MaterialTheme.typography.labelSmall)
+                }
+                Button(
+                    onClick = onOpenSyncPicker,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_download),
+                        contentDescription = "Sync",
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = "Sync", style = MaterialTheme.typography.labelSmall)
+                }
             }
         }
 
@@ -1374,6 +1405,19 @@ fun RulesTabContent(
             modifier = Modifier.fillMaxWidth()
         )
 
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Category Filter Chips
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            items(listOf("ALL", "NETWORK", "PACKAGE", "PROCESS")) { category ->
+                FilterChip(
+                    selected = selectedCategory == category,
+                    onClick = { selectedCategory = category },
+                    label = { Text(category, style = MaterialTheme.typography.labelSmall) }
+                )
+            }
+        }
+
         Spacer(modifier = Modifier.height(12.dp))
 
         if (filteredRules.isEmpty()) {
@@ -1381,7 +1425,7 @@ fun RulesTabContent(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "No YAML detection rules match search.")
+                Text(text = "No YAML detection rules match search criteria.")
             }
         } else {
             LazyColumn(
@@ -1687,6 +1731,14 @@ fun buildYamlSyntaxHighlighting(rule: DetectionRule): AnnotatedString {
 
 @Composable
 fun ThreatLogsTabContent(uiState: MainUiState) {
+    var selectedSeverity by remember { mutableStateOf("ALL") }
+
+    val filteredLogs = remember(uiState.threatLogs, selectedSeverity) {
+        if (selectedSeverity == "ALL") uiState.threatLogs else {
+            uiState.threatLogs.filter { it.severity.equals(selectedSeverity, ignoreCase = true) }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1697,9 +1749,22 @@ fun ThreatLogsTabContent(uiState: MainUiState) {
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Severity Filter Chips
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            items(listOf("ALL", "CRITICAL", "HIGH", "MEDIUM", "LOG")) { sev ->
+                FilterChip(
+                    selected = selectedSeverity == sev,
+                    onClick = { selectedSeverity = sev },
+                    label = { Text(sev, style = MaterialTheme.typography.labelSmall) }
+                )
+            }
+        }
+
         Spacer(modifier = Modifier.height(12.dp))
 
-        if (uiState.threatLogs.isEmpty()) {
+        if (filteredLogs.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -1715,7 +1780,7 @@ fun ThreatLogsTabContent(uiState: MainUiState) {
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(uiState.threatLogs) { log ->
+                items(filteredLogs) { log ->
                     ThreatLogItemCard(log = log)
                 }
             }
@@ -1944,7 +2009,7 @@ fun MainScreenDashboardPreview() {
                 isLoading = false,
                 threatLogs = listOf(
                     ThreatLogEntry(
-                        ruleId = "RULE-NET-001",
+                        ruleId = "c2_threat_block",
                         ruleName = "Known C2 Threat IP Block",
                         severity = "HIGH",
                         actionTaken = "BLOCK",

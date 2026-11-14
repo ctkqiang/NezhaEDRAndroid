@@ -11,14 +11,22 @@ private val RedLightColorScheme = lightColorScheme(
     primary = RedPrimaryLight,
     secondary = RedSecondaryLight,
     tertiary = RedTertiaryLight,
-    primaryContainer = RedContainerLight
+    primaryContainer = RedContainerLight,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceVariant = LightSurfaceVariant,
+    outline = LightOutline
 )
 
 private val RedDarkColorScheme = darkColorScheme(
     primary = RedPrimaryDark,
     secondary = RedSecondaryDark,
     tertiary = RedTertiaryDark,
-    primaryContainer = RedContainerDark
+    primaryContainer = RedContainerDark,
+    background = DarkBackground,
+    surface = DarkSurface,
+    surfaceVariant = DarkSurfaceVariant,
+    outline = DarkOutline
 )
 
 // Blue Theme
@@ -26,14 +34,22 @@ private val BlueLightColorScheme = lightColorScheme(
     primary = BluePrimaryLight,
     secondary = BlueSecondaryLight,
     tertiary = BlueTertiaryLight,
-    primaryContainer = BlueContainerLight
+    primaryContainer = BlueContainerLight,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceVariant = LightSurfaceVariant,
+    outline = LightOutline
 )
 
 private val BlueDarkColorScheme = darkColorScheme(
     primary = BluePrimaryDark,
     secondary = BlueSecondaryDark,
     tertiary = BlueTertiaryDark,
-    primaryContainer = BlueContainerDark
+    primaryContainer = BlueContainerDark,
+    background = DarkBackground,
+    surface = DarkSurface,
+    surfaceVariant = DarkSurfaceVariant,
+    outline = DarkOutline
 )
 
 // Pink Theme
@@ -41,14 +57,22 @@ private val PinkLightColorScheme = lightColorScheme(
     primary = PinkPrimaryLight,
     secondary = PinkSecondaryLight,
     tertiary = PinkTertiaryLight,
-    primaryContainer = PinkContainerLight
+    primaryContainer = PinkContainerLight,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceVariant = LightSurfaceVariant,
+    outline = LightOutline
 )
 
 private val PinkDarkColorScheme = darkColorScheme(
     primary = PinkPrimaryDark,
     secondary = PinkSecondaryDark,
     tertiary = PinkTertiaryDark,
-    primaryContainer = PinkContainerDark
+    primaryContainer = PinkContainerDark,
+    background = DarkBackground,
+    surface = DarkSurface,
+    surfaceVariant = DarkSurfaceVariant,
+    outline = DarkOutline
 )
 
 @Composable

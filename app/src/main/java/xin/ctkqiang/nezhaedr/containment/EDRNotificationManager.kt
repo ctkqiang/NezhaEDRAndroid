@@ -78,6 +78,8 @@ class EDRNotificationManager(private val context: Context) {
             .setAutoCancel(false)
             .build()
 
+        notification.flags = notification.flags or android.app.Notification.FLAG_ONGOING_EVENT or android.app.Notification.FLAG_NO_CLEAR
+
         try {
             notificationManager.notify(rule.canonicalId.hashCode(), notification)
             EDRLogger.i(TAG, "Custom RemoteViews threat notification posted successfully for Rule ${rule.canonicalId}")

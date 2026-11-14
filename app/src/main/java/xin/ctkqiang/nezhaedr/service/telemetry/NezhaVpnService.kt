@@ -91,6 +91,8 @@ class NezhaVpnService : VpnService() {
             )
             .build()
 
+        notification.flags = notification.flags or android.app.Notification.FLAG_ONGOING_EVENT or android.app.Notification.FLAG_NO_CLEAR
+
         startForeground(FOREGROUND_NOTIFICATION_ID, notification)
         EDRLogger.i(TAG, "startForegroundSentinel: EDR background service started with ongoing notification & stop action")
     }

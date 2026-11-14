@@ -1262,17 +1262,17 @@ fun MasterProtectionButton(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                            contentDescription = "Shield Master Power Button",
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(72.dp)
+                            painter = painterResource(id = R.drawable.ic_power),
+                            contentDescription = "Master Power Button",
+                            tint = if (isActive) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(56.dp)
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = if (isActive) stringResource(R.string.switch_on) else stringResource(R.string.switch_off),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.ExtraBold,
-                            color = if (isActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (isActive) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }

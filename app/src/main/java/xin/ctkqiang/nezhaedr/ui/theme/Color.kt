@@ -8,47 +8,42 @@ enum class AppThemeMode {
     PINK
 }
 
-// Enterprise Dark Obsidian Base Colors
-val DarkBackground = Color(0xFF0D1117)
-val DarkSurface = Color(0xFF161B22)
-val DarkSurfaceVariant = Color(0xFF21262D)
-val DarkOutline = Color(0xFF30363D)
+val AppleOledBlack = Color(0xFF000000)
+val AppleMutedLabel = Color(0xFF8E8E93)
+val AppleSoftEmerald = Color(0xFF10B981)
+val AppleRefinedCrimson = Color(0xFFEF4444)
+val AppleGlassTop = Color.White.copy(alpha = 0.06f)
+val AppleGlassBottom = Color.White.copy(alpha = 0.01f)
+val AppleSpecularBorderTop = Color.White.copy(alpha = 0.15f)
+val AppleSpecularBorderBottom = Color.White.copy(alpha = 0.03f)
 
-// Enterprise Light Porcelain Base Colors
-val LightBackground = Color(0xFFF6F8FA)
-val LightSurface = Color(0xFFFFFFFF)
-val LightSurfaceVariant = Color(0xFFF3F4F6)
-val LightOutline = Color(0xFFE5E7EB)
+// Theme Accents
+val RedPrimaryLight = Color(0xFFEF4444)
+val RedSecondaryLight = Color(0xFFDC2626)
+val RedTertiaryLight = Color(0xFFF87171)
+val RedContainerLight = Color(0xFF1F0808)
 
-// Red Theme Palette (Default)
-val RedPrimaryLight = Color(0xFFDC2626)
-val RedSecondaryLight = Color(0xFFB91C1C)
-val RedTertiaryLight = Color(0xFFEF4444)
-val RedContainerLight = Color(0xFFFEE2E2)
+val RedPrimaryDark = Color(0xFFEF4444)
+val RedSecondaryDark = Color(0xFFF87171)
+val RedTertiaryDark = Color(0xFFFCA5A5)
+val RedContainerDark = Color(0xFF2A0808)
 
-val RedPrimaryDark = Color(0xFFF87171)
-val RedSecondaryDark = Color(0xFFFCA5A5)
-val RedTertiaryDark = Color(0xFFFECACA)
-val RedContainerDark = Color(0xFF450A0A)
-
-// Blue Theme Palette
 val BluePrimaryLight = Color(0xFF0284C7)
 val BlueSecondaryLight = Color(0xFF0369A1)
 val BlueTertiaryLight = Color(0xFF38BDF8)
-val BlueContainerLight = Color(0xFFE0F2FE)
+val BlueContainerLight = Color(0xFF042033)
 
 val BluePrimaryDark = Color(0xFF38BDF8)
 val BlueSecondaryDark = Color(0xFF7DD3FC)
 val BlueTertiaryDark = Color(0xFFBAE6FD)
-val BlueContainerDark = Color(0xFF075985)
+val BlueContainerDark = Color(0xFF00273F)
 
-// Pink Theme Palette
 val PinkPrimaryLight = Color(0xFFDB2777)
 val PinkSecondaryLight = Color(0xFFBE185D)
 val PinkTertiaryLight = Color(0xFFF472B6)
-val PinkContainerLight = Color(0xFFFCE7F3)
+val PinkContainerLight = Color(0xFF330517)
 
 val PinkPrimaryDark = Color(0xFFF472B6)
 val PinkSecondaryDark = Color(0xFFFBCFE8)
 val PinkTertiaryDark = Color(0xFFFDE8E8)
-val PinkContainerDark = Color(0xFF831843)
+val PinkContainerDark = Color(0xFF4A0025)

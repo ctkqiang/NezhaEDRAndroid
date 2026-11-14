@@ -750,31 +750,26 @@ fun SettingsTabContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(
-                        selected = uiState.appTheme == AppThemeMode.RED,
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            onSelectTheme(AppThemeMode.RED)
-                        },
-                        label = { Text("Red (Default)", style = MaterialTheme.typography.labelSmall) }
-                    )
-                    FilterChip(
-                        selected = uiState.appTheme == AppThemeMode.BLUE,
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            onSelectTheme(AppThemeMode.BLUE)
-                        },
-                        label = { Text("Blue", style = MaterialTheme.typography.labelSmall) }
-                    )
-                    FilterChip(
-                        selected = uiState.appTheme == AppThemeMode.PINK,
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            onSelectTheme(AppThemeMode.PINK)
-                        },
-                        label = { Text("Pink", style = MaterialTheme.typography.labelSmall) }
-                    )
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(
+                        listOf(
+                            AppThemeMode.RED to "Red (Crimson)",
+                            AppThemeMode.BLUE to "Blue (Cyber)",
+                            AppThemeMode.PINK to "Pink (Magenta)",
+                            AppThemeMode.GREEN to "Green (Emerald)",
+                            AppThemeMode.AMBER to "Amber (Gold)",
+                            AppThemeMode.PURPLE to "Purple (Amethyst)"
+                        )
+                    ) { (themeMode, label) ->
+                        FilterChip(
+                            selected = uiState.appTheme == themeMode,
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                onSelectTheme(themeMode)
+                            },
+                            label = { Text(label, style = MaterialTheme.typography.labelSmall) }
+                        )
+                    }
                 }
             }
         }

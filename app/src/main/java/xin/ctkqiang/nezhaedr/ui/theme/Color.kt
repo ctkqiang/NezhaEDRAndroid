@@ -5,7 +5,10 @@ import androidx.compose.ui.graphics.Color
 enum class AppThemeMode {
     RED,
     BLUE,
-    PINK
+    PINK,
+    GREEN,
+    AMBER,
+    PURPLE
 }
 
 // Crisp Production Light Canvas Colors
@@ -33,3 +36,21 @@ val PinkPrimaryLight = Color(0xFFDB2777)
 val PinkSecondaryLight = Color(0xFFBE185D)
 val PinkTertiaryLight = Color(0xFFF472B6)
 val PinkContainerLight = Color(0xFFFCE7F3)
+
+// Green Theme Palette
+val GreenPrimaryLight = Color(0xFF059669)
+val GreenSecondaryLight = Color(0xFF047857)
+val GreenTertiaryLight = Color(0xFF10B981)
+val GreenContainerLight = Color(0xFFD1FAE5)
+
+// Amber Gold Theme Palette
+val AmberPrimaryLight = Color(0xFFD97706)
+val AmberSecondaryLight = Color(0xFFB45309)
+val AmberTertiaryLight = Color(0xFFF59E0B)
+val AmberContainerLight = Color(0xFFFEF3C7)
+
+// Purple Theme Palette
+val PurplePrimaryLight = Color(0xFF7C3AED)
+val PurpleSecondaryLight = Color(0xFF6D28D9)
+val PurpleTertiaryLight = Color(0xFF8B5CF6)
+val PurpleContainerLight = Color(0xFFEDE9FE)

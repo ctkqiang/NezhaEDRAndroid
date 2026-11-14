@@ -49,6 +49,51 @@ private val PinkLightColorScheme = lightColorScheme(
     onSurfaceVariant = LightTextSecondary
 )
 
+// Green Theme (Light)
+private val GreenLightColorScheme = lightColorScheme(
+    primary = GreenPrimaryLight,
+    secondary = GreenSecondaryLight,
+    tertiary = GreenTertiaryLight,
+    primaryContainer = GreenContainerLight,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceVariant = LightSurfaceVariant,
+    outline = LightOutline,
+    onBackground = LightTextPrimary,
+    onSurface = LightTextPrimary,
+    onSurfaceVariant = LightTextSecondary
+)
+
+// Amber Gold Theme (Light)
+private val AmberLightColorScheme = lightColorScheme(
+    primary = AmberPrimaryLight,
+    secondary = AmberSecondaryLight,
+    tertiary = AmberTertiaryLight,
+    primaryContainer = AmberContainerLight,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceVariant = LightSurfaceVariant,
+    outline = LightOutline,
+    onBackground = LightTextPrimary,
+    onSurface = LightTextPrimary,
+    onSurfaceVariant = LightTextSecondary
+)
+
+// Purple Theme (Light)
+private val PurpleLightColorScheme = lightColorScheme(
+    primary = PurplePrimaryLight,
+    secondary = PurpleSecondaryLight,
+    tertiary = PurpleTertiaryLight,
+    primaryContainer = PurpleContainerLight,
+    background = LightBackground,
+    surface = LightSurface,
+    surfaceVariant = LightSurfaceVariant,
+    outline = LightOutline,
+    onBackground = LightTextPrimary,
+    onSurface = LightTextPrimary,
+    onSurfaceVariant = LightTextSecondary
+)
+
 @Composable
 fun NezhaEDRTheme(
     appTheme: AppThemeMode = AppThemeMode.RED,
@@ -58,6 +103,9 @@ fun NezhaEDRTheme(
         AppThemeMode.RED -> RedLightColorScheme
         AppThemeMode.BLUE -> BlueLightColorScheme
         AppThemeMode.PINK -> PinkLightColorScheme
+        AppThemeMode.GREEN -> GreenLightColorScheme
+        AppThemeMode.AMBER -> AmberLightColorScheme
+        AppThemeMode.PURPLE -> PurpleLightColorScheme
     }
 
     MaterialTheme(

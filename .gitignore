@@ -13,6 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+release.jks
 *.jks
 *.keystore
 fastlane/*.json

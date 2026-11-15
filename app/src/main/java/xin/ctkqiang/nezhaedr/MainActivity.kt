@@ -9,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import xin.ctkqiang.nezhaedr.data.local.DailyTelemetryCleanupWorker
 import xin.ctkqiang.nezhaedr.ui.main.MainScreen
 import xin.ctkqiang.nezhaedr.ui.theme.NezhaEDRTheme
 import xin.ctkqiang.nezhaedr.util.EDRLogger
@@ -34,6 +35,9 @@ class MainActivity : ComponentActivity() {
         EDRLogger.i(TAG, "onCreate: Activity initializing with locale '$savedLang'")
         enableEdgeToEdge()
         requestNotificationPermission()
+
+        // Schedule daily 12:00 AM midnight SQLite cleanup cron job
+        DailyTelemetryCleanupWorker.scheduleMidnightCron(this)
 
         setContent {
             NezhaEDRTheme {

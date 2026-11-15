@@ -112,6 +112,11 @@ class NezhaVpnService : VpnService() {
                 .setMtu(1500)
                 .addAddress("10.0.0.2", 32)
 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                builder.setMetered(false)
+            }
+            builder.allowBypass()
+
             // Dynamic rule fetching from RuleRepository
             val ruleRepo = RuleRepositoryImpl(applicationContext)
             val activeRulesPkg = withContext(Dispatchers.IO) { ruleRepo.fetchRules().getOrNull() }

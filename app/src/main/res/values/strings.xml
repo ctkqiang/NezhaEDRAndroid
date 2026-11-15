@@ -59,6 +59,12 @@
 
     <!-- Settings Screen Phrasing -->
     <string name="settings_header_title">Application Preferences</string>
+    <string name="settings_dark_light_title">Appearance Mode</string>
+    <string name="settings_dark_light_desc">Choose between system auto, light, or dark theme canvas.</string>
+    <string name="mode_auto">Auto (System)</string>
+    <string name="mode_light">Light Mode</string>
+    <string name="mode_dark">Dark Mode</string>
+
     <string name="settings_theme_title">Interface Accent Color</string>
     <string name="settings_theme_desc">Customize the visual theme accent for the dashboard.</string>
     <string name="settings_gitops_title">Rule Engine Sync</string>

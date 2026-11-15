@@ -24,6 +24,7 @@ import xin.ctkqiang.nezhaedr.engine.EDREvaluationEngine
 import xin.ctkqiang.nezhaedr.service.telemetry.NezhaVpnService
 import xin.ctkqiang.nezhaedr.service.telemetry.PackageTelemetryReceiver
 import xin.ctkqiang.nezhaedr.ui.theme.AppThemeMode
+import xin.ctkqiang.nezhaedr.ui.theme.ThemeDarkLightMode
 import xin.ctkqiang.nezhaedr.util.EDRLogger
 import xin.ctkqiang.nezhaedr.util.LocaleHelper
 
@@ -41,6 +42,7 @@ class MainViewModel(
         MainUiState(
             isLoading = true,
             appTheme = loadSavedTheme(),
+            darkLightMode = loadSavedDarkLightMode(),
             appLanguageCode = loadSavedLanguage()
         )
     )
@@ -61,6 +63,12 @@ class MainViewModel(
         _uiState.update { it.copy(appTheme = theme) }
     }
 
+    fun setDarkLightMode(mode: ThemeDarkLightMode) {
+        EDRLogger.i(TAG, "setDarkLightMode: Changing dark/light mode to $mode")
+        prefs.edit().putString("dark_light_mode", mode.name).apply()
+        _uiState.update { it.copy(darkLightMode = mode) }
+    }
+
     fun toggleVpnState() {
         _uiState.update { current ->
             val nextState = !current.isVpnActive
@@ -75,6 +83,15 @@ class MainViewModel(
             AppThemeMode.valueOf(savedName ?: AppThemeMode.RED.name)
         } catch (e: Exception) {
             AppThemeMode.RED
+        }
+    }
+
+    private fun loadSavedDarkLightMode(): ThemeDarkLightMode {
+        val savedName = prefs.getString("dark_light_mode", ThemeDarkLightMode.AUTO.name)
+        return try {
+            ThemeDarkLightMode.valueOf(savedName ?: ThemeDarkLightMode.AUTO.name)
+        } catch (e: Exception) {
+            ThemeDarkLightMode.AUTO
         }
     }
 

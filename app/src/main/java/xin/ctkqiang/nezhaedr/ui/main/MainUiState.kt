@@ -6,6 +6,7 @@ import xin.ctkqiang.nezhaedr.data.model.DetectionRule
 import xin.ctkqiang.nezhaedr.data.model.DetectionRulePackage
 import xin.ctkqiang.nezhaedr.data.repository.RemoteRuleCatalogItem
 import xin.ctkqiang.nezhaedr.ui.theme.AppThemeMode
+import xin.ctkqiang.nezhaedr.ui.theme.ThemeDarkLightMode
 
 data class MainUiState(
     val isVpnActive: Boolean = false,
@@ -21,6 +22,7 @@ data class MainUiState(
     val availableRemoteCatalog: List<RemoteRuleCatalogItem> = emptyList(),
     val selectedRemoteFilesToSync: Set<String> = emptySet(),
     val appTheme: AppThemeMode = AppThemeMode.RED,
+    val darkLightMode: ThemeDarkLightMode = ThemeDarkLightMode.AUTO,
     val appLanguageCode: String = "zh",
     val languageRecomposeKey: Int = 0,
     val selectedTab: Int = 0,

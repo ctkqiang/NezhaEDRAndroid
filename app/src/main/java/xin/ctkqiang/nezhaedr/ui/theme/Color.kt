@@ -15,6 +15,12 @@ enum class AppThemeMode {
     SLATE
 }
 
+enum class ThemeDarkLightMode {
+    AUTO,
+    LIGHT,
+    DARK
+}
+
 // Crisp Production Light Canvas Colors
 val LightBackground = Color(0xFFF8F9FA)
 val LightSurface = Color(0xFFFFFFFF)
@@ -22,6 +28,14 @@ val LightSurfaceVariant = Color(0xFFF1F3F5)
 val LightOutline = Color(0xFFE9ECEF)
 val LightTextPrimary = Color(0xFF111827)
 val LightTextSecondary = Color(0xFF6B7280)
+
+// Crisp Production Dark Canvas Colors
+val DarkBackground = Color(0xFF0D1117)
+val DarkSurface = Color(0xFF161B22)
+val DarkSurfaceVariant = Color(0xFF21262D)
+val DarkOutline = Color(0xFF30363D)
+val DarkTextPrimary = Color(0xFFF0F6FC)
+val DarkTextSecondary = Color(0xFF8B949E)
 
 // Red Theme Palette (Default)
 val RedPrimaryLight = Color(0xFFDC2626)

@@ -58,6 +58,12 @@
 
     <!-- Settings Screen Phrasing -->
     <string name="settings_header_title">アプリケーション設定</string>
+    <string name="settings_dark_light_title">表示モード</string>
+    <string name="settings_dark_light_desc">システム自動、ライト、またはダークテーマの表示を選択します。</string>
+    <string name="mode_auto">システム自動 (Auto)</string>
+    <string name="mode_light">ライトモード (Light)</string>
+    <string name="mode_dark">ダークモード (Dark)</string>
+
     <string name="settings_theme_title">インターフェースのアクセントカラー</string>
     <string name="settings_theme_desc">ダッシュボードのビジュアルアクセントカラーをカスタマイズします。</string>
     <string name="settings_gitops_title">ルールエンジンの同期</string>

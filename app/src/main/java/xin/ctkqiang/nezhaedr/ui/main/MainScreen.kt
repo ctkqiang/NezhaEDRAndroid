@@ -116,6 +116,7 @@ import xin.ctkqiang.nezhaedr.data.repository.RemoteRuleCatalogItem
 import xin.ctkqiang.nezhaedr.service.telemetry.NezhaVpnService
 import xin.ctkqiang.nezhaedr.ui.theme.AppThemeMode
 import xin.ctkqiang.nezhaedr.ui.theme.NezhaEDRTheme
+import xin.ctkqiang.nezhaedr.ui.theme.ThemeDarkLightMode
 import xin.ctkqiang.nezhaedr.util.EDRLogger
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -162,7 +163,10 @@ fun MainScreen(
         }
     }
 
-    NezhaEDRTheme(appTheme = uiState.appTheme) {
+    NezhaEDRTheme(
+        appTheme = uiState.appTheme,
+        darkLightMode = uiState.darkLightMode
+    ) {
         MainScreenContent(
             uiState = uiState,
             onSelectTab = { tab ->
@@ -222,6 +226,10 @@ fun MainScreen(
             onSelectTheme = { theme ->
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 viewModel.setAppTheme(theme)
+            },
+            onSelectDarkLightMode = { mode ->
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                viewModel.setDarkLightMode(mode)
             },
             onSelectLanguage = { langCode ->
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -294,6 +302,7 @@ fun MainScreenContent(
     onSyncSelectedRules: () -> Unit = {},
     onImportRuleClick: () -> Unit = {},
     onSelectTheme: (AppThemeMode) -> Unit = {},
+    onSelectDarkLightMode: (ThemeDarkLightMode) -> Unit = {},
     onSelectLanguage: (String) -> Unit = {},
     onClearData: () -> Unit = {},
     onExportYaml: () -> Unit = {},
@@ -476,6 +485,7 @@ fun MainScreenContent(
                         4 -> SettingsTabContent(
                             uiState = uiState,
                             onSelectTheme = onSelectTheme,
+                            onSelectDarkLightMode = onSelectDarkLightMode,
                             onSelectLanguage = onSelectLanguage,
                             onOpenSyncPicker = onOpenSyncPicker,
                             onImportRuleClick = onImportRuleClick
@@ -767,6 +777,7 @@ fun SyncRulesPickerDialog(
 fun SettingsTabContent(
     uiState: MainUiState,
     onSelectTheme: (AppThemeMode) -> Unit,
+    onSelectDarkLightMode: (ThemeDarkLightMode) -> Unit,
     onSelectLanguage: (String) -> Unit,
     onOpenSyncPicker: () -> Unit,
     onImportRuleClick: () -> Unit
@@ -828,6 +839,66 @@ fun SettingsTabContent(
                             )
                         )
                     }
+                }
+            }
+        }
+
+        // Appearance Dark/Light Mode Selector Card
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(id = R.string.settings_dark_light_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(id = R.string.settings_dark_light_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = uiState.darkLightMode == ThemeDarkLightMode.AUTO,
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            onSelectDarkLightMode(ThemeDarkLightMode.AUTO)
+                        },
+                        label = { Text(stringResource(R.string.mode_auto), style = MaterialTheme.typography.labelSmall) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                    FilterChip(
+                        selected = uiState.darkLightMode == ThemeDarkLightMode.LIGHT,
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            onSelectDarkLightMode(ThemeDarkLightMode.LIGHT)
+                        },
+                        label = { Text(stringResource(R.string.mode_light), style = MaterialTheme.typography.labelSmall) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                    FilterChip(
+                        selected = uiState.darkLightMode == ThemeDarkLightMode.DARK,
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            onSelectDarkLightMode(ThemeDarkLightMode.DARK)
+                        },
+                        label = { Text(stringResource(R.string.mode_dark), style = MaterialTheme.typography.labelSmall) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
                 }
             }
         }

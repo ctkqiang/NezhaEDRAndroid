@@ -58,6 +58,12 @@
 
     <!-- Settings Screen Phrasing -->
     <string name="settings_header_title">การตั้งค่าแอปพลิเคชัน</string>
+    <string name="settings_dark_light_title">โหมดการแสดงผล</string>
+    <string name="settings_dark_light_desc">เลือกระหว่างอัตโนมัติตามระบบ โหมดสว่าง หรือโหมดมืด</string>
+    <string name="mode_auto">อัตโนมัติตามระบบ (Auto)</string>
+    <string name="mode_light">โหมดสว่าง (Light)</string>
+    <string name="mode_dark">โหมดมืด (Dark)</string>
+
     <string name="settings_theme_title">สีเน้นอินเทอร์เฟซ</string>
     <string name="settings_theme_desc">ปรับแต่งสีเน้นสำหรับแดชบอร์ด</string>
     <string name="settings_gitops_title">ซิงค์เครื่องมือกฎเกณฑ์</string>

@@ -59,6 +59,12 @@
 
     <!-- Settings Screen Phrasing -->
     <string name="settings_header_title">偏好设置</string>
+    <string name="settings_dark_light_title">外观显示模式</string>
+    <string name="settings_dark_light_desc">在系统跟随、浅色及深色显示模式之间选择。</string>
+    <string name="mode_auto">跟随系统 (Auto)</string>
+    <string name="mode_light">浅色模式 (Light)</string>
+    <string name="mode_dark">深色模式 (Dark)</string>
+
     <string name="settings_theme_title">主题配色风格</string>
     <string name="settings_theme_desc">自定义终端控制台的主题视觉配色。</string>
     <string name="settings_gitops_title">规则库在线同步</string>

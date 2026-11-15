@@ -58,6 +58,12 @@
 
     <!-- Settings Screen Phrasing -->
     <string name="settings_header_title">애플리케이션 설정</string>
+    <string name="settings_dark_light_title">디스플레이 모드</string>
+    <string name="settings_dark_light_desc">시스템 자동, 라이트, 또는 다크 모드 중에서 선택하세요.</string>
+    <string name="mode_auto">시스템 자동 (Auto)</string>
+    <string name="mode_light">라이트 모드 (Light)</string>
+    <string name="mode_dark">다크 모드 (Dark)</string>
+
     <string name="settings_theme_title">인터페이스 강조 색상</string>
     <string name="settings_theme_desc">대시보드의 시각적 강조 색상을 설정합니다.</string>
     <string name="settings_gitops_title">규칙 엔진 동기화</string>

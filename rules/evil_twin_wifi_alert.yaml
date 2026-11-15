@@ -1,0 +1,16 @@
+schema_version: "2.0"
+rule_id: "RULE-WIFI-001"
+id: "evil_twin_wifi_alert"
+name: "Rogue Evil Twin Wi-Fi Connection Detection"
+description: "Detects connection to known rogue Wi-Fi Access Points, evil twin SSIDs, or malicious captive portal gateways"
+severity: "CRITICAL"
+category: "WIFI"
+enabled: true
+engine_type: "conditional"
+target_source: "wifi_connection"
+condition:
+  target_domains:
+    - "evil-portal.net"
+    - "captive-phish.scam-wifi.io"
+  expression: "contains(domain, \"evil-portal\") || contains(domain, \"scam-wifi\")"
+action: "NOTIFY"

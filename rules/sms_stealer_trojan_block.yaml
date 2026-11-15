@@ -1,0 +1,16 @@
+schema_version: "2.0"
+rule_id: "RULE-PKG-004"
+id: "sms_stealer_trojan_block"
+name: "SMS Stealer & OTP Interceptor Trojan Detection"
+description: "Detects malware attempting background SMS interception, 2FA OTP theft, and forwarding"
+severity: "CRITICAL"
+category: "PACKAGE"
+enabled: true
+engine_type: "signature"
+target_source: "http_payload"
+condition:
+  package_patterns:
+    - ".*sms\\.stealer.*"
+    - ".*otp\\.interceptor.*"
+    - ".*forwarder\\.sms.*"
+action: "TERMINATE"

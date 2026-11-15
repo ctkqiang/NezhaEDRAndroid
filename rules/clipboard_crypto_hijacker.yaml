@@ -1,0 +1,15 @@
+schema_version: "2.0"
+rule_id: "RULE-PKG-005"
+id: "clipboard_crypto_hijacker"
+name: "Clipboard Crypto Address Hijacker Malware"
+description: "Detects malware targeting clipboard buffer to replace cryptocurrency wallet addresses"
+severity: "CRITICAL"
+category: "PACKAGE"
+enabled: true
+engine_type: "signature"
+target_source: "http_payload"
+condition:
+  package_patterns:
+    - ".*crypto\\.clipper.*"
+    - ".*wallet\\.hijacker.*"
+action: "TERMINATE"

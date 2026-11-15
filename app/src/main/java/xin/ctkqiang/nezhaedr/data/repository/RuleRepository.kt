@@ -52,14 +52,22 @@ class RuleRepositoryImpl(
         "backdoor_service_detection.yaml",
         "banking_trojan_alert.yaml",
         "c2_threat_block.yaml",
+        "clipboard_crypto_hijacker.yaml",
+        "command_injection_rce_block.yaml",
+        "credential_stuffing_bot_block.yaml",
         "cryptojacking_pool_block.yaml",
+        "evil_twin_wifi_alert.yaml",
+        "fake_av_scam_alert.yaml",
         "pegasus_spyware_block.yaml",
         "phishing_credential_block.yaml",
         "ransomware_beacon_block.yaml",
         "reconnaissance_probe_block.yaml",
         "rogue_package_alert.yaml",
         "scam_gambling_url_block.yaml",
-        "spyware_keylogger_detection.yaml"
+        "sms_stealer_trojan_block.yaml",
+        "spyware_keylogger_detection.yaml",
+        "stalkerware_location_tracker.yaml",
+        "tor_anonymizer_egress_block.yaml"
     )
 
     override fun getFallbackRemoteRuleCatalog(): List<RemoteRuleCatalogItem> {
@@ -73,9 +81,17 @@ class RuleRepositoryImpl(
             RemoteRuleCatalogItem("adware_click_farm_block.yaml", "adware_click_farm_block", "Fraudulent Adware & Click Farm Block", "NETWORK", "MEDIUM"),
             RemoteRuleCatalogItem("reconnaissance_probe_block.yaml", "reconnaissance_probe_block", "Reconnaissance & Network Probe Block", "NETWORK", "HIGH"),
             RemoteRuleCatalogItem("scam_gambling_url_block.yaml", "scam_gambling_url_block", "Scam & Gambling Keyword URL Block", "NETWORK", "HIGH"),
+            RemoteRuleCatalogItem("fake_av_scam_alert.yaml", "fake_av_scam_alert", "Fake Antivirus & Tech Support Scam Block", "NETWORK", "HIGH"),
+            RemoteRuleCatalogItem("command_injection_rce_block.yaml", "command_injection_rce_block", "Remote Command Injection & RCE Block", "NETWORK", "CRITICAL"),
+            RemoteRuleCatalogItem("credential_stuffing_bot_block.yaml", "credential_stuffing_bot_block", "Credential Stuffing & Brute Force Bot Block", "NETWORK", "HIGH"),
+            RemoteRuleCatalogItem("tor_anonymizer_egress_block.yaml", "tor_anonymizer_egress_block", "TOR Exit Node & Anonymizer Block", "NETWORK", "MEDIUM"),
+            RemoteRuleCatalogItem("evil_twin_wifi_alert.yaml", "evil_twin_wifi_alert", "Rogue Evil Twin Wi-Fi Connection Alert", "WIFI", "CRITICAL"),
             RemoteRuleCatalogItem("rogue_package_alert.yaml", "rogue_package_alert", "Suspicious Rogue Package Alert", "PACKAGE", "CRITICAL"),
             RemoteRuleCatalogItem("spyware_keylogger_detection.yaml", "spyware_keylogger_detection", "Spyware & Keylogger Package Detection", "PACKAGE", "HIGH"),
             RemoteRuleCatalogItem("banking_trojan_alert.yaml", "banking_trojan_alert", "Banking Trojan & Overlay Sideload Detection", "PACKAGE", "CRITICAL"),
+            RemoteRuleCatalogItem("sms_stealer_trojan_block.yaml", "sms_stealer_trojan_block", "SMS Stealer & OTP Interceptor Trojan Block", "PACKAGE", "CRITICAL"),
+            RemoteRuleCatalogItem("clipboard_crypto_hijacker.yaml", "clipboard_crypto_hijacker", "Clipboard Crypto Address Hijacker Malware", "PACKAGE", "CRITICAL"),
+            RemoteRuleCatalogItem("stalkerware_location_tracker.yaml", "stalkerware_location_tracker", "Stalkerware & GPS Location Tracker App", "PACKAGE", "HIGH"),
             RemoteRuleCatalogItem("backdoor_service_detection.yaml", "backdoor_service_detection", "Unauthorized Backdoor Service Detection", "PROCESS", "MEDIUM")
         )
     }

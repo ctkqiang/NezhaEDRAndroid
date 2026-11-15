@@ -14,7 +14,7 @@ class RuleRepositoryTest {
         val catalog = repository.getFallbackRemoteRuleCatalog()
 
         assertNotNull(catalog)
-        assertEquals(13, catalog.size)
+        assertEquals(21, catalog.size)
 
         val c2Item = catalog.find { it.fileName == "c2_threat_block.yaml" }
         assertNotNull(c2Item)
@@ -23,11 +23,17 @@ class RuleRepositoryTest {
         assertEquals("NETWORK", c2Item?.category)
         assertEquals("HIGH", c2Item?.severity)
 
-        val scamItem = catalog.find { it.fileName == "scam_gambling_url_block.yaml" }
-        assertNotNull(scamItem)
-        assertEquals("scam_gambling_url_block", scamItem?.ruleId)
-        assertEquals("Scam & Gambling Keyword URL Block", scamItem?.name)
-        assertEquals("HIGH", scamItem?.severity)
+        val wifiItem = catalog.find { it.fileName == "evil_twin_wifi_alert.yaml" }
+        assertNotNull(wifiItem)
+        assertEquals("evil_twin_wifi_alert", wifiItem?.ruleId)
+        assertEquals("WIFI", wifiItem?.category)
+        assertEquals("CRITICAL", wifiItem?.severity)
+
+        val smsItem = catalog.find { it.fileName == "sms_stealer_trojan_block.yaml" }
+        assertNotNull(smsItem)
+        assertEquals("sms_stealer_trojan_block", smsItem?.ruleId)
+        assertEquals("PACKAGE", smsItem?.category)
+        assertEquals("CRITICAL", smsItem?.severity)
     }
 
     @Test

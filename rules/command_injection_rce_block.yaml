@@ -1,0 +1,16 @@
+schema_version: "2.0"
+rule_id: "RULE-NET-007"
+id: "command_injection_rce_block"
+name: "Remote Command Injection & Shell Egress Probe"
+description: "Blocks network payloads attempting reverse shell execution or RCE exploit probes"
+severity: "CRITICAL"
+category: "NETWORK"
+enabled: true
+engine_type: "conditional"
+target_source: "url_request"
+condition:
+  target_domains:
+    - "reverse-shell-listener.net"
+    - "rce-payload-drop.org"
+  expression: "contains(domain, \"reverse-shell\") || contains(domain, \"rce-payload\")"
+action: "BLOCK"

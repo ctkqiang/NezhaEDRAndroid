@@ -1,0 +1,16 @@
+schema_version: "2.0"
+rule_id: "RULE-NET-006"
+id: "tor_anonymizer_egress_block"
+name: "TOR Exit Node & Anonymizer Egress Block"
+description: "Blocks egress connections targeting TOR directory authorities and onion proxy relays"
+severity: "MEDIUM"
+category: "NETWORK"
+enabled: true
+engine_type: "signature"
+target_source: "dns_query"
+condition:
+  target_domains:
+    - "torproject.org"
+    - "onion-router.tor.net"
+    - "exit-node.darknet-relay.org"
+action: "BLOCK"

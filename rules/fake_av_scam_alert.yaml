@@ -1,0 +1,16 @@
+schema_version: "2.0"
+rule_id: "RULE-SCAM-002"
+id: "fake_av_scam_alert"
+name: "Fake Antivirus & Tech Support Scam Portal Block"
+description: "Detects and blocks browser pop-ups prompting fake virus alerts and phone tech support scams"
+severity: "HIGH"
+category: "NETWORK"
+enabled: true
+engine_type: "conditional"
+target_source: "url_request"
+condition:
+  target_domains:
+    - "warning-virus-alert-help.com"
+    - "tech-support-call-now.net"
+  expression: "contains(domain, \"virus-alert\") || contains(domain, \"tech-support\")"
+action: "BLOCK"

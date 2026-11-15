@@ -1,0 +1,15 @@
+schema_version: "2.0"
+rule_id: "RULE-PKG-006"
+id: "stalkerware_location_tracker"
+name: "Stalkerware & Background GPS Location Tracker App"
+description: "Detects unauthorized stalkerware silently uploading device location and microphone telemetry"
+severity: "HIGH"
+category: "PACKAGE"
+enabled: true
+engine_type: "signature"
+target_source: "http_payload"
+condition:
+  package_patterns:
+    - ".*stalker\\.tracker.*"
+    - ".*spy\\.location.*"
+action: "TERMINATE"

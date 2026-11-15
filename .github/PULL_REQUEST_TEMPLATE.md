@@ -7,10 +7,10 @@
 
 ## Type of Change / 变更类型
 
-- [ ] 🛡️ **Ruleset Submission / 规则库贡献** (`rules/*.yaml`)
-- [ ] 🐛 **Bug Fix / 缺陷修复**
-- [ ] ✨ **New Feature / 新功能**
-- [ ] 🧹 **Chore & Refactoring / 整理与重构**
+- [ ] **Ruleset Submission / 规则库贡献** (`rules/*.yaml`)
+- [ ] **Bug Fix / 缺陷修复**
+- [ ] **New Feature / 新功能**
+- [ ] **Chore & Refactoring / 整理与重构**
 
 ---
 

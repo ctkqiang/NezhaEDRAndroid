@@ -1,0 +1,7 @@
+# NezhaEDR Mandatory Code Owners
+# All Pull Requests targeting main or dev require review and approval from @ctkqiang
+
+* @ctkqiang
+app/ @ctkqiang
+rules/ @ctkqiang
+.github/ @ctkqiang

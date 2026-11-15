@@ -1,5 +1,5 @@
 ---
-name: "🛡️ Ruleset Suggestion / 规则库建议"
+name: "Ruleset Suggestion / 规则库建议"
 about: "Propose new threat domains, C2 IPs, or malicious package patterns / 建议新增威胁域名、C2 IP 或风险应用包名"
 title: "[RULESET] "
 labels: "ruleset"

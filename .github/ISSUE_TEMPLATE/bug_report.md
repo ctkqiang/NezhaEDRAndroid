@@ -1,5 +1,5 @@
 ---
-name: "🐛 Bug Report / 缺陷报告"
+name: "Bug Report / 缺陷报告"
 about: "Report a bug or unexpected behavior in NezhaEDR / 报告应用中的问题或异常行为"
 title: "[BUG] "
 labels: "bug"

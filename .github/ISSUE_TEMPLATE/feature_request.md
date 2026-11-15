@@ -1,5 +1,5 @@
 ---
-name: "✨ Feature Request / 功能建议"
+name: "Feature Request / 功能建议"
 about: "Suggest a new feature or improvement for NezhaEDR / 为哪吒 EDR 提出新功能建议"
 title: "[FEATURE] "
 labels: "enhancement"

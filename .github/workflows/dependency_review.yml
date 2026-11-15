@@ -1,0 +1,23 @@
+name: Dependency Vulnerability Review
+
+on:
+  pull_request:
+    branches:
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    name: Dependency Security & CVE Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Review Dependency Changes
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
